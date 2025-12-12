@@ -137,6 +137,7 @@ def start_game(number_player, list_card_players, manilha_list):
     vira = list_card_players[-1]
     number_vira = vira[0]
     suit_vira = vira[2]
+    manilhas = manilha_list
 
     match number_player:
         case 2:
@@ -155,6 +156,9 @@ def start_game(number_player, list_card_players, manilha_list):
                 isround_over = False
                 round_win = '★'
                 round_loose = '☆'
+                player1_has_manilha = False
+                player2_has_manilha = False
+
                 print(f'Jogador 1 cartas: {player1_cards}')
                 print(f'Jogador 2 cartas: {player2_cards}')
                 print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
@@ -194,7 +198,7 @@ def start_game(number_player, list_card_players, manilha_list):
                 print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
 
                 while True:
-                    print('\nQual carta você quer jogar? ')
+                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
                     print(f'1 - {player1_cards[0]}')
                     print(f'2 - {player1_cards[1]}')
                     print(f'3 - {player1_cards[2]}')
@@ -243,6 +247,7 @@ def start_game(number_player, list_card_players, manilha_list):
                     continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
                     break
                 else:
+                    print('Vez do seu adersário de Jogar...')
                     print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
                     print(f'│                               ┌─────┐ ┌─────┐ ┌─────┐                               │')
                     print(f'│                               │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                               │')
@@ -318,25 +323,33 @@ def start_game(number_player, list_card_players, manilha_list):
                     print(f'│ └─────────────────┘               └─────┘ └─────┘            └─────────────────────┘│')
                     print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')     
                     
+                    print('\n')
                     time.sleep(2)
                     index_card_player1 = 0
                     index_card_player2 = 0
-
+                    
 
                     for i in order_strength:
                         if card_in_table[0] == i:
                             index_card_player1 = order_strength.index(i)
                         elif enemy_played_card[0] == i:
                             index_card_player2 = order_strength.index(i)
-
-                    if index_card_player1 > index_card_player2:
+                    
+                    if card_in_table in manilhas:
+                        player1_has_manilha = True
+                    if enemy_played_card in manilhas:
+                        player2_has_manilha = True
+                    
+                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                        print('Você venceu essa Rodada!')
+                        time.sleep(1)
                         count_round_player1 += 1
                         print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                        print(f'│                               ┌─────┐ ┌─────┐ ┌─────┐                               │')
-                        print(f'│                               │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                               │')
-                        print(f'│                               │ │ │ │ │ │ │ │ │ │ │ │                               │')
-                        print(f'│                               │ └─┘ │ │ └─┘ │ │ └─┘ │                               │')
-                        print(f'│                               └─────┘ └─────┘ └─────┘                               │')
+                        print(f'│                                   ┌─────┐ ┌─────┐                                   │')
+                        print(f'│                                   │ ┌─┐ │ │ ┌─┐ │                                   │')
+                        print(f'│                                   │ │ │ │ │ │ │ │                                   │')
+                        print(f'│                                   │ └─┘ │ │ └─┘ │                                   │')
+                        print(f'│                                   └─────┘ └─────┘                                   │')
                         print(f'│                                                                                     │')
                         print(f'│                                                                                     │')
                         print(f'│                                                                                     │')
@@ -367,14 +380,43 @@ def start_game(number_player, list_card_players, manilha_list):
                         print(f'│ └─────────────────┘               └─────┘ └─────┘            └─────────────────────┘│')
                         print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')  
                     
+                    elif player1_has_manilha == True and player2_has_manilha == False:
+                        print('Você venceu essa Rodada!')
+                        print(f'Você jogou a manilha {card_in_table} e seu adversário {enemy_played_card}')
+                    
+                    elif player2_has_manilha == True and player1_has_manilha == False:
+                        print('Seu adversário venceu essa Rodada!')
+                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
+
+                    elif player1_has_manilha == True and player2_has_manilha == True:
+                        for i in suits_manilha:
+                            if card_in_table[2] == i:
+                                index_card_player1 = suits_manilha.index(i)
+                            elif enemy_played_card[2] == i:
+                                index_card_player2 = suits_manilha.index(i)
+
+                        if index_card_player1 > index_card_player2:
+                            print('Você venceu essa Rodada!')
+                            print(f'A sua manilha {card_in_table} é mais forte que a do adversário {enemy_played_card}')
+                        else:
+                            print('Seu adversário venceu essa Rodada!')
+                            print(f'A sua manilha {card_in_table} é mais fraca que a do adversário {enemy_played_card}')
+
+
+
+
+
+
                     else:
+                        print('Seu adversário venceu essa Rodada!')
+                        time.sleep(1)
                         count_round_player2 += 1
                         print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                        print(f'│                               ┌─────┐ ┌─────┐ ┌─────┐                               │')
-                        print(f'│                               │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                               │')
-                        print(f'│                               │ │ │ │ │ │ │ │ │ │ │ │                               │')
-                        print(f'│                               │ └─┘ │ │ └─┘ │ │ └─┘ │                               │')
-                        print(f'│                               └─────┘ └─────┘ └─────┘                               │')
+                        print(f'│                                   ┌─────┐ ┌─────┐                                   │')
+                        print(f'│                                   │ ┌─┐ │ │ ┌─┐ │                                   │')
+                        print(f'│                                   │ │ │ │ │ │ │ │                                   │')
+                        print(f'│                                   │ └─┘ │ │ └─┘ │                                   │')
+                        print(f'│                                   └─────┘ └─────┘                                   │')
                         print(f'│                                                                                     │')
                         print(f'│                                                                                     │')
                         print(f'│                                                                                     │')
@@ -401,7 +443,7 @@ def start_game(number_player, list_card_players, manilha_list):
                         print(f'│ │     Placar      │               ┌─────┐ ┌─────┐            │       Rodadas       ││')
                         print(f'│ │  ─────────────  │               │{player1_cards[0][2]}    │ │{player1_cards[1][2]}    │            │  ─────────────────  ││')
                         print(f'│ │  Você  │  Ele   │               │  {player1_cards[0][0]}  │ │  {player1_cards[1][0]}  │            │   Você   │    Ele   ││')
-                        print(f'│ │   {points_player1}   │   {points_player2}   │               │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│        │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_loose}  {round_loose} ││')
+                        print(f'│ │   {points_player1}   │   {points_player2}   │               │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│            │ {round_loose}  {round_loose}  {round_loose}  │ {round_win}  {round_loose}  {round_loose} ││')
                         print(f'│ └─────────────────┘               └─────┘ └─────┘            └─────────────────────┘│')
                         print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')  
                     
