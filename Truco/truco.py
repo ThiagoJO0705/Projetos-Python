@@ -943,6 +943,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print('Seu adversário venceu essa Rodada!')
                                     print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                     count_round_player2 += 1
+                                    rounds[0].append(round_loose)
+                                    rounds[1].append(round_win)
+
                                     time.sleep(2)
                                     screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
 
@@ -1090,85 +1093,21 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
                                             break
 
+                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                             else:
                                 print('Seu adversário venceu essa Rodada!')          
-                                time.sleep(2)
                                 count_round_player2 += 1
-                                print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                                print(f'│                                       ┌─────┐                                       │')
-                                print(f'│                                       │ ┌─┐ │                                       │')
-                                print(f'│                                       │ │ │ │                                       │')
-                                print(f'│                                       │ └─┘ │                                       │')
-                                print(f'│                                       └─────┘                                       │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                       ┌─────┐                                       │')
-                                print(f'│                                       │{suit_vira}    │                                       │')
-                                print(f'│                                       │  {number_vira}  │                                       │')
-                                print(f'│                                       │    {suit_vira}│                                       │')
-                                print(f'│                                       └─────┘                                       │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                                print(f'│ │     Placar      │                   ┌─────┐                │       Rodadas       ││')
-                                print(f'│ │  ─────────────  │                   │{player1_cards[0][2]}    │                │  ─────────────────  ││')
-                                print(f'│ │  Você  │  Ele   │                   │  {player1_cards[0][0]}  │                │   Você   │    Ele   ││')
-                                print(f'│ │   {points_player1}   │   {points_player2}   │                   │    {player1_cards[0][2]}│                │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_win}  {round_loose}  ││')
-                                print(f'│ └─────────────────┘                   └─────┘                └─────────────────────┘│')
-                                print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')  
+                                rounds[0].append(round_loose)
+                                rounds[1].append(round_win)
+                                time.sleep(2)
+                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)     
+                                
 
                                 time.sleep(2)
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
 
-                                print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                       ┌─────┐                                       │')
-                                print(f'│                                       │{enemy_played_card[2]}    │                                       │')
-                                print(f'│                                       │  {enemy_played_card[0]}  │                                       │')
-                                print(f'│                                       │    {enemy_played_card[2]}│                                       │')
-                                print(f'│                                       └─────┘                                       │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                       ┌─────┐                                       │')
-                                print(f'│                                       │{suit_vira}    │                                       │')
-                                print(f'│                                       │  {number_vira}  │                                       │')
-                                print(f'│                                       │    {suit_vira}│                                       │')
-                                print(f'│                                       └─────┘                                       │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│                                                                                     │')
-                                print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                                print(f'│ │     Placar      │                   ┌─────┐                │       Rodadas       ││')
-                                print(f'│ │  ─────────────  │                   │{player1_cards[0][2]}    │                │  ─────────────────  ││')
-                                print(f'│ │  Você  │  Ele   │                   │  {player1_cards[0][0]}  │                │   Você   │    Ele   ││')
-                                print(f'│ │   {points_player1}   │   {points_player2}   │                   │    {player1_cards[0][2]}│                │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_win}  {round_loose}  ││')
-                                print(f'│ └─────────────────┘                   └─────┘                └─────────────────────┘│')
-                                print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')  
+                                screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)     
 
 
 
@@ -1207,41 +1146,7 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
                                     break
                                 else:      
-                                    print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                       ┌─────┐                                       │')
-                                    print(f'│                                       │{enemy_played_card[2]}    │                                       │')
-                                    print(f'│                                       │  {enemy_played_card[0]}  │                                       │')
-                                    print(f'│                                       │    {enemy_played_card[2]}│                                       │')
-                                    print(f'│                                       └─────┘                                       │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                       ┌─────┐                                       │')
-                                    print(f'│                                       │{suit_vira}    │                                       │')
-                                    print(f'│                                       │  {number_vira}  │                                       │')
-                                    print(f'│                                       │    {suit_vira}│                                       │')
-                                    print(f'│                                       └─────┘                                       │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│                                       ┌─────┐                                       │')
-                                    print(f'│                                       │{card_in_table[2]}    │                                       │')
-                                    print(f'│                                       │  {card_in_table[0]}  │                                       │')
-                                    print(f'│                                       │    {card_in_table[2]}│                                       │')
-                                    print(f'│                                       └─────┘                                       │')
-                                    print(f'│                                                                                     │')
-                                    print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                                    print(f'│ │     Placar      │                                          │       Rodadas       ││')
-                                    print(f'│ │  ─────────────  │                                          │  ─────────────────  ││')
-                                    print(f'│ │  Você  │  Ele   │                                          │   Você   │    Ele   ││')
-                                    print(f'│ │   {points_player1}   │   {points_player2}   │                                          │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_win}  {round_loose}  ││')
-                                    print(f'│ └─────────────────┘                                          └─────────────────────┘│')
-                                    print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')     
+                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                     
                                     print('\n')
                                     time.sleep(2)
@@ -1395,43 +1300,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                     elif player1_has_manilha == True and player2_has_manilha == False:
                         print('Você venceu essa Rodada!')
                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                        rounds[0].append(round_win)
+                        rounds[1].append(round_loose)
                         count_round_player1 += 1
                         time.sleep(2)
-                        print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                        print(f'│                                   ┌─────┐ ┌─────┐                                   │')
-                        print(f'│                                   │ ┌─┐ │ │ ┌─┐ │                                   │')
-                        print(f'│                                   │ │ │ │ │ │ │ │                                   │')
-                        print(f'│                                   │ └─┘ │ │ └─┘ │                                   │')
-                        print(f'│                                   └─────┘ └─────┘                                   │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                       ┌─────┐                                       │')
-                        print(f'│                                       │{suit_vira}    │                                       │')
-                        print(f'│                                       │  {number_vira}  │                                       │')
-                        print(f'│                                       │    {suit_vira}│                                       │')
-                        print(f'│                                       └─────┘                                       │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│                                                                                     │')
-                        print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                        print(f'│ │     Placar      │               ┌─────┐ ┌─────┐            │       Rodadas       ││')
-                        print(f'│ │  ─────────────  │               │{player1_cards[0][2]}    │ │{player1_cards[1][2]}    │            │  ─────────────────  ││')
-                        print(f'│ │  Você  │  Ele   │               │  {player1_cards[0][0]}  │ │  {player1_cards[1][0]}  │            │   Você   │    Ele   ││')
-                        print(f'│ │   {points_player1}   │   {points_player2}   │               │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│            │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_loose}  {round_loose}  ││')
-                        print(f'│ └─────────────────┘               └─────┘ └─────┘            └─────────────────────┘│')
-                        print(f'└─────────────────────────────────────────────────────────────────────────────────────┘') 
+                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)      
 
                         while True:
                             print('\nSua vez de Jogar, qual carta você quer jogar? ')
@@ -1475,84 +1348,548 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                             break
                         else:
                             print('Vez do seu adersário de Jogar...')
-                            print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                            print(f'│                                   ┌─────┐ ┌─────┐                                   │')
-                            print(f'│                                   │ ┌─┐ │ │ ┌─┐ │                                   │')
-                            print(f'│                                   │ │ │ │ │ │ │ │                                   │')
-                            print(f'│                                   │ └─┘ │ │ └─┘ │                                   │')
-                            print(f'│                                   └─────┘ └─────┘                                   │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │{suit_vira}    │                                       │')
-                            print(f'│                                       │  {number_vira}  │                                       │')
-                            print(f'│                                       │    {suit_vira}│                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │{card_in_table[2]}    │                                       │')
-                            print(f'│                                       │  {card_in_table[0]}  │                                       │')
-                            print(f'│                                       │    {card_in_table[2]}│                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                            print(f'│ │     Placar      │                   ┌─────┐                │       Rodadas       ││')
-                            print(f'│ │  ─────────────  │                   │{player1_cards[0][2]}    │                │  ─────────────────  ││')
-                            print(f'│ │  Você  │  Ele   │                   │  {player1_cards[0][0]}  │                │   Você   │    Ele   ││')
-                            print(f'│ │   {points_player1}   │   {points_player2}   │                   │    {player1_cards[0][2]}│                │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_loose}  {round_loose}  ││')
-                            print(f'│ └─────────────────┘                   └─────┘                └─────────────────────┘│')
-                            print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')          
+                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
                             
                             time.sleep(2)        
                             enemy_played_card = random.choice(player2_cards)
                             player2_cards.remove(enemy_played_card)
-                            print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │ ┌─┐ │                                       │')
-                            print(f'│                                       │ │ │ │                                       │')
-                            print(f'│                                       │ └─┘ │                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │{enemy_played_card[2]}    │                                       │')
-                            print(f'│                                       │  {enemy_played_card[0]}  │                                       │')
-                            print(f'│                                       │    {enemy_played_card[2]}│                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │{suit_vira}    │                                       │')
-                            print(f'│                                       │  {number_vira}  │                                       │')
-                            print(f'│                                       │    {suit_vira}│                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                                                                     │')
-                            print(f'│                                       ┌─────┐                                       │')
-                            print(f'│                                       │{card_in_table[2]}    │                                       │')
-                            print(f'│                                       │  {card_in_table[0]}  │                                       │')
-                            print(f'│                                       │    {card_in_table[2]}│                                       │')
-                            print(f'│                                       └─────┘                                       │')
-                            print(f'│                                                                                     │')
-                            print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                            print(f'│ │     Placar      │                   ┌─────┐                │       Rodadas       ││')
-                            print(f'│ │  ─────────────  │                   │{player1_cards[0][2]}    │                │  ─────────────────  ││')
-                            print(f'│ │  Você  │  Ele   │                   │  {player1_cards[0][0]}  │                │   Você   │    Ele   ││')
-                            print(f'│ │   {points_player1}   │   {points_player2}   │                   │    {player1_cards[0][2]}│                │ {round_win}  {round_loose}  {round_loose}  │ {round_loose}  {round_loose}  {round_loose}  ││')
-                            print(f'│ └─────────────────┘                   └─────┘                └─────────────────────┘│')
-                            print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')     
+                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)         
                             
                             print('\n')
                             time.sleep(2)
 
+
+                            
+
+
+
+                            index_card_player1 = 0
+                            index_card_player2 = 0
+
+
+                            for i in order_strength:
+                                if card_in_table[0] == i:
+                                    index_card_player1 = order_strength.index(i)
+                                elif enemy_played_card[0] == i:
+                                    index_card_player2 = order_strength.index(i)
+
+                            if card_in_table in manilhas:
+                                player1_has_manilha = True
+                            if enemy_played_card in manilhas:
+                                player2_has_manilha = True
+
+                            #Rodada 2 - Player1 vence rodada 1 e 2
+
+                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                                print('Você venceu a Rodada')
+                                print('Você ganhou!!')
+                                time.sleep(2)
+                                count_points_player1 = round_value
+                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                time.sleep(2)
+                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                break
+
+                            #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
+
+                            elif player1_has_manilha == True and player2_has_manilha == False:
+                                print('Você venceu essa Rodada!')
+                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                print('Você ganhou!!')
+                                time.sleep(2)
+                                count_points_player1 = round_value
+                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                time.sleep(2)
+                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                break
+
+                            #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
+
+                            elif player2_has_manilha == True and player1_has_manilha == False:
+                                rounds[0].append(round_loose)
+                                rounds[1].append(round_win)
+                                print('Seu adversário venceu essa Rodada!')
+                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
+                                count_round_player2 += 1
+                                time.sleep(2)
+                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
+
+                                time.sleep(2)
+                                enemy_played_card = random.choice(player2_cards)
+                                player2_cards.remove(enemy_played_card)
+                                screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
+
+                                
+                                while True:
+                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
+                                    print(f'1 - {player1_cards[0]}')
+                                    print(f'4 - Pedir Truco')
+                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_in_table = ''
+                                    match card_option:
+                                        case '1':
+                                            played_card = player1_cards[0]
+                                            print(f'Você jogou a carta: {played_card}')
+                                            card_in_table = played_card
+                                            player1_cards.remove(played_card)
+                                            break
+                                        case '4':
+                                            print('Você pediu Truco!')   
+                                            for card in player2_cards:
+                                                if card in manilha_list:
+                                                    print('O oponente aceitou o Truco!')
+                                                    round_value = 3
+                                                    break
+                                            else:
+                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                count_points_player1 += round_value
+                                                isround_over = True
+                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                break
+                                        case _:
+                                            print('Opção inválida! Tente novamente')
+                                if isround_over == True:
+                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                    time.sleep(2)
+                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
+                                    break
+                                else:      
+                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
+                                    
+                                    print('\n')
+                                    time.sleep(2)
+                                    
+                                    index_card_player1 = 0
+                                    index_card_player2 = 0
+
+
+                                    for i in order_strength:
+                                        if card_in_table[0] == i:
+                                            index_card_player1 = order_strength.index(i)
+                                        elif enemy_played_card[0] == i:
+                                            index_card_player2 = order_strength.index(i)
+
+                                    if card_in_table in manilhas:
+                                        player1_has_manilha = True
+                                    if enemy_played_card in manilhas:
+                                        player2_has_manilha = True
+
+
+                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
+                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                                        print('Você venceu a Rodada')
+                                        print('Você ganhou!!')
+                                        time.sleep(2)
+                                        count_points_player1 = round_value
+                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+                                        
+                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
+                                    elif player1_has_manilha == True and player2_has_manilha == False:
+                                        print('Você venceu essa Rodada!')
+                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                        print('Você ganhou!!')
+                                        time.sleep(2)
+                                        count_points_player1 = round_value
+                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+
+
+                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
+                                    elif player2_has_manilha == True and player1_has_manilha == False:
+                                        print('Seu adversário venceu essa Rodada!')
+                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
+                                        print('Você perdeu!!')
+                                        time.sleep(2)
+                                        count_points_player2 = round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+
+
+                                    elif player1_has_manilha == True and player2_has_manilha == True:
+                                        for i in suits_manilha:
+                                            if card_in_table[2] == i:
+                                                index_card_player1 = suits_manilha.index(i)
+                                            elif enemy_played_card[2] == i:
+                                                index_card_player2 = suits_manilha.index(i)
+
+                                    
+
+                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
+                                        if index_card_player1 > index_card_player2:
+                                            print('Você venceu essa Rodada!')
+                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                            print('Você ganhou!!')
+                                            time.sleep(2)
+                                            count_points_player1 = round_value
+                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+
+                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
+                                        else:
+                                            print('Seu adversário venceu essa Rodada!')
+                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
+                                            time.sleep(2)
+                                            count_points_player2 = round_value
+                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
+                                    else:
+                                        print('Seu adversário venceu essa Rodada!')
+                                        print('Você perdeu!!')
+                                        time.sleep(2)
+                                        count_points_player2 = round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+                            
+
+                            elif player1_has_manilha == True and player2_has_manilha == True:
+                                for i in suits_manilha:
+                                    if card_in_table[2] == i:
+                                        index_card_player1 = suits_manilha.index(i)
+                                    elif enemy_played_card[2] == i:
+                                        index_card_player2 = suits_manilha.index(i)
+
+                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
+                                if index_card_player1 > index_card_player2:
+                                    print('Você venceu essa Rodada!')
+                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                    print('Você ganhou!!')
+                                    time.sleep(2)
+                                    count_points_player1 = round_value
+                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                    time.sleep(2)
+                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                    break
+                                #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
+                                else:
+                                    print('Seu adversário venceu essa Rodada!')
+                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
+                                    count_round_player2 += 1
+                                    rounds[0].append(round_loose)
+                                    rounds[1].append(round_win)
+
+                                    time.sleep(2)
+                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
+
+                                    time.sleep(2)
+                                    enemy_played_card = random.choice(player2_cards)
+                                    player2_cards.remove(enemy_played_card)
+
+                                    screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
+
+
+
+                                    
+                                    while True:
+                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
+                                        print(f'1 - {player1_cards[0]}')
+                                        print(f'4 - Pedir Truco')
+                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_in_table = ''
+                                        match card_option:
+                                            case '1':
+                                                played_card = player1_cards[0]
+                                                print(f'Você jogou a carta: {played_card}')
+                                                card_in_table = played_card
+                                                player1_cards.remove(played_card)
+                                                break
+                                            case '4':
+                                                print('Você pediu Truco!')   
+                                                for card in player2_cards:
+                                                    if card in manilha_list:
+                                                        print('O oponente aceitou o Truco!')
+                                                        round_value = 3
+                                                        break
+                                                else:
+                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    count_points_player1 += round_value
+                                                    isround_over = True
+                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                    break
+                                            case _:
+                                                print('Opção inválida! Tente novamente')
+                                    if isround_over == True:
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
+                                        break
+                                    else:      
+
+                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
+                                        
+                                        print('\n')
+                                        time.sleep(2)
+                                        
+                                        index_card_player1 = 0
+                                        index_card_player2 = 0
+
+
+                                        for i in order_strength:
+                                            if card_in_table[0] == i:
+                                                index_card_player1 = order_strength.index(i)
+                                            elif enemy_played_card[0] == i:
+                                                index_card_player2 = order_strength.index(i)
+
+                                        if card_in_table in manilhas:
+                                            player1_has_manilha = True
+                                        if enemy_played_card in manilhas:
+                                            player2_has_manilha = True
+
+                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                                            print('Você venceu a Rodada')
+                                            print('Você ganhou!!')
+                                            time.sleep(2)
+                                            count_points_player1 = round_value
+                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+
+                                        elif player1_has_manilha == True and player2_has_manilha == False:
+                                            print('Você venceu essa Rodada!')
+                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                            print('Você ganhou!!')
+                                            time.sleep(2)
+                                            count_points_player1 = round_value
+                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+
+
+
+                                        elif player2_has_manilha == True and player1_has_manilha == False:
+                                            print('Seu adversário venceu essa Rodada!')
+                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
+                                            print('Você perdeu!!')
+                                            time.sleep(2)
+                                            count_points_player2 = round_value
+                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+
+
+
+                                        elif player1_has_manilha == True and player2_has_manilha == True:
+                                            for i in suits_manilha:
+                                                if card_in_table[2] == i:
+                                                    index_card_player1 = suits_manilha.index(i)
+                                                elif enemy_played_card[2] == i:
+                                                    index_card_player2 = suits_manilha.index(i)
+
+
+                                            if index_card_player1 > index_card_player2:
+                                                print('Você venceu essa Rodada!')
+                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                                print('Você ganhou!!')
+                                                time.sleep(2)
+                                                count_points_player1 = round_value
+                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                time.sleep(2)
+                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                                break
+                                            else:
+                                                print('Seu adversário venceu essa Rodada!')
+                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
+                                                time.sleep(2)
+                                                count_points_player2 = round_value
+                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                time.sleep(2)
+                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                                break
+                                            
+                                        else:
+                                            print('Seu adversário venceu essa Rodada!')
+                                            print('Você perdeu!!')
+                                            time.sleep(2)
+                                            count_points_player2 = round_value
+                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+
+                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
+                            else:
+                                print('Seu adversário venceu essa Rodada!')          
+                                count_round_player2 += 1
+                                rounds[0].append(round_loose)
+                                rounds[1].append(round_win)
+                                time.sleep(2)
+                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)     
+                                
+
+                                time.sleep(2)
+                                enemy_played_card = random.choice(player2_cards)
+                                player2_cards.remove(enemy_played_card)
+
+                                screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)     
+
+
+
+                                
+                                while True:
+                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
+                                    print(f'1 - {player1_cards[0]}')
+                                    print(f'4 - Pedir Truco')
+                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_in_table = ''
+                                    match card_option:
+                                        case '1':
+                                            played_card = player1_cards[0]
+                                            print(f'Você jogou a carta: {played_card}')
+                                            card_in_table = played_card
+                                            player1_cards.remove(played_card)
+                                            break
+                                        case '4':
+                                            print('Você pediu Truco!')   
+                                            for card in player2_cards:
+                                                if card in manilha_list:
+                                                    print('O oponente aceitou o Truco!')
+                                                    round_value = 3
+                                                    break
+                                            else:
+                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                count_points_player1 += round_value
+                                                isround_over = True
+                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                break
+                                        case _:
+                                            print('Opção inválida! Tente novamente')
+                                if isround_over == True:
+                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                    time.sleep(2)
+                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
+                                    break
+                                else:      
+                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
+                                    
+                                    print('\n')
+                                    time.sleep(2)
+                                    
+                                    index_card_player1 = 0
+                                    index_card_player2 = 0
+
+
+                                    for i in order_strength:
+                                        if card_in_table[0] == i:
+                                            index_card_player1 = order_strength.index(i)
+                                        elif enemy_played_card[0] == i:
+                                            index_card_player2 = order_strength.index(i)
+
+                                    if card_in_table in manilhas:
+                                        player1_has_manilha = True
+                                    if enemy_played_card in manilhas:
+                                        player2_has_manilha = True
+
+                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                                        print('Você venceu a Rodada')
+                                        print('Você ganhou!!')
+                                        time.sleep(2)
+                                        count_points_player1 = round_value
+                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+
+                                    elif player1_has_manilha == True and player2_has_manilha == False:
+                                        print('Você venceu essa Rodada!')
+                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                        print('Você ganhou!!')
+                                        time.sleep(2)
+                                        count_points_player1 = round_value
+                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+
+
+
+                                    elif player2_has_manilha == True and player1_has_manilha == False:
+                                        print('Seu adversário venceu essa Rodada!')
+                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
+                                        print('Você perdeu!!')
+                                        time.sleep(2)
+                                        count_points_player2 = round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
+
+
+
+                                    elif player1_has_manilha == True and player2_has_manilha == True:
+                                        for i in suits_manilha:
+                                            if card_in_table[2] == i:
+                                                index_card_player1 = suits_manilha.index(i)
+                                            elif enemy_played_card[2] == i:
+                                                index_card_player2 = suits_manilha.index(i)
+
+
+                                        
+                                        if index_card_player1 > index_card_player2:
+                                            print('Você venceu essa Rodada!')
+                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
+                                            print('Você ganhou!!')
+                                            time.sleep(2)
+                                            count_points_player1 = round_value
+                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+                                        else:
+                                            print('Seu adversário venceu essa Rodada!')
+                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
+                                            time.sleep(2)
+                                            count_points_player2 = round_value
+                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                            time.sleep(2)
+                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                            break
+                                        
+                                    else:
+                                        print('Seu adversário venceu essa Rodada!')
+                                        print('Você perdeu!!')
+                                        time.sleep(2)
+                                        count_points_player2 = round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                        time.sleep(2)
+                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
+                                        break
 
 
 
