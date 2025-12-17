@@ -121,7 +121,7 @@ def shuffle_deck(deck, number_player):
     print(f'O Vira é {vira}')
     order_strength = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'] if deck == deck_dirty else ['Q', 'J', 'K', 'A', '2', '3']
     index_vira = order_strength.index(vira[0])
-    if index_vira == order_strength[-1]:
+    if index_vira == len(order_strength) - 1:
         manilha = order_strength[0]
     else:
         manilha = order_strength[index_vira + 1]
@@ -4292,6 +4292,13 @@ def start_game(number_player,  deck):
                                           
                                 time.sleep(2)
                                 continue
+            
+            if count_points_player1 >= 12:
+                print('Você venceu a partida!')
+                print(f'Você fez {count_points_player1} pontos e seus adversário fez {count_points_player2} pontos')
+            elif count_points_player2 >= 12:
+                print('Você perdeu a partida!')
+                print(f'Você fez {count_points_player1} pontos e seus adversário fez {count_points_player2} pontos')
 
 
                                                     
