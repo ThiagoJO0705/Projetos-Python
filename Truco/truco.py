@@ -11,15 +11,15 @@ def play_truco():
         case '1':
             print('\nVocê escolheu o Baralho Limpo!')
             number_player, list_card_players, manilha_list = choose_players(deck_clean, is_dirty=False)
-            start_game(number_player, list_card_players, manilha_list, deck=deck_clean)
+            start_game(number_player, deck=deck_clean)
         case '2':
             print('\nVocê escolheu o Baralho Sujo!')
             number_player, list_card_players, manilha_list  = choose_players(deck_dirty, is_dirty=True)
-            start_game(number_player, list_card_players, manilha_list, deck=deck_dirty)
+            start_game(number_player, deck=deck_dirty)
         case _:
             print('\nOpção inválida! Usando baralho sujo por padrão.')
             number_player, list_card_players, manilha_list = choose_players(deck_dirty, is_dirty=True)
-            start_game(number_player, list_card_players, manilha_list, deck=deck_dirty)
+            start_game(number_player, deck=deck_dirty)
     
 def rules_truco():
     print("\nRegras Gerais")
@@ -545,17 +545,10 @@ def screen(vira, player1_cards, points_player1, points_player2, card_in_table, e
         print(f'│ └─────────────────┘                                          └─────────────────────┘│')
         print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
 
-def start_game(number_player, list_card_players, manilha_list, deck):
+def start_game(number_player,  deck):
     print('\nIniciando o jogo de Truco...')
     print(f'Número de jogadores: {number_player}')
-    print(f'Cartas dos jogadores: {list_card_players}')
-    print(f'Manilhas: {manilha_list}')
-    vira = list_card_players[-1]
-    number_vira = vira[0]
-    suit_vira = vira[2]
-    manilhas = manilha_list
-    rounds = [[],
-              []]
+    time.sleep(2)
 
     match number_player:
         case 2:
@@ -563,14 +556,24 @@ def start_game(number_player, list_card_players, manilha_list, deck):
             suits_manilha = ['♦', '♠', '♥', '♣']
             count_points_player1 = 0
             count_points_player2 = 0
-            while True:
+            points_player1 = '00'
+            points_player2 = '00'
+            while count_points_player1 < 12 and count_points_player2 < 12:
+                list_card_players, manilha_list = shuffle_deck(deck, number_player=2)
+                print(f'Cartas dos jogadores: {list_card_players}')
+                print(f'Manilhas: {manilha_list}')
+                time.sleep(2)
+                vira = list_card_players[-1]
+                number_vira = vira[0]
+                suit_vira = vira[2]
+                manilhas = manilha_list
+                rounds = [[],
+                        []]
                 player1_cards = list_card_players[0:3]
                 player2_cards = list_card_players[3:6]
                 count_round_player1 = 0
                 count_round_player2 = 0
                 round_value = 1
-                points_player1 = '00'
-                points_player2 = '00'
                 isround_over = False
                 round_win = '★'
                 round_loose = '☆'
@@ -625,10 +628,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                             print('Opção inválida! Tente novamente')
 
                 if isround_over == True:
-                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                        
                     time.sleep(2)
-                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                    break
+                    continue
                 else:
                     print('Vez do seu adersário de Jogar...')
                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '1', True, False, rounds)
@@ -707,10 +709,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
-                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                             time.sleep(2)
-                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                            break
+                            continue
                         else:
                             print('Vez do seu adersário de Jogar...')
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)        
@@ -746,12 +747,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print('Você venceu a Rodada')
                                 print('Você ganhou!!')
                                 time.sleep(2)
-                                count_points_player1 = round_value
+                                count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
                             #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
 
@@ -760,12 +760,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                 print('Você ganhou!!')
                                 time.sleep(2)
-                                count_points_player1 = round_value
+                                count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -813,10 +812,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                     
@@ -847,12 +845,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -860,12 +857,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -873,13 +869,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Seu adversário venceu essa Rodada!')
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -897,35 +890,30 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                             
 
                             elif player1_has_manilha == True and player2_has_manilha == True:
@@ -941,12 +929,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                     print('Você ganhou!!')
                                     time.sleep(2)
-                                    count_points_player1 = round_value
+                                    count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
                                     print('Seu adversário venceu essa Rodada!')
@@ -994,10 +981,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
 
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
@@ -1028,24 +1014,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
                                             print('Você venceu essa Rodada!')
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
 
@@ -1054,12 +1038,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
 
@@ -1076,33 +1059,28 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                                time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                          
+                                                continue
                                             
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                                    
+                                            continue
 
                             #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                             else:
@@ -1152,10 +1130,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                     
@@ -1184,24 +1161,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
                                     elif player1_has_manilha == True and player2_has_manilha == False:
                                         print('Você venceu essa Rodada!')
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
 
@@ -1210,12 +1185,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
 
@@ -1233,33 +1206,29 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                         
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
                     
 
 
@@ -1356,10 +1325,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
-                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                      
                             time.sleep(2)
-                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                            break
+                            continue
                         else:
                             print('Vez do seu adersário de Jogar...')
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
@@ -1400,12 +1368,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print('Você venceu a Rodada')
                                 print('Você ganhou!!')
                                 time.sleep(2)
-                                count_points_player1 = round_value
+                                count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
                             #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
 
@@ -1414,12 +1381,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                 print('Você ganhou!!')
                                 time.sleep(2)
-                                count_points_player1 = round_value
+                                count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -1467,10 +1433,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                     
@@ -1500,12 +1465,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -1513,12 +1477,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -1527,12 +1490,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -1550,35 +1512,31 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
                             
 
                             elif player1_has_manilha == True and player2_has_manilha == True:
@@ -1594,12 +1552,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                     print('Você ganhou!!')
                                     time.sleep(2)
-                                    count_points_player1 = round_value
+                                    count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
                                     print('Seu adversário venceu essa Rodada!')
@@ -1649,10 +1606,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
 
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
@@ -1682,24 +1638,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
                                             print('Você venceu essa Rodada!')
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
 
@@ -1708,12 +1662,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                                      
+                                            continue
 
 
 
@@ -1730,33 +1682,29 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                             
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                                      
+                                            continue
 
                             #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                             else:
@@ -1806,10 +1754,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                     
@@ -1837,24 +1784,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
                                     elif player1_has_manilha == True and player2_has_manilha == False:
                                         print('Você venceu essa Rodada!')
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
 
@@ -1863,12 +1808,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
 
@@ -1886,33 +1829,29 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                         
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
 
@@ -2002,10 +1941,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
-                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                      
                             time.sleep(2)
-                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                            break
+                            continue
                         else:      
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
                             print('\n')
@@ -2066,10 +2004,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                     time.sleep(2)
@@ -2106,12 +2043,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2119,12 +2055,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -2133,12 +2068,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2156,35 +2089,31 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
                                 
@@ -2229,10 +2158,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                     time.sleep(2)
@@ -2269,12 +2197,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2282,12 +2209,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -2296,12 +2222,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2319,35 +2243,31 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                        time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                                  
+                                        continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -2357,11 +2277,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print('Seu adversário venceu essa Rodada!')
                                 print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                 print('Você Perdeu!!')
+                                count_points_player2 += round_value
                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                          
+                                continue
                             
 
                             elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2407,10 +2326,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                         time.sleep(2)
@@ -2448,12 +2366,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2461,12 +2378,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+
+                                            continue
 
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -2475,12 +2390,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+
+                                            continue
 
 
                                         elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2498,35 +2411,31 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+   
+                                            continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
@@ -2535,23 +2444,20 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     rounds[0].append(round_loose)
                                     rounds[1].append(round_win)
                                     print('Você Perdeu!!')
+                                    count_points_player2 += round_value
                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                    time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                              
+     
+                                    continue
 
                             #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                             else:
                                 print('Seu adversário venceu essa Rodada!')          
                                 print('Você perdeu!!')
                                 time.sleep(2)
-                                count_points_player2 = round_value
+                                count_points_player2 += round_value
                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
 
 
@@ -2631,10 +2537,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     case _:
                                         print('Opção inválida! Tente novamente')
                             if isround_over == True:
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                break
+                                continue
                             else:
                                 print('Vez do seu adersário de Jogar...')
                                 screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
@@ -2675,12 +2580,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print('Você venceu a Rodada')
                                     print('Você ganhou!!')
                                     time.sleep(2)
-                                    count_points_player1 = round_value
+                                    count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
 
@@ -2689,12 +2593,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                     print('Você ganhou!!')
                                     time.sleep(2)
-                                    count_points_player1 = round_value
+                                    count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -2742,10 +2645,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                         
@@ -2775,12 +2677,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2788,12 +2689,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -2802,12 +2702,10 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+
+                                            continue
 
 
                                         elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2825,35 +2723,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                            time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                                      
+
+                                            continue
                                 
 
                                 elif player1_has_manilha == True and player2_has_manilha == True:
@@ -2869,12 +2764,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                     #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
@@ -2924,10 +2818,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 case _:
                                                     print('Opção inválida! Tente novamente')
                                         if isround_over == True:
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                            break
+                                            continue
                                         else:      
 
                                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
@@ -2957,24 +2850,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print('Você venceu a Rodada')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             elif player1_has_manilha == True and player2_has_manilha == False:
                                                 print('Você venceu essa Rodada!')
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
 
 
@@ -2983,12 +2874,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                                 print('Você perdeu!!')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                                time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                          
+
+                                                continue
 
 
 
@@ -3005,33 +2895,30 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                     print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                     print('Você ganhou!!')
                                                     time.sleep(2)
-                                                    count_points_player1 = round_value
+                                                    count_points_player1 += round_value
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                              
                                                     time.sleep(2)
-                                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                    break
+                                                    continue
                                                 else:
                                                     print('Seu adversário venceu essa Rodada!')
                                                     print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                     time.sleep(2)
-                                                    count_points_player2 = round_value
+                                                    count_points_player2 += round_value
                                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                              
                                                     time.sleep(2)
-                                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                    break
+                                                    continue
                                                 
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print('Você perdeu!!')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
-                                                time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                          
+
+                                                continue
 
                                 #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                                 else:
@@ -3081,10 +2968,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
                                         
@@ -3112,24 +2998,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
                                             print('Você venceu essa Rodada!')
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
 
@@ -3138,12 +3022,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
 
@@ -3161,33 +3044,30 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                             
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                             
 
@@ -3266,10 +3146,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     case _:
                                         print('Opção inválida! Tente novamente')
                             if isround_over == True:
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                break
+                                continue
                             else:      
                                 screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
                                 print('\n')
@@ -3330,10 +3209,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                         time.sleep(2)
@@ -3370,12 +3248,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -3383,12 +3260,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -3397,12 +3273,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         elif player1_has_manilha == True and player2_has_manilha == True:
@@ -3420,35 +3295,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                     
@@ -3493,10 +3365,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                         time.sleep(2)
@@ -3533,12 +3404,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -3546,12 +3416,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -3560,12 +3429,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         elif player1_has_manilha == True and player2_has_manilha == True:
@@ -3583,35 +3451,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -3621,11 +3486,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     print('Seu adversário venceu essa Rodada!')
                                     print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                     print('Você Perdeu!!')
+                                    count_points_player2 += round_value
                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
                                 
 
                                 elif player1_has_manilha == True and player2_has_manilha == True:
@@ -3671,10 +3536,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 case _:
                                                     print('Opção inválida! Tente novamente')
                                         if isround_over == True:
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                            break
+                                            continue
                                         else:      
                                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                             time.sleep(2)
@@ -3712,12 +3576,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print('Você venceu a Rodada')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                                 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                             elif player1_has_manilha == True and player2_has_manilha == False:
@@ -3725,12 +3588,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -3739,12 +3601,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                                 print('Você perdeu!!')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
 
                                             elif player1_has_manilha == True and player2_has_manilha == True:
@@ -3762,35 +3623,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                     print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                     print('Você ganhou!!')
                                                     time.sleep(2)
-                                                    count_points_player1 = round_value
+                                                    count_points_player1 += round_value
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                              
                                                     time.sleep(2)
-                                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                    break
+                                                    continue
 
                                                 #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                                 else:
                                                     print('Seu adversário venceu essa Rodada!')
                                                     print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                     time.sleep(2)
-                                                    count_points_player2 = round_value
+                                                    count_points_player2 += round_value
                                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                              
                                                     time.sleep(2)
-                                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                    break
+                                                    continue
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print('Você perdeu!!')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                     #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                     else:
@@ -3799,23 +3657,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         rounds[0].append(round_loose)
                                         rounds[1].append(round_win)
                                         print('Você Perdeu!!')
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
                                 #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                                 else:
                                     print('Seu adversário venceu essa Rodada!')          
                                     print('Você perdeu!!')
                                     time.sleep(2)
-                                    count_points_player2 = round_value
+                                    count_points_player2 += round_value
                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
 
 
 
@@ -3908,10 +3765,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
-                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                      
                             time.sleep(2)
-                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                            break
+                            continue
                         else:      
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
                             print('\n')
@@ -3972,10 +3828,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                     time.sleep(2)
@@ -4012,12 +3867,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -4025,12 +3879,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -4039,12 +3892,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -4062,35 +3914,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                 
@@ -4135,10 +3984,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                    break
+                                    continue
                                 else:      
                                     screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                     time.sleep(2)
@@ -4175,12 +4023,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -4188,12 +4035,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                         print('Você ganhou!!')
                                         time.sleep(2)
-                                        count_points_player1 = round_value
+                                        count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -4202,12 +4048,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                         print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
 
                                     elif player1_has_manilha == True and player2_has_manilha == True:
@@ -4225,35 +4070,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
                                         time.sleep(2)
-                                        count_points_player2 = round_value
+                                        count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                        break
+                                        continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
 
@@ -4263,11 +4105,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                 print('Seu adversário venceu essa Rodada!')
                                 print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                 print('Você Perdeu!!')
+                                count_points_player2 += round_value
                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
                             
 
                             elif player1_has_manilha == True and player2_has_manilha == True:
@@ -4313,10 +4155,9 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
-                                        list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                  
                                         time.sleep(2)
-                                        continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 ,number_player=2)
-                                        break
+                                        continue
                                     else:      
                                         screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
                                         time.sleep(2)
@@ -4354,12 +4195,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print('Você venceu a Rodada')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -4367,12 +4207,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                             print('Você ganhou!!')
                                             time.sleep(2)
-                                            count_points_player1 = round_value
+                                            count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
@@ -4381,12 +4220,11 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                             print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
 
                                         elif player1_has_manilha == True and player2_has_manilha == True:
@@ -4404,35 +4242,32 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                                 print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
                                                 print('Você ganhou!!')
                                                 time.sleep(2)
-                                                count_points_player1 = round_value
+                                                count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
                                                 print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
                                                 time.sleep(2)
-                                                count_points_player2 = round_value
+                                                count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                          
                                                 time.sleep(2)
-                                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                                break
+                                                continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
                                             print('Você perdeu!!')
                                             time.sleep(2)
-                                            count_points_player2 = round_value
+                                            count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                            list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                                      
                                             time.sleep(2)
-                                            continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                            break
+                                            continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
@@ -4441,23 +4276,22 @@ def start_game(number_player, list_card_players, manilha_list, deck):
                                     rounds[0].append(round_loose)
                                     rounds[1].append(round_win)
                                     print('Você Perdeu!!')
+                                    count_points_player2 += round_value
                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                              
                                     time.sleep(2)
-                                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                    break
+                                    continue
 
                             #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
                             else:
                                 print('Seu adversário venceu essa Rodada!')          
                                 print('Você perdeu!!')
                                 time.sleep(2)
-                                count_points_player2 = round_value
+                                count_points_player2 += round_value
                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                list_card_players_continue, manilha_list_continue = shuffle_deck(deck, number_player=2)
+                                          
                                 time.sleep(2)
-                                continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2 , number_player=2)
-                                break
+                                continue
 
 
                                                     
@@ -4549,153 +4383,6 @@ def start_game(number_player, list_card_players, manilha_list, deck):
             print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
 
             
-        
-        
-
-def continue_game(list_card_players_continue, list_manilha_continue, points_player1, points_player2,count_points_player1, count_points_player2, number_player):
-    manilha_list = list_manilha_continue 
-    print(f'Manilhas: {manilha_list}')
-    vira = list_card_players_continue[-1]
-    number_vira = vira[0]
-    suit_vira = vira[2]
-
-    match number_player:
-        case 2:
-            while True:
-                player1_cards = list_card_players_continue[0:3]
-                player2_cards = list_card_players_continue[3:6]
-                round_value = 1
-                count_points_p1 = count_points_player1
-                count_points_p2 = count_points_player2
-                points_p1 = points_player1 
-                points_p2 = points_player2 
-                isround_over = False
-                print(f'Jogador 1 cartas: {player1_cards}')
-                print(f'Jogador 2 cartas: {player2_cards}')
-                print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                print(f'│                               ┌─────┐ ┌─────┐ ┌─────┐                               │')
-                print(f'│                               │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                               │')
-                print(f'│                               │ │ │ │ │ │ │ │ │ │ │ │                               │')
-                print(f'│                               │ └─┘ │ │ └─┘ │ │ └─┘ │                               │')
-                print(f'│                               └─────┘ └─────┘ └─────┘                               │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                       ┌─────┐                                       │')
-                print(f'│                                       │{suit_vira}    │                                       │')
-                print(f'│                                       │  {number_vira}  │                                       │')
-                print(f'│                                       │    {suit_vira}│                                       │')
-                print(f'│                                       └─────┘                                       │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│                                                                                     │')
-                print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                print(f'│ │     Placar      │           ┌─────┐ ┌─────┐ ┌─────┐        │       Rodadas       ││')
-                print(f'│ │  ─────────────  │           │{player1_cards[0][2]}    │ │{player1_cards[1][2]}    │ │{player1_cards[2][2]}    │        │  ─────────────────  ││')
-                print(f'│ │  Você  │  Ele   │           │  {player1_cards[0][0]}  │ │  {player1_cards[1][0]}  │ │  {player1_cards[2][0]}  │        │   Você   │    Ele   ││')
-                print(f'│ │   {points_p1}   │   {points_p2}   │           │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│ │    {player1_cards[2][2]}│        │ 〇 〇 〇 │ 〇 〇 〇 ││')
-                print(f'│ └─────────────────┘           └─────┘ └─────┘ └─────┘        └─────────────────────┘│')
-                print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
-                
-                while True:
-                    print('\nQual carta você quer jogar? ')
-                    print(f'1 - {player1_cards[0]}')
-                    print(f'2 - {player1_cards[1]}')
-                    print(f'4 - Pedir Truco')
-                    card_option = input('Escolha uma opção (1, 2 ou 4): ').strip()
-                    card_in_table = ''
-                    match card_option:
-                        case '1':
-                            played_card = player1_cards[0]
-                            print(f'Você jogou a carta: {played_card}')
-                            card_in_table = played_card
-                            player1_cards.remove(played_card)
-                            break
-                        case '2':
-                            played_card = player1_cards[1]
-                            print(f'Você jogou a carta: {played_card}')
-                            card_in_table = played_card
-                            player1_cards.remove(played_card)
-                            break
-                        case '3':
-                            played_card = player1_cards[2]
-                            print(f'Você jogou a carta: {played_card}')
-                            card_in_table = played_card
-                            player1_cards.remove(played_card)
-                            break
-                        case '4':
-                            print('Você pediu Truco!') 
-                            for card in player2_cards:
-                                if card in manilha_list:
-                                    print('O oponente aceitou o Truco!')
-                                    round_value = 3
-                                    break
-                            else:
-                                print('O oponente recusou o Truco! Você ganha a rodada.')
-                                count_points_p1 += round_value
-                                isround_over = True
-                                points_player1 = f'0{count_points_p1}' if count_points_p1 < 10 else str(count_points_p1)
-                                break
-                            
-                            
-                        case _:
-                            print('Opção inválida! Tente novamente')
-
-                if isround_over == True:
-                    list_card_players_continue, manilha_list_continue = shuffle_deck(deck_dirty, number_player=2)
-                    time.sleep(2)
-                    continue_game(list_card_players_continue, manilha_list_continue, points_player1, points_player2,count_points_player1, count_points_player2, number_player=2)
-                    break
-                else:
-                    print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-                    print(f'│                               ┌─────┐ ┌─────┐ ┌─────┐                               │')
-                    print(f'│                               │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                               │')
-                    print(f'│                               │ │ │ │ │ │ │ │ │ │ │ │                               │')
-                    print(f'│                               │ └─┘ │ │ └─┘ │ │ └─┘ │                               │')
-                    print(f'│                               └─────┘ └─────┘ └─────┘                               │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                       ┌─────┐                                       │')
-                    print(f'│                                       │{suit_vira}    │                                       │')
-                    print(f'│                                       │  {number_vira}  │                                       │')
-                    print(f'│                                       │    {suit_vira}│                                       │')
-                    print(f'│                                       └─────┘                                       │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                                                                     │')
-                    print(f'│                                       ┌─────┐                                       │')
-                    print(f'│                                       │{card_in_table[2]}    │                                       │')
-                    print(f'│                                       │  {card_in_table[0]}  │                                       │')
-                    print(f'│                                       │    {card_in_table[2]}│                                       │')
-                    print(f'│                                       └─────┘                                       │')
-                    print(f'│                                                                                     │')
-                    print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-                    print(f'│ │     Placar      │               ┌─────┐ ┌─────┐            │       Rodadas       ││')
-                    print(f'│ │  ─────────────  │               │{player1_cards[0][2]}    │ │{player1_cards[1][2]}    │            │  ─────────────────  ││')
-                    print(f'│ │  Você  │  Ele   │               │  {player1_cards[0][0]}  │ │  {player1_cards[1][0]}  │            │   Você   │    Ele   ││')
-                    print(f'│ │   {points_player1}   │   {points_player2}   │               │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│            │ 〇 〇 〇 │ 〇 〇 〇 ││')
-                    print(f'│ └─────────────────┘               └─────┘ └─────┘            └─────────────────────┘│')
-                    print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')  
-                        
-    
-
 
 
 
