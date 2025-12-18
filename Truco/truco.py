@@ -882,7 +882,6 @@ def start_game(number_player,  deck):
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                time.sleep(2)
                                 continue
 
                             #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
@@ -895,7 +894,7 @@ def start_game(number_player,  deck):
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                time.sleep(2)
+
                                 continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
@@ -1059,7 +1058,7 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
+
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -1071,7 +1070,7 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
+
                                         continue
 
 
@@ -1104,7 +1103,7 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
+                                          
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -1115,7 +1114,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -1143,7 +1141,7 @@ def start_game(number_player,  deck):
                                     count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                    time.sleep(2)
+
                                     continue
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
@@ -1307,7 +1305,7 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
+
                                             continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -1317,8 +1315,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            time.sleep(2)
+                   
                                             continue
 
 
@@ -1330,8 +1327,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            time.sleep(2)
+                                       
                                             continue
 
 
@@ -1352,7 +1348,7 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
+                                         
                                                 continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
@@ -1533,7 +1529,7 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
+             
                                         continue
 
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -1543,8 +1539,7 @@ def start_game(number_player,  deck):
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        time.sleep(2)
+                      
                                         continue
 
 
@@ -1577,8 +1572,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            time.sleep(2)
+                                       
                                             continue
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
@@ -1586,8 +1580,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            time.sleep(2)
+                                     
                                             continue
                                         
                                     else:
@@ -1818,8 +1811,7 @@ def start_game(number_player,  deck):
                                 time.sleep(2)
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                          
-                                time.sleep(2)
+                              
                                 continue
 
                             #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
@@ -1831,8 +1823,7 @@ def start_game(number_player,  deck):
                                 time.sleep(2)
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                          
-                                time.sleep(2)
+                      
                                 continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
@@ -1994,8 +1985,7 @@ def start_game(number_player,  deck):
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        time.sleep(2)
+                                 
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -2007,7 +1997,7 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
+                                    
                                         continue
 
 
@@ -2042,7 +2032,7 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
+                                          
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -2052,8 +2042,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            time.sleep(2)
+                                   
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -2082,7 +2071,7 @@ def start_game(number_player,  deck):
                                     count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                    time.sleep(2)
+                              
                                     continue
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                 else:
@@ -2246,8 +2235,7 @@ def start_game(number_player,  deck):
                                             time.sleep(2)
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            time.sleep(2)
+                                      
                                             continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2258,7 +2246,7 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
+                                         
                                             continue
 
 
@@ -2290,8 +2278,7 @@ def start_game(number_player,  deck):
                                                 time.sleep(2)
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                time.sleep(2)
+                                             
                                                 continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
@@ -2299,8 +2286,7 @@ def start_game(number_player,  deck):
                                                 time.sleep(2)
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                time.sleep(2)
+                                          
                                                 continue
                                             
                                         else:
@@ -2471,8 +2457,7 @@ def start_game(number_player,  deck):
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        time.sleep(2)
+                                         
                                         continue
 
                                     elif player1_has_manilha == True and player2_has_manilha == False:
@@ -2482,8 +2467,7 @@ def start_game(number_player,  deck):
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        time.sleep(2)
+                                           
                                         continue
 
 
@@ -2517,7 +2501,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                         else:
                                             print('Seu adversário venceu essa Rodada!')
@@ -2526,7 +2509,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                         
                                     else:
@@ -2888,7 +2870,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -2900,7 +2881,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -2934,7 +2914,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -2945,7 +2924,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -3121,7 +3099,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -3133,7 +3110,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -3167,7 +3143,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -3178,7 +3153,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -3369,7 +3343,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -3414,7 +3387,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -3425,7 +3397,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
@@ -3659,7 +3630,6 @@ def start_game(number_player,  deck):
                                     count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                    time.sleep(2)
                                     continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
@@ -3672,7 +3642,6 @@ def start_game(number_player,  deck):
                                     count_points_player1 += round_value
                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                               
-                                    time.sleep(2)
                                     continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
@@ -3835,7 +3804,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -3847,7 +3815,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -3881,7 +3848,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -3892,7 +3858,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
@@ -3922,7 +3887,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
                                     #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
                                     else:
@@ -4087,7 +4051,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             elif player1_has_manilha == True and player2_has_manilha == False:
@@ -4098,7 +4061,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
 
@@ -4132,7 +4094,6 @@ def start_game(number_player,  deck):
                                                     count_points_player1 += round_value
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                               
-                                                    time.sleep(2)
                                                     continue
                                                 else:
                                                     print('Seu adversário venceu essa Rodada!')
@@ -4141,7 +4102,6 @@ def start_game(number_player,  deck):
                                                     count_points_player2 += round_value
                                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                               
-                                                    time.sleep(2)
                                                     continue
                                                 
                                             else:
@@ -4314,7 +4274,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                         elif player1_has_manilha == True and player2_has_manilha == False:
@@ -4325,7 +4284,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4338,7 +4296,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4360,7 +4317,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
                                             else:
                                                 print('Seu adversário venceu essa Rodada!')
@@ -4369,7 +4325,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                             
                                         else:
@@ -4379,7 +4334,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
                             
@@ -4719,7 +4673,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -4731,7 +4684,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4744,7 +4696,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4766,7 +4717,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -4777,7 +4727,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
@@ -4787,7 +4736,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4954,7 +4902,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -4966,7 +4913,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -4979,7 +4925,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -5001,7 +4946,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -5012,7 +4956,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
@@ -5022,7 +4965,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
@@ -5205,7 +5147,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
                                                 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -5217,7 +5158,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
 
@@ -5230,7 +5170,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
 
 
@@ -5252,7 +5191,6 @@ def start_game(number_player,  deck):
                                                     count_points_player1 += round_value
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                               
-                                                    time.sleep(2)
                                                     continue
 
                                                 #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -5263,7 +5201,6 @@ def start_game(number_player,  deck):
                                                     count_points_player2 += round_value
                                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                               
-                                                    time.sleep(2)
                                                     continue
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                             else:
@@ -5273,7 +5210,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                     #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
@@ -5286,7 +5222,6 @@ def start_game(number_player,  deck):
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                   
-                                        time.sleep(2)
                                         continue
 
                                 #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
@@ -5297,7 +5232,6 @@ def start_game(number_player,  deck):
                                     count_points_player2 += round_value
                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                               
-                                    time.sleep(2)
                                     continue
 
 
@@ -5651,7 +5585,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -5663,7 +5596,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -5676,7 +5608,6 @@ def start_game(number_player,  deck):
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -5698,7 +5629,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -5709,7 +5639,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -5719,7 +5648,6 @@ def start_game(number_player,  deck):
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -5886,7 +5814,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
                                         
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -5898,7 +5825,6 @@ def start_game(number_player,  deck):
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -5911,7 +5837,6 @@ def start_game(number_player,  deck):
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                   
-                                        time.sleep(2)
                                         continue
 
 
@@ -5933,7 +5858,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -5944,7 +5868,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
                                     #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
@@ -5954,7 +5877,6 @@ def start_game(number_player,  deck):
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                   
-                                        time.sleep(2)
                                         continue
 
                             #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
@@ -6137,7 +6059,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
                                             
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
@@ -6149,7 +6070,6 @@ def start_game(number_player,  deck):
                                             count_points_player1 += round_value
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -6162,7 +6082,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
 
@@ -6184,7 +6103,6 @@ def start_game(number_player,  deck):
                                                 count_points_player1 += round_value
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                           
-                                                time.sleep(2)
                                                 continue
 
                                             #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
@@ -6195,7 +6113,6 @@ def start_game(number_player,  deck):
                                                 count_points_player2 += round_value
                                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                           
-                                                time.sleep(2)
                                                 continue
                                         #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                         else:
@@ -6205,7 +6122,6 @@ def start_game(number_player,  deck):
                                             count_points_player2 += round_value
                                             points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                                       
-                                            time.sleep(2)
                                             continue
 
                                 #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
@@ -6229,7 +6145,6 @@ def start_game(number_player,  deck):
                                 count_points_player2 += round_value
                                 points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                           
-                                time.sleep(2)
                                 continue
             
             if count_points_player1 >= 12:
@@ -6243,7 +6158,94 @@ def start_game(number_player,  deck):
                                                     
                     
                     
+# def p1_truco(player2_cards, manilha_list, round_value, count_points_player2, isround_over, points_player2, suits_manilha, count_points_player1, points_player1):
+#     if player1_truco:
+#         print('\nVocê já pediu Truco!')
+#         continue
+        
+#     print('\nVocê pediu Truco! Esperando o Adversário responder.')
+#     player1_truco = True
+#     time.sleep(1)
+#     strong_cards = 0   
+#     for card in player2_cards:
+#         if card in manilha_list or card[0] == '3' or card[0] == '2':
+#             strong_cards += 1
+#     if strong_cards >= 2:
+#         round_value = 3
+#         print('O Adversário pediu 6! Você aceita ?')
+#         print('1 - Aceitar')
+#         print('2 - Correr')
+#         print('3 - Pedir 9')
+#         truco_choice = input('Escolha uma das opções acima: ')
+#         while True:
+#             match truco_choice:
+#                 case '1':
+#                     print('Você aceitou! A rodada está valendo 6 pontos.')
+#                     round_value = 6
+#                     break
+#                 case '2':
+#                     print('Você correu! O Adversário ganhou a rodada.')
+#                     count_points_player2 += round_value
+#                     isround_over = True
+#                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+#                     break
+#                 case '3':
+                    
+#                     print('Você pediu 9! Esperando o Adversário responder.')
+#                     time.sleep(1)
+#                     ai_has_strong_manilha_card = False
+#                     ai_has_weak_manilha_card = False
+#                     for card in player2_cards:
+#                         if card in manilha_list and card[2] in suits_manilha[2:4]:
+#                             ai_has_strong_manilha_card = True
+#                         elif card in manilha_list and card[2] in suits_manilha[0:2]:
+#                             ai_has_weak_manilha_card = True
+#                     if ai_has_strong_manilha_card:
+#                         while True:
+#                             round_value = 9
+#                             print('O Adversário pediu 12! Você aceita ?')
+#                             print('1 - Aceitar')
+#                             print('2 - Correr')
+#                             truco_choice = input('Escolha uma das opções acima: ')
+#                             match truco_choice:
+#                                 case '1': 
+#                                     print('Você aceitou! A rodada está valendo 12 pontos')
+#                                     round_value = 12
+#                                     break
+#                                 case '2':
+#                                     print('Você correu! O Adversário ganhou a rodada.')
+#                                     count_points_player2 += round_value
+#                                     isround_over = True
+#                                     points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+#                                     break
+#                                 case _:
+#                                     print('Opção inválida! Tente novamente')
+#                     elif ai_has_weak_manilha_card:
+#                         print('O Adversário aceitou! A rodada está valendo 9.')
+#                         round_value = 9
+#                         break
+#                     else:
+#                         round_value = 9
+#                         print('Você ganhou a rodada! O Adversário correu.')
+#                         count_points_player1 += round_value
+#                         isround_over = True
+#                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+#                         break
+#                     break
+#                 case _:
+#                     print('Opção inválida! Tente novame')
+#     elif strong_cards == 1:
+#         print('O Adversário aceitou o Truco! ')
+#         round_value = 3
+#     else:
+#         print('O Adversário recusou o Truco! Você ganha a rodada.')
+#         count_points_player1 += round_value
+#         isround_over = True
+#         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+#         break
 
+def p2_truco():
+    pass
                     
 
 
