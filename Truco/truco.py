@@ -10,16 +10,14 @@ def play_truco():
     match truco_option:
         case '1':
             print('\nVocê escolheu o Baralho Limpo!')
-            number_player, list_card_players, manilha_list = choose_players(deck_clean, is_dirty=False)
-            start_game(number_player, deck=deck_clean)
+            start_game(number_player=2, deck=deck_clean)
         case '2':
             print('\nVocê escolheu o Baralho Sujo!')
-            number_player, list_card_players, manilha_list  = choose_players(deck_dirty, is_dirty=True)
-            start_game(number_player, deck=deck_dirty)
+            
+            start_game(number_player=2, deck=deck_dirty)
         case _:
             print('\nOpção inválida! Usando baralho sujo por padrão.')
-            number_player, list_card_players, manilha_list = choose_players(deck_dirty, is_dirty=True)
-            start_game(number_player, deck=deck_dirty)
+            start_game(number_player=2, deck=deck_dirty)
     
 def rules_truco():
     print("\nRegras Gerais")
@@ -68,32 +66,6 @@ def rules_truco():
     print("A força total das cartas em Truco é determinada primeiro pelas manilhas, seguidas pelas cartas normais.")
     print('Zap > Copas > Espadilha > Pikafumo > 3 > 2 > A > K > J > Q > 7 > 6 > 5 > 4 (Baralho Sujo)')
     print('Zap > Copas > Espadilha > Pikafumo > 3 > 2 > A > K > J > Q (Baralho Limpo)')
-
-def choose_players(deck, is_dirty):
-    number_player = int(input('Selecione o número de jogadores (2 ou 4): '))
-    if is_dirty == True:
-        match number_player:
-            case 2:
-                print('Iniciando jogo para 2 jogadores...')
-                list_card_players, manilha_list = shuffle_deck(deck, number_player)
-            case 4:
-                print('Iniciando jogo para 4 jogadores...')
-                list_card_players, manilha_list = shuffle_deck(deck, number_player)
-            case _:
-                print('Número inválido de jogadores! Iniciando jogo para 2 jogadores por padrão...')
-    else:
-        match number_player:
-            case 2:
-                print('Iniciando jogo para 2 jogadores...')
-                # shuffle_deck(deck, number_player, is_dirty=False)
-                list_card_players, manilha_list = shuffle_deck(deck, number_player)
-            case 4:
-                print('Iniciando jogo para 4 jogadores...')
-                # shuffle_deck(deck, number_player, is_dirty=False)
-                list_card_players, manilha_list = shuffle_deck(deck, number_player)
-            case _:
-                print('Número inválido de jogadores! Iniciando jogo para 2 jogadores por padrão...')
-    return number_player, list_card_players, manilha_list
 
 def shuffle_deck(deck, number_player):
     wich_deck = 'Sujo' if deck == deck_dirty else 'Limpo'
@@ -554,6 +526,7 @@ def start_game(number_player,  deck):
         case 2:
             order_strength = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3']
             suits_manilha = ['♦', '♠', '♥', '♣']
+
             count_points_player1 = 0
             count_points_player2 = 0
             points_player1 = '00'
@@ -579,6 +552,8 @@ def start_game(number_player,  deck):
                 round_loose = '☆'
                 player1_has_manilha = False
                 player2_has_manilha = False
+                player1_truco = False
+                player2_truco = False
                 #Rodada 1
                 print(f'Jogador 1 cartas: {player1_cards}')
                 print(f'Jogador 2 cartas: {player2_cards}')
@@ -590,7 +565,7 @@ def start_game(number_player,  deck):
                     print(f'2 - {player1_cards[1]}')
                     print(f'3 - {player1_cards[2]}')
                     print(f'4 - Pedir Truco')
-                    card_option = input('Escolha uma opção (1, 2, 3 ou 4): ').strip()
+                    card_option = input('Escolha uma das opções acima: ').strip()
                     card_in_table = ''
                     match card_option:
                         case '1':
@@ -612,18 +587,96 @@ def start_game(number_player,  deck):
                             player1_cards.remove(played_card)
                             break
                         case '4':
-                            print('Você pediu Truco!')   
+                            if player1_truco:
+                                print('\nVocê já pediu Truco!')
+                                continue
+                                
+                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                            player1_truco = True
+                            time.sleep(1)
+                            strong_cards = 0   
                             for card in player2_cards:
-                                if card in manilha_list:
-                                    print('O oponente aceitou o Truco!')
-                                    round_value = 3
-                                    break
+                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                    strong_cards += 1
+                            if strong_cards >= 2:
+                                round_value = 3
+                                print('O Adversário pediu 6! Você aceita ?')
+                                print('1 - Aceitar')
+                                print('2 - Correr')
+                                print('3 - Pedir 9')
+                                truco_choice = input('Escolha uma das opções acima: ')
+                                while True:
+                                    match truco_choice:
+                                        case '1':
+                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                            round_value = 6
+                                            break
+                                        case '2':
+                                            print('Você correu! O Adversário ganhou a rodada.')
+                                            count_points_player2 += round_value
+                                            isround_over = True
+                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                            break
+                                        case '3':
+                                            
+                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                            time.sleep(1)
+                                            ai_has_strong_manilha_card = False
+                                            ai_has_weak_manilha_card = False
+
+                                            for card in player2_cards:
+                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                    ai_has_strong_manilha_card = True
+                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                    ai_has_weak_manilha_card = True
+                                            if ai_has_strong_manilha_card:
+                                                while True:
+                                                    round_value = 9
+                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    match truco_choice:
+                                                        case '1': 
+                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                            round_value = 12
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+                                            elif ai_has_weak_manilha_card:
+                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                round_value = 9
+                                                break
+                                            else:
+                                                round_value = 9
+                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                count_points_player1 += round_value
+                                                isround_over = True
+                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                break
+                                            break
+                                        case _:
+                                            print('Opção inválida! Tente novamente')
+
+                            elif strong_cards == 1:
+                                print('O Adversário aceitou o Truco! ')
+                                round_value = 3
                             else:
-                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                 count_points_player1 += round_value
                                 isround_over = True
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                 break
+    
+                            if isround_over:
+                                break 
+                            
                         case _:
                             print('Opção inválida! Tente novamente')
 
@@ -678,7 +731,7 @@ def start_game(number_player,  deck):
                             print(f'1 - {player1_cards[0]}')
                             print(f'2 - {player1_cards[1]}')
                             print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                            card_option = input('Escolha uma das opções acima: ').strip()
                             card_in_table = ''
                             match card_option:
                                 case '1':
@@ -694,20 +747,99 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    print('Você pediu Truco!')   
+                                    if player1_truco:
+                                        print('\nVocê já pediu Truco!')
+                                        continue
+                                
+                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                    player1_truco = True
+                                    time.sleep(1)
+                                    strong_cards = 0   
                                     for card in player2_cards:
-                                        if card in manilha_list:
-                                            print('O oponente aceitou o Truco!')
-                                            round_value = 3
-                                            break
+                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                            strong_cards += 1
+                                    if strong_cards >= 2:
+                                        round_value = 3
+                                        print('O Adversário pediu 6! Você aceita ?')
+                                        print('1 - Aceitar')
+                                        print('2 - Correr')
+                                        print('3 - Pedir 9')
+                                        truco_choice = input('Escolha uma das opções acima: ')
+                                        while True:
+                                            match truco_choice:
+                                                case '1':
+                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                    round_value = 6
+                                                    break
+                                                case '2':
+                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                    count_points_player2 += round_value
+                                                    isround_over = True
+                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                    break
+                                                case '3':
+
+                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                    time.sleep(1)
+                                                    ai_has_strong_manilha_card = False
+                                                    ai_has_weak_manilha_card = False
+
+                                                    for card in player2_cards:
+                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                            ai_has_strong_manilha_card = True
+                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                            ai_has_weak_manilha_card = True
+                                                    if ai_has_strong_manilha_card:
+                                                        while True:
+                                                            round_value = 9
+                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                            print('1 - Aceitar')
+                                                            print('2 - Correr')
+                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                            match truco_choice:
+                                                                case '1': 
+                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                    round_value = 12
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+                                                    elif ai_has_weak_manilha_card:
+                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                        round_value = 9
+                                                        break
+                                                    else:
+                                                        round_value = 9
+                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                        count_points_player1 += round_value
+                                                        isround_over = True
+                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                        break
+                                                    break
+                                                case _:
+                                                    print('Opção inválida! Tente novamente')
+
+                                    elif strong_cards == 1:
+                                        print('O Adversário aceitou o Truco! ')
+                                        round_value = 3
                                     else:
-                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                         count_points_player1 += round_value
                                         isround_over = True
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                         break
+                                    
+                                    if isround_over:
+                                        break 
+                                    
                                 case _:
                                     print('Opção inválida! Tente novamente')
+
                         if isround_over == True:
                                           
                             time.sleep(2)
@@ -787,7 +919,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -797,18 +929,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -956,7 +1167,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -966,18 +1177,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                    
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -1105,7 +1395,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -1115,18 +1405,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -1294,7 +1663,7 @@ def start_game(number_player,  deck):
                             print(f'1 - {player1_cards[0]}')
                             print(f'2 - {player1_cards[1]}')
                             print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                            card_option = input('Escolha uma das opções acima: ').strip()
                             card_in_table = ''
                             match card_option:
                                 case '1':
@@ -1310,18 +1679,97 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    print('Você pediu Truco!')   
+                                    if player1_truco:
+                                        print('\nVocê já pediu Truco!')
+                                        continue
+                        
+                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                    player1_truco = True
+                                    time.sleep(1)
+                                    strong_cards = 0   
                                     for card in player2_cards:
-                                        if card in manilha_list:
-                                            print('O oponente aceitou o Truco!')
-                                            round_value = 3
-                                            break
+                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                            strong_cards += 1
+                                    if strong_cards >= 2:
+                                        round_value = 3
+                                        print('O Adversário pediu 6! Você aceita ?')
+                                        print('1 - Aceitar')
+                                        print('2 - Correr')
+                                        print('3 - Pedir 9')
+                                        truco_choice = input('Escolha uma das opções acima: ')
+                                        while True:
+                                            match truco_choice:
+                                                case '1':
+                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                    round_value = 6
+                                                    break
+                                                case '2':
+                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                    count_points_player2 += round_value
+                                                    isround_over = True
+                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                    break
+                                                case '3':
+                                                
+                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                    time.sleep(1)
+                                                    ai_has_strong_manilha_card = False
+                                                    ai_has_weak_manilha_card = False
+                                
+                                                    for card in player2_cards:
+                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                            ai_has_strong_manilha_card = True
+                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                            ai_has_weak_manilha_card = True
+                                                    if ai_has_strong_manilha_card:
+                                                        while True:
+                                                            round_value = 9
+                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                            print('1 - Aceitar')
+                                                            print('2 - Correr')
+                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                            match truco_choice:
+                                                                case '1': 
+                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                    round_value = 12
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+                                                    elif ai_has_weak_manilha_card:
+                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                        round_value = 9
+                                                        break
+                                                    else:
+                                                        round_value = 9
+                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                        count_points_player1 += round_value
+                                                        isround_over = True
+                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                        break
+                                                    break
+                                                case _:
+                                                    print('Opção inválida! Tente novamente')
+                                        
+                                    elif strong_cards == 1:
+                                        print('O Adversário aceitou o Truco! ')
+                                        round_value = 3
                                     else:
-                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                         count_points_player1 += round_value
                                         isround_over = True
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                         break
+                                    
+                                    if isround_over:
+                                        break 
+                            
+                                                   
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
@@ -1408,7 +1856,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -1418,18 +1866,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -1581,7 +2108,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -1591,18 +2118,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -1729,7 +2335,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -1739,18 +2345,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -1910,7 +2595,7 @@ def start_game(number_player,  deck):
                             print(f'1 - {player1_cards[0]}')
                             print(f'2 - {player1_cards[1]}')
                             print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                            card_option = input('Escolha uma das opções acima: ').strip()
                             card_in_table = ''
                             match card_option:
                                 case '1':
@@ -1926,18 +2611,96 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    print('Você pediu Truco!')   
+                                    if player1_truco:
+                                        print('\nVocê já pediu Truco!')
+                                        continue
+                        
+                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                    player1_truco = True
+                                    time.sleep(1)
+                                    strong_cards = 0   
                                     for card in player2_cards:
-                                        if card in manilha_list:
-                                            print('O oponente aceitou o Truco!')
-                                            round_value = 3
-                                            break
+                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                            strong_cards += 1
+                                    if strong_cards >= 2:
+                                        round_value = 3
+                                        print('O Adversário pediu 6! Você aceita ?')
+                                        print('1 - Aceitar')
+                                        print('2 - Correr')
+                                        print('3 - Pedir 9')
+                                        truco_choice = input('Escolha uma das opções acima: ')
+                                        while True:
+                                            match truco_choice:
+                                                case '1':
+                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                    round_value = 6
+                                                    break
+                                                case '2':
+                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                    count_points_player2 += round_value
+                                                    isround_over = True
+                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                    break
+                                                case '3':
+                                                
+                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                    time.sleep(1)
+                                                    ai_has_strong_manilha_card = False
+                                                    ai_has_weak_manilha_card = Fals
+                                                    for card in player2_cards:
+                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                            ai_has_strong_manilha_card = True
+                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                            ai_has_weak_manilha_card = True
+                                                    if ai_has_strong_manilha_card:
+                                                        while True:
+                                                            round_value = 9
+                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                            print('1 - Aceitar')
+                                                            print('2 - Correr')
+                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                            match truco_choice:
+                                                                case '1': 
+                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                    round_value = 12
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+                                                    elif ai_has_weak_manilha_card:
+                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                        round_value = 9
+                                                        break
+                                                    else:
+                                                        round_value = 9
+                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                        count_points_player1 += round_value
+                                                        isround_over = True
+                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                        break
+                                                    break
+                                                case _:
+                                                    print('Opção inválida! Tente novamente')
+                                                                    
+                                    elif strong_cards == 1:
+                                        print('O Adversário aceitou o Truco! ')
+                                        round_value = 3
                                     else:
-                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                         count_points_player1 += round_value
                                         isround_over = True
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                         break
+                                    
+                                    if isround_over:
+                                        break 
+                            
+                                         
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
@@ -1979,7 +2742,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -1989,18 +2752,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -2133,7 +2975,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -2143,18 +2985,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -2301,7 +3222,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -2311,18 +3232,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -2506,7 +3506,7 @@ def start_game(number_player,  deck):
                                 print(f'1 - {player1_cards[0]}')
                                 print(f'2 - {player1_cards[1]}')
                                 print(f'4 - Pedir Truco')
-                                card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                card_option = input('Escolha uma das opções acima: ').strip()
                                 card_in_table = ''
                                 match card_option:
                                     case '1':
@@ -2522,18 +3522,94 @@ def start_game(number_player,  deck):
                                         player1_cards.remove(played_card)
                                         break
                                     case '4':
-                                        print('Você pediu Truco!')   
+                                        if player1_truco:
+                                            print('\nVocê já pediu Truco!')
+                                            continue
+                            
+                                        print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                        player1_truco = True
+                                        time.sleep(1)
+                                        strong_cards = 0   
                                         for card in player2_cards:
-                                            if card in manilha_list:
-                                                print('O oponente aceitou o Truco!')
-                                                round_value = 3
-                                                break
+                                            if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                strong_cards += 1
+                                        if strong_cards >= 2:
+                                            round_value = 3
+                                            print('O Adversário pediu 6! Você aceita ?')
+                                            print('1 - Aceitar')
+                                            print('2 - Correr')
+                                            print('3 - Pedir 9')
+                                            truco_choice = input('Escolha uma das opções acima: ')
+                                            while True:
+                                                match truco_choice:
+                                                    case '1':
+                                                        print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                        round_value = 6
+                                                        break
+                                                    case '2':
+                                                        print('Você correu! O Adversário ganhou a rodada.')
+                                                        count_points_player2 += round_value
+                                                        isround_over = True
+                                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                        break
+                                                    case '3':
+                                                    
+                                                        print('Você pediu 9! Esperando o Adversário responder.')
+                                                        time.sleep(1)
+                                                        ai_has_strong_manilha_card = False
+                                                        ai_has_weak_manilha_card = False
+                                                        for card in player2_cards:
+                                                            if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                ai_has_strong_manilha_card = True
+                                                            elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                ai_has_weak_manilha_card = True
+                                                        if ai_has_strong_manilha_card:
+                                                            while True:
+                                                                round_value = 9
+                                                                print('O Adversário pediu 12! Você aceita ?')
+                                                                print('1 - Aceitar')
+                                                                print('2 - Correr')
+                                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                                match truco_choice:
+                                                                    case '1': 
+                                                                        print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                        round_value = 12
+                                                                        break
+                                                                    case '2':
+                                                                        print('Você correu! O Adversário ganhou a rodada.')
+                                                                        count_points_player2 += round_value
+                                                                        isround_over = True
+                                                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                        break
+                                                                    case _:
+                                                                        print('Opção inválida! Tente novamente')
+                                                        elif ai_has_weak_manilha_card:
+                                                            print('O Adversário aceitou! A rodada está valendo 9.')
+                                                            round_value = 9
+                                                            break
+                                                        else:
+                                                            round_value = 9
+                                                            print('Você ganhou a rodada! O Adversário correu.')
+                                                            count_points_player1 += round_value
+                                                            isround_over = True
+                                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                            break
+                                                        break
+                                                    case _:
+                                                        print('Opção inválida! Tente novamente')
+                                        elif strong_cards == 1:
+                                            print('O Adversário aceitou o Truco! ')
+                                            round_value = 3
                                         else:
-                                            print('O oponente recusou o Truco! Você ganha a rodada.')
+                                            print('O Adversário recusou o Truco! Você ganha a rodada.')
                                             count_points_player1 += round_value
                                             isround_over = True
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                             break
+                                        
+                                        if isround_over:
+                                            break 
+                                
                                     case _:
                                         print('Opção inválida! Tente novamente')
                             if isround_over == True:
@@ -2620,7 +3696,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -2630,18 +3706,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+    
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+    
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+                                                
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -2793,7 +3948,7 @@ def start_game(number_player,  deck):
                                             print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                             print(f'1 - {player1_cards[0]}')
                                             print(f'4 - Pedir Truco')
-                                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                            card_option = input('Escolha uma das opções acima: ').strip()
                                             card_in_table = ''
                                             match card_option:
                                                 case '1':
@@ -2803,18 +3958,97 @@ def start_game(number_player,  deck):
                                                     player1_cards.remove(played_card)
                                                     break
                                                 case '4':
-                                                    print('Você pediu Truco!')   
+                                                    if player1_truco:
+                                                        print('\nVocê já pediu Truco!')
+                                                        continue
+                                                    
+                                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                    player1_truco = True
+                                                    time.sleep(1)
+                                                    strong_cards = 0   
                                                     for card in player2_cards:
-                                                        if card in manilha_list:
-                                                            print('O oponente aceitou o Truco!')
-                                                            round_value = 3
-                                                            break
+                                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                            strong_cards += 1
+                                                    if strong_cards >= 2:
+                                                        round_value = 3
+                                                        print('O Adversário pediu 6! Você aceita ?')
+                                                        print('1 - Aceitar')
+                                                        print('2 - Correr')
+                                                        print('3 - Pedir 9')
+                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                        while True:
+                                                            match truco_choice:
+                                                                case '1':
+                                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                    round_value = 6
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case '3':
+                                                                
+                                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                                    time.sleep(1)
+                                                                    ai_has_strong_manilha_card = False
+                                                                    ai_has_weak_manilha_card = False
+
+                                                                    for card in player2_cards:
+                                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                            ai_has_strong_manilha_card = True
+                                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                            ai_has_weak_manilha_card = True
+                                                                    if ai_has_strong_manilha_card:
+                                                                        while True:
+                                                                            round_value = 9
+                                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                                            print('1 - Aceitar')
+                                                                            print('2 - Correr')
+                                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                                            match truco_choice:
+                                                                                case '1': 
+                                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                    round_value = 12
+                                                                                    break
+                                                                                case '2':
+                                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                                    count_points_player2 += round_value
+                                                                                    isround_over = True
+                                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                    break
+                                                                                case _:
+                                                                                    print('Opção inválida! Tente novamente')
+                                                                    elif ai_has_weak_manilha_card:
+                                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                        round_value = 9
+                                                                        break
+                                                                    else:
+                                                                        round_value = 9
+                                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                                        count_points_player1 += round_value
+                                                                        isround_over = True
+                                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                        break
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+
+                                                    elif strong_cards == 1:
+                                                        print('O Adversário aceitou o Truco! ')
+                                                        round_value = 3
                                                     else:
-                                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                         count_points_player1 += round_value
                                                         isround_over = True
                                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                         break
+                                                    
+                                                    if isround_over:
+                                                        break 
+                                                    
+                                                    
                                                 case _:
                                                     print('Opção inválida! Tente novamente')
                                         if isround_over == True:
@@ -2943,7 +4177,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -2953,18 +4187,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -3115,7 +4428,7 @@ def start_game(number_player,  deck):
                                 print(f'1 - {player1_cards[0]}')
                                 print(f'2 - {player1_cards[1]}')
                                 print(f'4 - Pedir Truco')
-                                card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                card_option = input('Escolha uma das opções acima: ').strip()
                                 card_in_table = ''
                                 match card_option:
                                     case '1':
@@ -3131,18 +4444,94 @@ def start_game(number_player,  deck):
                                         player1_cards.remove(played_card)
                                         break
                                     case '4':
-                                        print('Você pediu Truco!')   
+                                        if player1_truco:
+                                            print('\nVocê já pediu Truco!')
+                                            continue
+                            
+                                        print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                        player1_truco = True
+                                        time.sleep(1)
+                                        strong_cards = 0   
                                         for card in player2_cards:
-                                            if card in manilha_list:
-                                                print('O oponente aceitou o Truco!')
-                                                round_value = 3
-                                                break
+                                            if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                strong_cards += 1
+                                        if strong_cards >= 2:
+                                            round_value = 3
+                                            print('O Adversário pediu 6! Você aceita ?')
+                                            print('1 - Aceitar')
+                                            print('2 - Correr')
+                                            print('3 - Pedir 9')
+                                            truco_choice = input('Escolha uma das opções acima: ')
+                                            while True:
+                                                match truco_choice:
+                                                    case '1':
+                                                        print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                        round_value = 6
+                                                        break
+                                                    case '2':
+                                                        print('Você correu! O Adversário ganhou a rodada.')
+                                                        count_points_player2 += round_value
+                                                        isround_over = True
+                                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                        break
+                                                    case '3':
+                                                    
+                                                        print('Você pediu 9! Esperando o Adversário responder.')
+                                                        time.sleep(1)
+                                                        ai_has_strong_manilha_card = False
+                                                        ai_has_weak_manilha_card = False
+                                                        for card in player2_cards:
+                                                            if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                ai_has_strong_manilha_card = True
+                                                            elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                ai_has_weak_manilha_card = True
+                                                        if ai_has_strong_manilha_card:
+                                                            while True:
+                                                                round_value = 9
+                                                                print('O Adversário pediu 12! Você aceita ?')
+                                                                print('1 - Aceitar')
+                                                                print('2 - Correr')
+                                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                                match truco_choice:
+                                                                    case '1': 
+                                                                        print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                        round_value = 12
+                                                                        break
+                                                                    case '2':
+                                                                        print('Você correu! O Adversário ganhou a rodada.')
+                                                                        count_points_player2 += round_value
+                                                                        isround_over = True
+                                                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                        break
+                                                                    case _:
+                                                                        print('Opção inválida! Tente novamente')
+                                                        elif ai_has_weak_manilha_card:
+                                                            print('O Adversário aceitou! A rodada está valendo 9.')
+                                                            round_value = 9
+                                                            break
+                                                        else:
+                                                            round_value = 9
+                                                            print('Você ganhou a rodada! O Adversário correu.')
+                                                            count_points_player1 += round_value
+                                                            isround_over = True
+                                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                            break
+                                                        break
+                                                    case _:
+                                                        print('Opção inválida! Tente novamente')
+                                        elif strong_cards == 1:
+                                            print('O Adversário aceitou o Truco! ')
+                                            round_value = 3
                                         else:
-                                            print('O oponente recusou o Truco! Você ganha a rodada.')
+                                            print('O Adversário recusou o Truco! Você ganha a rodada.')
                                             count_points_player1 += round_value
                                             isround_over = True
                                             points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                             break
+                                        
+                                        if isround_over:
+                                            break 
+                                
                                     case _:
                                         print('Opção inválida! Tente novamente')
                             if isround_over == True:
@@ -3184,7 +4573,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -3194,18 +4583,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -3340,7 +4808,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -3350,18 +4818,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                    print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                        break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -3511,7 +5058,7 @@ def start_game(number_player,  deck):
                                             print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                             print(f'1 - {player1_cards[0]}')
                                             print(f'4 - Pedir Truco')
-                                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                            card_option = input('Escolha uma das opções acima: ').strip()
                                             card_in_table = ''
                                             match card_option:
                                                 case '1':
@@ -3521,18 +5068,97 @@ def start_game(number_player,  deck):
                                                     player1_cards.remove(played_card)
                                                     break
                                                 case '4':
-                                                    print('Você pediu Truco!')   
+                                                    if player1_truco:
+                                                        print('\nVocê já pediu Truco!')
+                                                        continue
+                                                    
+                                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                    player1_truco = True
+                                                    time.sleep(1)
+                                                    strong_cards = 0   
                                                     for card in player2_cards:
-                                                        if card in manilha_list:
-                                                            print('O oponente aceitou o Truco!')
-                                                            round_value = 3
-                                                            break
+                                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                            strong_cards += 1
+                                                    if strong_cards >= 2:
+                                                        round_value = 3
+                                                        print('O Adversário pediu 6! Você aceita ?')
+                                                        print('1 - Aceitar')
+                                                        print('2 - Correr')
+                                                        print('3 - Pedir 9')
+                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                        while True:
+                                                            match truco_choice:
+                                                                case '1':
+                                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                    round_value = 6
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case '3':
+                                                                
+                                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                                    time.sleep(1)
+                                                                    ai_has_strong_manilha_card = False
+                                                                    ai_has_weak_manilha_card = False
+
+                                                                    for card in player2_cards:
+                                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                            ai_has_strong_manilha_card = True
+                                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                            ai_has_weak_manilha_card = True
+                                                                    if ai_has_strong_manilha_card:
+                                                                        while True:
+                                                                            round_value = 9
+                                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                                            print('1 - Aceitar')
+                                                                            print('2 - Correr')
+                                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                                            match truco_choice:
+                                                                                case '1': 
+                                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                    round_value = 12
+                                                                                    break
+                                                                                case '2':
+                                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                                    count_points_player2 += round_value
+                                                                                    isround_over = True
+                                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                    break
+                                                                                case _:
+                                                                                    print('Opção inválida! Tente novamente')
+                                                                    elif ai_has_weak_manilha_card:
+                                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                        round_value = 9
+                                                                        break
+                                                                    else:
+                                                                        round_value = 9
+                                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                                        count_points_player1 += round_value
+                                                                        isround_over = True
+                                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                        break
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+
+                                                    elif strong_cards == 1:
+                                                        print('O Adversário aceitou o Truco! ')
+                                                        round_value = 3
                                                     else:
-                                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                         count_points_player1 += round_value
                                                         isround_over = True
                                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                         break
+                                                    
+                                                    if isround_over:
+                                                        break 
+                                                    
+                                                    
                                                 case _:
                                                     print('Opção inválida! Tente novamente')
                                         if isround_over == True:
@@ -3734,7 +5360,7 @@ def start_game(number_player,  deck):
                             print(f'1 - {player1_cards[0]}')
                             print(f'2 - {player1_cards[1]}')
                             print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                            card_option = input('Escolha uma das opções acima: ').strip()
                             card_in_table = ''
                             match card_option:
                                 case '1':
@@ -3750,18 +5376,94 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    print('Você pediu Truco!')   
+                                    if player1_truco:
+                                        print('\nVocê já pediu Truco!')
+                                        continue
+                        
+                                    print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                    player1_truco = True
+                                    time.sleep(1)
+                                    strong_cards = 0   
                                     for card in player2_cards:
-                                        if card in manilha_list:
-                                            print('O oponente aceitou o Truco!')
-                                            round_value = 3
-                                            break
+                                        if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                            strong_cards += 1
+                                    if strong_cards >= 2:
+                                        round_value = 3
+                                        print('O Adversário pediu 6! Você aceita ?')
+                                        print('1 - Aceitar')
+                                        print('2 - Correr')
+                                        print('3 - Pedir 9')
+                                        truco_choice = input('Escolha uma das opções acima: ')
+                                        while True:
+                                            match truco_choice:
+                                                case '1':
+                                                    print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                    round_value = 6
+                                                    break
+                                                case '2':
+                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                    count_points_player2 += round_value
+                                                    isround_over = True
+                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                    break
+                                                case '3':
+                                                
+                                                    print('Você pediu 9! Esperando o Adversário responder.')
+                                                    time.sleep(1)
+                                                    ai_has_strong_manilha_card = False
+                                                    ai_has_weak_manilha_card = Fals
+                                                    for card in player2_cards:
+                                                        if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                            ai_has_strong_manilha_card = True
+                                                        elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                            ai_has_weak_manilha_card = True
+                                                    if ai_has_strong_manilha_card:
+                                                        while True:
+                                                            round_value = 9
+                                                            print('O Adversário pediu 12! Você aceita ?')
+                                                            print('1 - Aceitar')
+                                                            print('2 - Correr')
+                                                            truco_choice = input('Escolha uma das opções acima: ')
+                                                            match truco_choice:
+                                                                case '1': 
+                                                                    print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                    round_value = 12
+                                                                    break
+                                                                case '2':
+                                                                    print('Você correu! O Adversário ganhou a rodada.')
+                                                                    count_points_player2 += round_value
+                                                                    isround_over = True
+                                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                    break
+                                                                case _:
+                                                                    print('Opção inválida! Tente novamente')
+                                                    elif ai_has_weak_manilha_card:
+                                                        print('O Adversário aceitou! A rodada está valendo 9.')
+                                                        round_value = 9
+                                                        break
+                                                    else:
+                                                        round_value = 9
+                                                        print('Você ganhou a rodada! O Adversário correu.')
+                                                        count_points_player1 += round_value
+                                                        isround_over = True
+                                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                        break
+                                                    break
+                                                case _:
+                                                    print('Opção inválida! Tente novamente')
+                                    elif strong_cards == 1:
+                                        print('O Adversário aceitou o Truco! ')
+                                        round_value = 3
                                     else:
-                                        print('O oponente recusou o Truco! Você ganha a rodada.')
+                                        print('O Adversário recusou o Truco! Você ganha a rodada.')
                                         count_points_player1 += round_value
                                         isround_over = True
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                         break
+                                    
+                                    if isround_over:
+                                        break 
+                            
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
@@ -3803,7 +5505,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -3813,18 +5515,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -3959,7 +5740,7 @@ def start_game(number_player,  deck):
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
                                     print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                    card_option = input('Escolha uma das opções acima: ').strip()
                                     card_in_table = ''
                                     match card_option:
                                         case '1':
@@ -3969,18 +5750,97 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            print('Você pediu Truco!')   
+                                            if player1_truco:
+                                                print('\nVocê já pediu Truco!')
+                                                continue
+                                
+                                            print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                            player1_truco = True
+                                            time.sleep(1)
+                                            strong_cards = 0   
                                             for card in player2_cards:
-                                                if card in manilha_list:
-                                                    print('O oponente aceitou o Truco!')
-                                                    round_value = 3
-                                                    break
+                                                if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                    strong_cards += 1
+                                            if strong_cards >= 2:
+                                                round_value = 3
+                                                print('O Adversário pediu 6! Você aceita ?')
+                                                print('1 - Aceitar')
+                                                print('2 - Correr')
+                                                print('3 - Pedir 9')
+                                                truco_choice = input('Escolha uma das opções acima: ')
+                                                while True:
+                                                    match truco_choice:
+                                                        case '1':
+                                                            print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                            round_value = 6
+                                                            break
+                                                        case '2':
+                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                            count_points_player2 += round_value
+                                                            isround_over = True
+                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                            break
+                                                        case '3':
+                                                        
+                                                            print('Você pediu 9! Esperando o Adversário responder.')
+                                                            time.sleep(1)
+                                                            ai_has_strong_manilha_card = False
+                                                            ai_has_weak_manilha_card = False
+
+                                                            for card in player2_cards:
+                                                                if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                    ai_has_strong_manilha_card = True
+                                                                elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                    ai_has_weak_manilha_card = True
+                                                            if ai_has_strong_manilha_card:
+                                                                while True:
+                                                                    round_value = 9
+                                                                    print('O Adversário pediu 12! Você aceita ?')
+                                                                    print('1 - Aceitar')
+                                                                    print('2 - Correr')
+                                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                                    match truco_choice:
+                                                                        case '1': 
+                                                                            print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                            round_value = 12
+                                                                            break
+                                                                        case '2':
+                                                                            print('Você correu! O Adversário ganhou a rodada.')
+                                                                            count_points_player2 += round_value
+                                                                            isround_over = True
+                                                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                            break
+                                                                        case _:
+                                                                            print('Opção inválida! Tente novamente')
+                                                            elif ai_has_weak_manilha_card:
+                                                                print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                round_value = 9
+                                                                break
+                                                            else:
+                                                                round_value = 9
+                                                                print('Você ganhou a rodada! O Adversário correu.')
+                                                                count_points_player1 += round_value
+                                                                isround_over = True
+                                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                break
+                                                            break
+                                                        case _:
+                                                            print('Opção inválida! Tente novamente')
+
+                                            elif strong_cards == 1:
+                                                print('O Adversário aceitou o Truco! ')
+                                                round_value = 3
                                             else:
-                                                print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                 count_points_player1 += round_value
                                                 isround_over = True
                                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                 break
+                                            
+                                            if isround_over:
+                                                break 
+                                    
+
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
@@ -4130,7 +5990,7 @@ def start_game(number_player,  deck):
                                         print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                         print(f'1 - {player1_cards[0]}')
                                         print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma opção (1, 2 ou 3): ').strip()
+                                        card_option = input('Escolha uma das opções acima: ').strip()
                                         card_in_table = ''
                                         match card_option:
                                             case '1':
@@ -4140,18 +6000,97 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                print('Você pediu Truco!')   
+                                                if player1_truco:
+                                                    print('\nVocê já pediu Truco!')
+                                                    continue
+                                                
+                                                print('\nVocê pediu Truco! Esperando o Adversário responder.')
+                                                player1_truco = True
+                                                time.sleep(1)
+                                                strong_cards = 0   
                                                 for card in player2_cards:
-                                                    if card in manilha_list:
-                                                        print('O oponente aceitou o Truco!')
-                                                        round_value = 3
-                                                        break
+                                                    if card in manilha_list or card[0] == '3' or card[0] == '2':
+                                                        strong_cards += 1
+                                                if strong_cards >= 2:
+                                                    round_value = 3
+                                                    print('O Adversário pediu 6! Você aceita ?')
+                                                    print('1 - Aceitar')
+                                                    print('2 - Correr')
+                                                    print('3 - Pedir 9')
+                                                    truco_choice = input('Escolha uma das opções acima: ')
+                                                    while True:
+                                                        match truco_choice:
+                                                            case '1':
+                                                                print('Você aceitou! A rodada está valendo 6 pontos.')
+                                                                round_value = 6
+                                                                break
+                                                            case '2':
+                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                count_points_player2 += round_value
+                                                                isround_over = True
+                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                break
+                                                            case '3':
+                                                            
+                                                                print('Você pediu 9! Esperando o Adversário responder.')
+                                                                time.sleep(1)
+                                                                ai_has_strong_manilha_card = False
+                                                                ai_has_weak_manilha_card = False
+
+                                                                for card in player2_cards:
+                                                                    if card in manilha_list and card[2] in suits_manilha[2:4]:
+                                                                        ai_has_strong_manilha_card = True
+                                                                    elif card in manilha_list and card[2] in suits_manilha[0:2]:
+                                                                        ai_has_weak_manilha_card = True
+                                                                if ai_has_strong_manilha_card:
+                                                                    while True:
+                                                                        round_value = 9
+                                                                        print('O Adversário pediu 12! Você aceita ?')
+                                                                        print('1 - Aceitar')
+                                                                        print('2 - Correr')
+                                                                        truco_choice = input('Escolha uma das opções acima: ')
+                                                                        match truco_choice:
+                                                                            case '1': 
+                                                                                print('Você aceitou! A rodada está valendo 12 pontos')
+                                                                                round_value = 12
+                                                                                break
+                                                                            case '2':
+                                                                                print('Você correu! O Adversário ganhou a rodada.')
+                                                                                count_points_player2 += round_value
+                                                                                isround_over = True
+                                                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                                                                break
+                                                                            case _:
+                                                                                print('Opção inválida! Tente novamente')
+                                                                elif ai_has_weak_manilha_card:
+                                                                    print('O Adversário aceitou! A rodada está valendo 9.')
+                                                                    round_value = 9
+                                                                    break
+                                                                else:
+                                                                    round_value = 9
+                                                                    print('Você ganhou a rodada! O Adversário correu.')
+                                                                    count_points_player1 += round_value
+                                                                    isround_over = True
+                                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                                                    break
+                                                                break
+                                                            case _:
+                                                                print('Opção inválida! Tente novamente')
+
+                                                elif strong_cards == 1:
+                                                    print('O Adversário aceitou o Truco! ')
+                                                    round_value = 3
                                                 else:
-                                                    print('O oponente recusou o Truco! Você ganha a rodada.')
+                                                    print('O Adversário recusou o Truco! Você ganha a rodada.')
                                                     count_points_player1 += round_value
                                                     isround_over = True
                                                     points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
                                                     break
+                                                
+                                                if isround_over:
+                                                    break 
+                                                
+
                                             case _:
                                                 print('Opção inválida! Tente novamente')
                                     if isround_over == True:
@@ -4339,57 +6278,6 @@ def start_game(number_player,  deck):
 
 
 
-
-            
-        case 4:
-            player1_cards = list_card_players[0:3]
-            player2_cards = list_card_players[3:6]
-            player3_cards = list_card_players[6:9]
-            player4_cards = list_card_players[9:12]
-            points_team1 = '00'
-            points_team2 = '00'
-            print(f'Jogador 1 cartas: {player1_cards}')
-            print(f'Jogador 2 cartas: {player2_cards}')
-            print(f'Jogador 3 cartas: {player3_cards}')
-            print(f'Jogador 4 cartas: {player4_cards}')
-            print(f'┌─────────────────────────────────────────────────────────────────────────────────────┐')
-            print(f'│                              ┌─────┐ ┌─────┐ ┌─────┐                                │')
-            print(f'│                              │ ┌─┐ │ │ ┌─┐ │ │ ┌─┐ │                                │')
-            print(f'│                              │ │ │ │ │ │ │ │ │ │ │ │                                │')
-            print(f'│                              │ └─┘ │ │ └─┘ │ │ └─┘ │                                │')
-            print(f'│                              └─────┘ └─────┘ └─────┘                                │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│  ┌──────────┐                                                         ┌──────────┐  │')
-            print(f'│  │ ┌──────┐ │                                                         │ ┌──────┐ │  │')
-            print(f'│  │ └──────┘ │                                                         │ └──────┘ │  │')
-            print(f'│  └──────────┘                                                         └──────────┘  │')
-            print(f'│  ┌──────────┐                        ┌─────┐                          ┌──────────┐  │')
-            print(f'│  │ ┌──────┐ │                        │{suit_vira}    │                          │ ┌──────┐ │  │')
-            print(f'│  │ └──────┘ │                        │  {number_vira}  │                          │ └──────┘ │  │')
-            print(f'│  └──────────┘                        │    {suit_vira}│                          └──────────┘  │')
-            print(f'│  ┌──────────┐                        └─────┘                          ┌──────────┐  │')
-            print(f'│  │ ┌──────┐ │                                                         │ ┌──────┐ │  │')
-            print(f'│  │ └──────┘ │                                                         │ └──────┘ │  │')
-            print(f'│  └──────────┘                                                         └──────────┘  │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│                                                                                     │')
-            print(f'│ ┌─────────────────┐                                          ┌─────────────────────┐│')
-            print(f'│ │     Placar      │           ┌─────┐ ┌─────┐ ┌─────┐        │       Rodadas       ││')
-            print(f'│ │  ─────────────  │           │{player1_cards[0][2]}    │ │{player1_cards[1][2]}    │ │{player1_cards[2][2]}    │        │  ─────────────────  ││')
-            print(f'│ │  Vocês │  Eles  │           │  {player1_cards[0][0]}  │ │  {player1_cards[1][0]}  │ │  {player1_cards[2][0]}  │        │   Vocês  │    Eles  ││')
-            print(f'│ │   {points_team1}   │   {points_team2}   │           │    {player1_cards[0][2]}│ │    {player1_cards[1][2]}│ │    {player1_cards[2][2]}│        │ 〇 〇 〇 │ 〇 〇 〇 ││')
-            print(f'│ └─────────────────┘           └─────┘ └─────┘ └─────┘        └─────────────────────┘│')
-            print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
-
-            
 
 
 
