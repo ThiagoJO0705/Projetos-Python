@@ -515,6 +515,50 @@ def screen(vira, player1_cards, points_player1, points_player2, card_in_table, e
         print(f'│ └─────────────────┘                                          └─────────────────────┘│')
         print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
 
+def winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha):
+    index_card_player1 = 0
+    index_card_player2 = 0
+    player1_has_manilha = False
+    player2_has_manilha = False
+
+    for i in order_strength:
+        if card_in_table[0] == i:
+            index_card_player1 = order_strength.index(i)
+        if enemy_played_card[0] == i:
+            index_card_player2 = order_strength.index(i)
+
+    if card_in_table in manilhas:
+        player1_has_manilha = True
+    if enemy_played_card in manilhas:
+        player2_has_manilha = True
+
+    if player1_has_manilha == False and player2_has_manilha == False:
+        if index_card_player1 > index_card_player2:
+            return 1
+        elif index_card_player2 > index_card_player1:
+            return 2
+        else:
+            return 0 
+
+    elif player1_has_manilha == True and player2_has_manilha == False:
+        return 1
+    elif player2_has_manilha == True and player1_has_manilha == False:
+        return 2
+
+    elif player1_has_manilha == True and player2_has_manilha == True:
+        idx_suit1 = 0
+        idx_suit2 = 0
+        for i in suits_manilha:
+            if card_in_table[2] == i: idx_suit1 = suits_manilha.index(i)
+            elif enemy_played_card[2] == i: idx_suit2 = suits_manilha.index(i)
+        
+        if idx_suit1 > idx_suit2:
+            return 1
+        else:
+            return 2
+            
+    return 2
+
 def p1_truco(p2_cards, man_list, r_value, isr_over, c_p_p2, p_p2, s_man, c_p_p1, p_p1, p1_tc, rounds, p2_tc):
 
     strong_cards = 0   
@@ -716,6 +760,9 @@ def start_game(number_player,  deck):
             count_points_player2 = 0
             count_points_player1 = 0
             while count_points_player1 < 12 and count_points_player2 < 12:
+                player1_truco = False
+                player2_truco = False
+
                 list_card_players, manilha_list = shuffle_deck(deck, number_player=2)
                 print(f'Cartas dos jogadores: {list_card_players}')
                 print(f'Manilhas: {manilha_list}')
@@ -736,8 +783,7 @@ def start_game(number_player,  deck):
                 round_loose = '☆'
                 player1_has_manilha = False
                 player2_has_manilha = False
-                player1_truco = False
-                player2_truco = False
+                
                 #Rodada 1
                 print(f'Jogador 1 cartas: {player1_cards}')
                 print(f'Jogador 2 cartas: {player2_cards}')
@@ -792,8 +838,6 @@ def start_game(number_player,  deck):
                     if not player2_truco and not player1_truco:
                         round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
                         
-
-
                     if isround_over == True:
                         time.sleep(2)
                         continue
@@ -806,30 +850,12 @@ def start_game(number_player,  deck):
                     
                     print('\n')
                     time.sleep(2)
-                    index_card_player1 = 0
-                    index_card_player2 = 0
                     
 
-                    player1_has_manilha = False
-                    player2_has_manilha = False
-
-                    for i in order_strength:
-                        if card_in_table[0] == i:
-                            index_card_player1 = order_strength.index(i)
-                        elif enemy_played_card[0] == i:
-                            index_card_player2 = order_strength.index(i)
-                    
-                    if card_in_table in manilhas:
-                        player1_has_manilha = True
-                    if enemy_played_card in manilhas:
-                        player2_has_manilha = True
-
-
-
+                    winner = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
 
                     #Rodada 1 - Player 1 vence
-
-                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                    if winner == 1:
                         print('Você venceu essa Rodada!')
                         rounds[0].append(round_win)
                         rounds[1].append(round_loose)
@@ -869,7 +895,6 @@ def start_game(number_player,  deck):
                                     print('Opção inválida! Tente novamente')
 
                         if isround_over == True:
-                                          
                             time.sleep(2)
                             continue
                         else:
@@ -878,8 +903,6 @@ def start_game(number_player,  deck):
                             if not player2_truco and not player1_truco:
                                 round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
                                 
-
-
                             if isround_over == True:
                                 time.sleep(2)
                                 continue
@@ -891,55 +914,29 @@ def start_game(number_player,  deck):
                             
                             print('\n')
                             time.sleep(2)
-                            index_card_player1 = 0
-                            index_card_player2 = 0
+                            
+                            winner_r2 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
 
-                            player1_has_manilha = False
-                            player2_has_manilha = False
-
-
-                            for i in order_strength:
-                                if card_in_table[0] == i:
-                                    index_card_player1 = order_strength.index(i)
-                                elif enemy_played_card[0] == i:
-                                    index_card_player2 = order_strength.index(i)
-
-                            if card_in_table in manilhas:
-                                player1_has_manilha = True
-                            if enemy_played_card in manilhas:
-                                player2_has_manilha = True
-
-                            #Rodada 2 - Player1 vence rodada 1 e 2
-
-                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                            if winner_r2 == 1:
                                 print('Você venceu a Rodada')
                                 print('Você ganhou!!')
                                 time.sleep(2)
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
                                 continue
-
-                            #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
-
-                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                print('Você venceu essa Rodada!')
-                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                print('Você ganhou!!')
+                            
+                            elif winner_r2 == 0: # Empate na 2a, P1 ganhou a 1a -> P1 ganha
+                                print('Empatou essa rodada!')
+                                print('Como você venceu a primeira, você ganhou a mão!!')
                                 time.sleep(2)
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
-
                                 continue
 
-                            #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                            elif player2_has_manilha == True and player1_has_manilha == False:
+                            else: # P2 Venceu R2
                                 rounds[0].append(round_loose)
                                 rounds[1].append(round_win)
                                 print('Seu adversário venceu essa Rodada!')
-                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
                                 count_round_player2 += 1
                                 time.sleep(2)
                                 screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
@@ -948,8 +945,6 @@ def start_game(number_player,  deck):
                                 if not player2_truco and not player1_truco:
                                     round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
                                     
-
-
                                 if isround_over == True:
                                     time.sleep(2)
                                     continue
@@ -957,7 +952,6 @@ def start_game(number_player,  deck):
                                 player2_cards.remove(enemy_played_card)
                                 screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
 
-                                
                                 while True:
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
@@ -983,7 +977,6 @@ def start_game(number_player,  deck):
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                              
                                     time.sleep(2)
                                     continue
                                 else:      
@@ -992,91 +985,24 @@ def start_game(number_player,  deck):
                                     print('\n')
                                     time.sleep(2)
                                     
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
+                                    winner_r3 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
 
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
+                                    if winner_r3 == 1:
                                         print('Você venceu a Rodada')
                                         print('Você ganhou!!')
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-
                                         continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
+                                    
+                                    elif winner_r3 == 0: # Empate na 3a, quem ganhou a 1a (P1) leva
+                                        print('Empatou essa rodada!')
+                                        print('Como você venceu a primeira, você ganhou a mão!!')
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-
                                         continue
 
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                        time.sleep(2)
-                                        continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                          
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
                                     else:
                                         print('Seu adversário venceu essa Rodada!')
                                         print('Você perdeu!!')
@@ -1084,334 +1010,26 @@ def start_game(number_player,  deck):
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                         time.sleep(2)
                                         continue
-                            
 
-                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                for i in suits_manilha:
-                                    if card_in_table[2] == i:
-                                        index_card_player1 = suits_manilha.index(i)
-                                    elif enemy_played_card[2] == i:
-                                        index_card_player2 = suits_manilha.index(i)
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                if index_card_player1 > index_card_player2:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    print('Você ganhou!!')
-                                    time.sleep(2)
-                                    count_points_player1 += round_value
-                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
-
-                                    continue
-                                #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                    count_round_player2 += 1
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                    time.sleep(2)
-                                    if not player2_truco and not player1_truco:
-                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                            
-
-
-                                    if isround_over == True:
-                                        time.sleep(2)
-                                        continue
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-
-                                    screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
-
-                                    
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break                                            
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-
-                                            continue
-
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                   
-                                            continue
-
-
-
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                       
-                                            continue
-
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                         
-                                                continue
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                            
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                    
-                                            continue
-
-                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                            else:
-                                print('Seu adversário venceu essa Rodada!')          
-                                count_round_player2 += 1
-                                rounds[0].append(round_loose)
-                                rounds[1].append(round_win)
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)     
-                                
-
-                                time.sleep(2)
-                                if not player2_truco and not player1_truco:
-                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                    
-
-
-                                if isround_over == True:
-                                    time.sleep(2)
-                                    continue
-                                enemy_played_card = random.choice(player2_cards)
-                                player2_cards.remove(enemy_played_card)
-
-                                screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)     
-
-
-
-                                
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-             
-                                        continue
-
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                      
-                                        continue
-
-
-
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-
-                                        
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                       
-                                            continue
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                     
-                                            continue
-                                        
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-                    #Rodada 1 - Player 1 vence manilha
-                    elif player1_has_manilha == True and player2_has_manilha == False:
-                        print('Você venceu essa Rodada!')
-                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                        rounds[0].append(round_win)
-                        rounds[1].append(round_loose)
-                        count_round_player1 += 1
+                    #Rodada 1 - Player 2 vence 
+                    elif winner == 2:
+                        print('Seu adversário venceu essa Rodada!')
+                        count_round_player2 += 1
+                        rounds[0].append(round_loose)
+                        rounds[1].append(round_win)
                         time.sleep(2)
-                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)      
+                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
+
+                        time.sleep(2)
+                        if not player2_truco and not player1_truco:
+                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                            
+                        if isround_over == True:
+                            time.sleep(2)
+                            continue
+                        enemy_played_card = random.choice(player2_cards)
+                        player2_cards.remove(enemy_played_card)
+                        screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
 
                         while True:
                             print('\nSua vez de Jogar, qual carta você quer jogar? ')
@@ -1436,90 +1054,184 @@ def start_game(number_player,  deck):
                                 case '4':
                                     if player1_truco:
                                         print('\nO Jogo já está Trucado!')
-                                        continue  
+                                        continue
                                     round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
                                     if isround_over:
                                         break 
                                 case _:
                                     print('Opção inválida! Tente novamente')
                         if isround_over == True:
-                                      
                             time.sleep(2)
                             continue
-                        else:
-                            print('Vez do seu adersário de Jogar...')
-                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
+                        else:      
+                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
+                            print('\n')
+                            time.sleep(2)
+
+                            winner_r2 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
+
+                            if winner_r2 == 1:
+                                print('Você venceu a Rodada')
+                                rounds[0].append(round_win)
+                                rounds[1].append(round_loose)
+                                count_round_player1 += 1
+                                time.sleep(2)
+                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
+                                while True:
+                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
+                                    print(f'1 - {player1_cards[0]}')
+                                    print(f'4 - Pedir Truco')
+                                    card_option = input('Escolha uma das opções acima: ').strip()
+                                    card_in_table = ''
+                                    match card_option:
+                                        case '1':
+                                            played_card = player1_cards[0]
+                                            print(f'Você jogou a carta: {played_card}')
+                                            card_in_table = played_card
+                                            player1_cards.remove(played_card)
+                                            break
+                                        case '4':
+                                            if player1_truco:
+                                                print('\nO Jogo já está Trucado!')
+                                                continue
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
+                                            if isround_over:
+                                                break 
+                                        case _:
+                                            print('Opção inválida! Tente novamente')
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
+                                else:      
+                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
+                                    time.sleep(2)
+
+                                    enemy_played_card = random.choice(player2_cards)
+                                    player2_cards.remove(enemy_played_card)
+                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
+                                    
+                                    print('\n')
+                                    time.sleep(2)
+                                    
+                                    winner_r3 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
+
+                                    if winner_r3 == 1:
+                                        print('Você venceu a Rodada')
+                                        print('Você ganhou!!')
+                                        time.sleep(2)
+                                        count_points_player1 += round_value
+                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
+                                        continue
+                                    
+                                    elif winner_r3 == 0: # Empate na 3a, quem ganhou a 1a (P2) leva
+                                        print('Empatou essa rodada!')
+                                        print('Como o adversário venceu a primeira, ele ganhou a mão!!')
+                                        time.sleep(2)
+                                        count_points_player2 += round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        continue
+
+                                    else: # P2 Venceu R3
+                                        print('Seu adversário venceu essa Rodada!')
+                                        print('Você perdeu!!')
+                                        time.sleep(2)
+                                        count_points_player2 += round_value
+                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                        continue
+
+                            elif winner_r2 == 0: # Empate na 2a, P2 ganhou a 1a -> P2 ganha
+                                print('Empatou essa rodada!')
+                                print('Como o adversário venceu a primeira, ele ganhou a mão!!')
+                                time.sleep(2)
+                                count_points_player2 += round_value
+                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                continue
+
+                            else: # P2 Venceu R2 e tinha vencido R1
+                                print('Seu adversário venceu essa Rodada!')
+                                print('Você Perdeu!!')
+                                count_points_player2 += round_value
+                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
+                                time.sleep(2)
+                                continue
+
+                    # Rodada 1 - Empate (0)
+                    elif winner == 0:
+                        print('Empatou a primeira rodada! Quem ganhar a próxima leva!')
+                        rounds[0].append('★')
+                        rounds[1].append('★')
+                        time.sleep(2)
+                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)
+
+                        while True:
+                            print('\nSua vez de Jogar, qual carta você quer jogar? ')
+                            print(f'1 - {player1_cards[0]}')
+                            print(f'2 - {player1_cards[1]}')
+                            print(f'4 - Pedir Truco')
+                            card_option = input('Escolha uma das opções acima: ').strip()
+                            card_in_table = ''
+                            match card_option:
+                                case '1':
+                                    played_card = player1_cards[0]
+                                    print(f'Você jogou a carta: {played_card}')
+                                    card_in_table = played_card
+                                    player1_cards.remove(played_card)
+                                    break
+                                case '2':
+                                    played_card = player1_cards[1]
+                                    print(f'Você jogou a carta: {played_card}')
+                                    card_in_table = played_card
+                                    player1_cards.remove(played_card)
+                                    break
+                                case '4':
+                                    if player1_truco:
+                                        print('\nO Jogo já está Trucado!')
+                                        continue
+                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
+                                    if isround_over:
+                                        break 
+                                case _:
+                                    print('Opção inválida! Tente novamente')
+                        if isround_over == True:
+                            time.sleep(2)
+                            continue
+                        else:      
+                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)
                             if not player2_truco and not player1_truco:
                                 round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                               
-
-
+                            
                             if isround_over == True:
                                 time.sleep(2)
                                 continue
-                    
+                            
                             time.sleep(2)        
                             enemy_played_card = random.choice(player2_cards)
                             player2_cards.remove(enemy_played_card)
-                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)         
+                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)    
                             
                             print('\n')
                             time.sleep(2)
-
-
                             
+                            winner_r2 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
 
-
-
-                            index_card_player1 = 0
-                            index_card_player2 = 0
-                            player1_has_manilha = False
-                            player2_has_manilha = False
-
-
-                            for i in order_strength:
-                                if card_in_table[0] == i:
-                                    index_card_player1 = order_strength.index(i)
-                                elif enemy_played_card[0] == i:
-                                    index_card_player2 = order_strength.index(i)
-
-                            if card_in_table in manilhas:
-                                player1_has_manilha = True
-                            if enemy_played_card in manilhas:
-                                player2_has_manilha = True
-
-                            #Rodada 2 - Player1 vence rodada 1 e 2
-
-                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                print('Você venceu a Rodada')
-                                print('Você ganhou!!')
+                            if winner_r2 == 1:
+                                print('Você venceu a Rodada e a Mão (pelo empate na 1ª)!')
                                 time.sleep(2)
                                 count_points_player1 += round_value
                                 points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                              
                                 continue
-
-                            #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
-
-                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                print('Você venceu essa Rodada!')
-                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                print('Você ganhou!!')
+                            
+                            elif winner_r2 == 2:
+                                print('Seu adversário venceu a Rodada e a Mão (pelo empate na 1ª)!')
                                 time.sleep(2)
-                                count_points_player1 += round_value
-                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                      
+                                count_points_player2 += round_value
+                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
                                 continue
 
-                            #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                            elif player2_has_manilha == True and player1_has_manilha == False:
-                                rounds[0].append(round_loose)
-                                rounds[1].append(round_win)
-                                print('Seu adversário venceu essa Rodada!')
-                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                count_round_player2 += 1
+                            else: # Empate na 2a também
+                                print('Empatou novamente! Vamos para a 3ª rodada decisiva.')
+                                rounds[0].append('●')
+                                rounds[1].append('●')
                                 time.sleep(2)
                                 screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
 
@@ -1527,8 +1239,6 @@ def start_game(number_player,  deck):
                                 if not player2_truco and not player1_truco:
                                     round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
                                     
-
-
                                 if isround_over == True:
                                     time.sleep(2)
                                     continue
@@ -1536,7 +1246,6 @@ def start_game(number_player,  deck):
                                 player2_cards.remove(enemy_played_card)
                                 screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
 
-                                
                                 while True:
                                     print('\nSua vez de Jogar, qual carta você quer jogar? ')
                                     print(f'1 - {player1_cards[0]}')
@@ -1554,15 +1263,12 @@ def start_game(number_player,  deck):
                                             if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
-
                                             round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
                                             if isround_over:
                                                 break 
                                         case _:
                                             print('Opção inválida! Tente novamente')
                                 if isround_over == True:
-                                              
                                     time.sleep(2)
                                     continue
                                 else:      
@@ -1571,2779 +1277,24 @@ def start_game(number_player,  deck):
                                     print('\n')
                                     time.sleep(2)
                                     
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
+                                    winner_r3 = winner_round(card_in_table, enemy_played_card, order_strength, manilhas, suits_manilha)
 
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
+                                    if winner_r3 == 1:
+                                        print('Você venceu a Rodada e a Mão!')
                                         time.sleep(2)
                                         count_points_player1 += round_value
                                         points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                 
                                         continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                    
-                                        continue
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
+                                    elif winner_r3 == 2:
+                                        print('Seu adversário venceu a Rodada e a Mão!')
                                         time.sleep(2)
                                         count_points_player2 += round_value
                                         points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-
                                         continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                          
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                   
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-                            
-
-                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                for i in suits_manilha:
-                                    if card_in_table[2] == i:
-                                        index_card_player1 = suits_manilha.index(i)
-                                    elif enemy_played_card[2] == i:
-                                        index_card_player2 = suits_manilha.index(i)
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                if index_card_player1 > index_card_player2:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    print('Você ganhou!!')
-                                    time.sleep(2)
-                                    count_points_player1 += round_value
-                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
-                              
-                                    continue
-                                #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                    count_round_player2 += 1
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                    time.sleep(2)
-                                    if not player2_truco and not player1_truco:
-                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                        
-
-
-                                    if isround_over == True:
+                                    else: # Empate na 3a também
+                                        print('Empatou as 3 rodadas! Ninguém ganha pontos.')
                                         time.sleep(2)
                                         continue
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-
-                                    screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
-
-
-
-                                    
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-                                        
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                      
-                                            continue
-
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                         
-                                            continue
-
-
-
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                             
-                                                continue
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                          
-                                                continue
-                                            
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                            else:
-                                print('Seu adversário venceu essa Rodada!')          
-                                count_round_player2 += 1
-                                rounds[0].append(round_loose)
-                                rounds[1].append(round_win)
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)     
-                                
-
-                                time.sleep(2)
-                                if not player2_truco and not player1_truco:
-                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                    
-
-
-                                if isround_over == True:
-                                    time.sleep(2)
-                                    continue
-                                enemy_played_card = random.choice(player2_cards)
-                                player2_cards.remove(enemy_played_card)
-
-                                screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)     
-
-
-
-                                
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                         
-                                        continue
-
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                           
-                                        continue
-
-
-
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-
-                                        
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                        
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    #Rodada 1 - Player 2 vence manilha
-                    elif player2_has_manilha == True and player1_has_manilha == False:
-                        print('Seu adversário venceu essa Rodada!')
-                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                        count_round_player2 += 1
-                        rounds[0].append(round_loose)
-                        rounds[1].append(round_win)
-                        time.sleep(2)
-                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
-
-                        time.sleep(2)
-                        if not player2_truco and not player1_truco:
-                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                            
-
-
-                        if isround_over == True:
-                            time.sleep(2)
-                            continue
-                        enemy_played_card = random.choice(player2_cards)
-                        player2_cards.remove(enemy_played_card)
-                        screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
-
-                                
-                        while True:
-                            print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                            print(f'1 - {player1_cards[0]}')
-                            print(f'2 - {player1_cards[1]}')
-                            print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma das opções acima: ').strip()
-                            card_in_table = ''
-                            match card_option:
-                                case '1':
-                                    played_card = player1_cards[0]
-                                    print(f'Você jogou a carta: {played_card}')
-                                    card_in_table = played_card
-                                    player1_cards.remove(played_card)
-                                    break
-                                case '2':
-                                    played_card = player1_cards[1]
-                                    print(f'Você jogou a carta: {played_card}')
-                                    card_in_table = played_card
-                                    player1_cards.remove(played_card)
-                                    break
-                                case '4':
-                                        
-                                    if player1_truco:
-                                        print('\nO Jogo já está Trucado!')
-                                        continue
-                                        
-                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-                                        
-                                    if isround_over:
-                                        break 
-                                case _:
-                                    print('Opção inválida! Tente novamente')
-                        if isround_over == True:
-                                      
-                            time.sleep(2)
-                            continue
-                        else:      
-                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
-                            print('\n')
-                            time.sleep(2)
-
-                            index_card_player1 = 0
-                            index_card_player2 = 0
-                            player1_has_manilha = False
-                            player2_has_manilha = False
-
-
-                            for i in order_strength:
-                                if card_in_table[0] == i:
-                                    index_card_player1 = order_strength.index(i)
-                                elif enemy_played_card[0] == i:
-                                    index_card_player2 = order_strength.index(i)
-
-                            if card_in_table in manilhas:
-                                player1_has_manilha = True
-                            if enemy_played_card in manilhas:
-                                player2_has_manilha = True
-
-                            #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2
-
-                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                print('Você venceu a Rodada')
-                                rounds[0].append(round_win)
-                                rounds[1].append(round_loose)
-                                count_round_player1 += 1
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                    time.sleep(2)
-
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                
-
-                            #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2 com manilha
-
-                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                print('Você venceu essa Rodada!')
-                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                rounds[0].append(round_win)
-                                rounds[1].append(round_loose)
-                                count_round_player1 += 1
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                    time.sleep(2)
-
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-                            #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                            elif player2_has_manilha == True and player1_has_manilha == False:
-                                rounds[0].append(round_loose)
-                                rounds[1].append(round_win)
-                                print('Seu adversário venceu essa Rodada!')
-                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                print('Você Perdeu!!')
-                                count_points_player2 += round_value
-                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                          
-                                continue
-                            
-
-                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                for i in suits_manilha:
-                                    if card_in_table[2] == i:
-                                        index_card_player1 = suits_manilha.index(i)
-                                    elif enemy_played_card[2] == i:
-                                        index_card_player2 = suits_manilha.index(i)
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                if index_card_player1 > index_card_player2:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '', False, False, rounds)
-
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                        time.sleep(2)
-
-                                        enemy_played_card = random.choice(player2_cards)
-                                        player2_cards.remove(enemy_played_card)
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                            
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-
-                                            continue
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-
-                                            continue
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-                                        
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-   
-                                            continue
-
-                                #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-                                    print('Você Perdeu!!')
-                                    count_points_player2 += round_value
-                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                              
-     
-                                    continue
-
-                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                            else:
-                                print('Seu adversário venceu essa Rodada!')          
-                                print('Você perdeu!!')
-                                time.sleep(2)
-                                count_points_player2 += round_value
-                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                continue
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    elif player1_has_manilha == True and player2_has_manilha == True:
-                        for i in suits_manilha:
-                            if card_in_table[2] == i:
-                                index_card_player1 = suits_manilha.index(i)
-                            elif enemy_played_card[2] == i:
-                                index_card_player2 = suits_manilha.index(i)
-
-
-                        #Rodada 1 - Player 1 vence manilha contra manilha
-                        if index_card_player1 > index_card_player2:
-                            print('Você venceu essa Rodada!')
-                            print(f'A sua manilha {card_in_table} é mais forte que a do adversário {enemy_played_card}')
-                            count_round_player1 += 1
-                            rounds[0].append(round_win)
-                            rounds[1].append(round_loose)
-                            count_round_player1 += 1
-                            time.sleep(2)
-                            screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)      
-
-                            while True:
-                                print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                print(f'1 - {player1_cards[0]}')
-                                print(f'2 - {player1_cards[1]}')
-                                print(f'4 - Pedir Truco')
-                                card_option = input('Escolha uma das opções acima: ').strip()
-                                card_in_table = ''
-                                match card_option:
-                                    case '1':
-                                        played_card = player1_cards[0]
-                                        print(f'Você jogou a carta: {played_card}')
-                                        card_in_table = played_card
-                                        player1_cards.remove(played_card)
-                                        break
-                                    case '2':
-                                        played_card = player1_cards[1]
-                                        print(f'Você jogou a carta: {played_card}')
-                                        card_in_table = played_card
-                                        player1_cards.remove(played_card)
-                                        break
-                                    case '4':
-                                        if player1_truco:
-                                            print('\nO Jogo já está Trucado!')
-                                            continue
-
-                                        round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                        if isround_over:
-                                            break 
-                                    case _:
-                                        print('Opção inválida! Tente novamente')
-                            if isround_over == True:
-                                          
-                                time.sleep(2)
-                                continue
-                            else:
-                                print('Vez do seu adersário de Jogar...')
-                                screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
-                                if not player2_truco and not player1_truco:
-                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                    
-
-
-                                if isround_over == True:
-                                    time.sleep(2)
-                                    continue
-                    
-                                time.sleep(2)        
-                                enemy_played_card = random.choice(player2_cards)
-                                player2_cards.remove(enemy_played_card)
-                                screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)         
-                                
-                                print('\n')
-                                time.sleep(2)
-
-
-                                
-
-
-
-                                index_card_player1 = 0
-                                index_card_player2 = 0
-                                player1_has_manilha = False
-                                player2_has_manilha = False
-
-
-                                for i in order_strength:
-                                    if card_in_table[0] == i:
-                                        index_card_player1 = order_strength.index(i)
-                                    elif enemy_played_card[0] == i:
-                                        index_card_player2 = order_strength.index(i)
-
-                                if card_in_table in manilhas:
-                                    player1_has_manilha = True
-                                if enemy_played_card in manilhas:
-                                    player2_has_manilha = True
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2
-
-                                if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                    print('Você venceu a Rodada')
-                                    print('Você ganhou!!')
-                                    time.sleep(2)
-                                    count_points_player1 += round_value
-                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
-                                    continue
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha
-
-                                elif player1_has_manilha == True and player2_has_manilha == False:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    print('Você ganhou!!')
-                                    time.sleep(2)
-                                    count_points_player1 += round_value
-                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                              
-                                    continue
-
-                                #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                                elif player2_has_manilha == True and player1_has_manilha == False:
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                    count_round_player2 += 1
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
-
-                                    time.sleep(2)
-                                    if not player2_truco and not player1_truco:
-                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                        
-
-
-                                    if isround_over == True:
-                                        time.sleep(2)
-                                        continue
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
-
-                                    
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                            
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-
-                                            continue
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-                                        
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-
-                                            continue
-                                
-
-                                elif player1_has_manilha == True and player2_has_manilha == True:
-                                    for i in suits_manilha:
-                                        if card_in_table[2] == i:
-                                            index_card_player1 = suits_manilha.index(i)
-                                        elif enemy_played_card[2] == i:
-                                            index_card_player2 = suits_manilha.index(i)
-
-                                    #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                    if index_card_player1 > index_card_player2:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-                                    #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                        count_round_player2 += 1
-                                        rounds[0].append(round_loose)
-                                        rounds[1].append(round_win)
-
-                                        time.sleep(2)
-                                        screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                        time.sleep(2)
-                                        if not player2_truco and not player1_truco:
-                                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                            
-
-
-                                        if isround_over == True:
-                                            time.sleep(2)
-                                            continue
-                                        enemy_played_card = random.choice(player2_cards)
-                                        player2_cards.remove(enemy_played_card)
-
-                                        screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
-
-
-
-                                        
-                                        while True:
-                                            print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                            print(f'1 - {player1_cards[0]}')
-                                            print(f'4 - Pedir Truco')
-                                            card_option = input('Escolha uma das opções acima: ').strip()
-                                            card_in_table = ''
-                                            match card_option:
-                                                case '1':
-                                                    played_card = player1_cards[0]
-                                                    print(f'Você jogou a carta: {played_card}')
-                                                    card_in_table = played_card
-                                                    player1_cards.remove(played_card)
-                                                    break
-                                                case '4':
-                                                    if player1_truco:
-                                                        print('\nO Jogo já está Trucado!')
-                                                        continue
-
-                                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                    if isround_over:
-                                                        break 
-                                                case _:
-                                                    print('Opção inválida! Tente novamente')
-                                        if isround_over == True:
-                                                      
-                                            time.sleep(2)
-                                            continue
-                                        else:      
-
-                                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)
-                                            
-                                            print('\n')
-                                            time.sleep(2)
-                                            
-                                            index_card_player1 = 0
-                                            index_card_player2 = 0
-                                            player1_has_manilha = False
-                                            player2_has_manilha = False
-                                            
-
-
-                                            for i in order_strength:
-                                                if card_in_table[0] == i:
-                                                    index_card_player1 = order_strength.index(i)
-                                                elif enemy_played_card[0] == i:
-                                                    index_card_player2 = order_strength.index(i)
-
-                                            if card_in_table in manilhas:
-                                                player1_has_manilha = True
-                                            if enemy_played_card in manilhas:
-                                                player2_has_manilha = True
-
-                                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                                print('Você venceu a Rodada')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-
-
-                                            elif player2_has_manilha == True and player1_has_manilha == False:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                                print('Você perdeu!!')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-
-                                                continue
-
-
-
-                                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                                for i in suits_manilha:
-                                                    if card_in_table[2] == i:
-                                                        index_card_player1 = suits_manilha.index(i)
-                                                    elif enemy_played_card[2] == i:
-                                                        index_card_player2 = suits_manilha.index(i)
-
-
-                                                if index_card_player1 > index_card_player2:
-                                                    print('Você venceu essa Rodada!')
-                                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                    print('Você ganhou!!')
-                                                    time.sleep(2)
-                                                    count_points_player1 += round_value
-                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                              
-                                                    continue
-                                                else:
-                                                    print('Seu adversário venceu essa Rodada!')
-                                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                    time.sleep(2)
-                                                    count_points_player2 += round_value
-                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                              
-                                                    continue
-                                                
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print('Você perdeu!!')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-
-                                                continue
-
-                                #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')          
-                                    count_round_player2 += 1
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)     
-                                    
-
-                                    time.sleep(2)
-                                    if not player2_truco and not player1_truco:
-                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                        
-
-
-                                    if isround_over == True:
-                                        time.sleep(2)
-                                        continue
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-
-                                    screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)     
-
-
-
-                                    
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-
-
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-
-                                            
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                            
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-                            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        #Rodada 1 - Player 2 vence manilha contra manilha
-                        else:
-                            print('Seu adversário venceu essa Rodada!')
-                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                            count_round_player2 += 1
-                            rounds[0].append(round_loose)
-                            rounds[1].append(round_win)
-                            time.sleep(2)
-                            screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
-
-                            time.sleep(2)
-                            if not player2_truco and not player1_truco:
-                                round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                                
-
-
-                            if isround_over == True:
-                                time.sleep(2)
-                                continue
-                            enemy_played_card = random.choice(player2_cards)
-                            player2_cards.remove(enemy_played_card)
-                            screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
-
-                                    
-                            while True:
-                                print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                print(f'1 - {player1_cards[0]}')
-                                print(f'2 - {player1_cards[1]}')
-                                print(f'4 - Pedir Truco')
-                                card_option = input('Escolha uma das opções acima: ').strip()
-                                card_in_table = ''
-                                match card_option:
-                                    case '1':
-                                        played_card = player1_cards[0]
-                                        print(f'Você jogou a carta: {played_card}')
-                                        card_in_table = played_card
-                                        player1_cards.remove(played_card)
-                                        break
-                                    case '2':
-                                        played_card = player1_cards[1]
-                                        print(f'Você jogou a carta: {played_card}')
-                                        card_in_table = played_card
-                                        player1_cards.remove(played_card)
-                                        break
-                                    case '4':
-                                        if player1_truco:
-                                            print('\nO Jogo já está Trucado!')
-                                            continue
-
-                                        round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                        if isround_over:
-                                            break 
-                                    case _:
-                                        print('Opção inválida! Tente novamente')
-                            if isround_over == True:
-                                          
-                                time.sleep(2)
-                                continue
-                            else:      
-                                screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
-                                print('\n')
-                                time.sleep(2)
-
-                                index_card_player1 = 0
-                                index_card_player2 = 0
-                                player1_has_manilha = False
-                                player2_has_manilha = False
-
-
-                                for i in order_strength:
-                                    if card_in_table[0] == i:
-                                        index_card_player1 = order_strength.index(i)
-                                    elif enemy_played_card[0] == i:
-                                        index_card_player2 = order_strength.index(i)
-
-                                if card_in_table in manilhas:
-                                    player1_has_manilha = True
-                                if enemy_played_card in manilhas:
-                                    player2_has_manilha = True
-
-                                #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2
-
-                                if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                    print('Você venceu a Rodada')
-                                    rounds[0].append(round_win)
-                                    rounds[1].append(round_loose)
-                                    count_round_player1 += 1
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                        time.sleep(2)
-
-                                        enemy_played_card = random.choice(player2_cards)
-                                        player2_cards.remove(enemy_played_card)
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                            
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-                                        
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-                                    
-
-                                #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2 com manilha
-
-                                elif player1_has_manilha == True and player2_has_manilha == False:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    rounds[0].append(round_win)
-                                    rounds[1].append(round_loose)
-                                    count_round_player1 += 1
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                            case _:
-                                                print('Opção inválida! Tente novamente')
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                        time.sleep(2)
-
-                                        enemy_played_card = random.choice(player2_cards)
-                                        player2_cards.remove(enemy_played_card)
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                            
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-                                        
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-                                #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                                elif player2_has_manilha == True and player1_has_manilha == False:
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                    print('Você Perdeu!!')
-                                    count_points_player2 += round_value
-                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                              
-                                    time.sleep(2)
-                                    continue
-                                
-
-                                elif player1_has_manilha == True and player2_has_manilha == True:
-                                    for i in suits_manilha:
-                                        if card_in_table[2] == i:
-                                            index_card_player1 = suits_manilha.index(i)
-                                        elif enemy_played_card[2] == i:
-                                            index_card_player2 = suits_manilha.index(i)
-
-                                    #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                    if index_card_player1 > index_card_player2:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        time.sleep(2)
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '', False, False, rounds)
-
-                                        while True:
-                                            print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                            print(f'1 - {player1_cards[0]}')
-                                            print(f'4 - Pedir Truco')
-                                            card_option = input('Escolha uma das opções acima: ').strip()
-                                            card_in_table = ''
-                                            match card_option:
-                                                case '1':
-                                                    played_card = player1_cards[0]
-                                                    print(f'Você jogou a carta: {played_card}')
-                                                    card_in_table = played_card
-                                                    player1_cards.remove(played_card)
-                                                    break
-                                                case '4':
-                                                    if player1_truco:
-                                                        print('\nO Jogo já está Trucado!')
-                                                        continue
-
-                                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                    if isround_over:
-                                                        break 
-                                                case _:
-                                                    print('Opção inválida! Tente novamente')
-                                        if isround_over == True:
-                                                      
-                                            time.sleep(2)
-                                            continue
-                                        else:      
-                                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                            time.sleep(2)
-
-                                            enemy_played_card = random.choice(player2_cards)
-                                            player2_cards.remove(enemy_played_card)
-                                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                            
-
-                                            
-                                            print('\n')
-                                            time.sleep(2)
-                                            
-                                            index_card_player1 = 0
-                                            index_card_player2 = 0
-                                            player1_has_manilha = False
-                                            player2_has_manilha = False
-
-
-
-                                            for i in order_strength:
-                                                if card_in_table[0] == i:
-                                                    index_card_player1 = order_strength.index(i)
-                                                elif enemy_played_card[0] == i:
-                                                    index_card_player2 = order_strength.index(i)
-
-                                            if card_in_table in manilhas:
-                                                player1_has_manilha = True
-                                            if enemy_played_card in manilhas:
-                                                player2_has_manilha = True
-
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                                print('Você venceu a Rodada')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-                                                
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                            elif player2_has_manilha == True and player1_has_manilha == False:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                                print('Você perdeu!!')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-
-
-                                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                                for i in suits_manilha:
-                                                    if card_in_table[2] == i:
-                                                        index_card_player1 = suits_manilha.index(i)
-                                                    elif enemy_played_card[2] == i:
-                                                        index_card_player2 = suits_manilha.index(i)
-
-                                            
-
-                                                #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                                if index_card_player1 > index_card_player2:
-                                                    print('Você venceu essa Rodada!')
-                                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                    print('Você ganhou!!')
-                                                    time.sleep(2)
-                                                    count_points_player1 += round_value
-                                                    points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                              
-                                                    continue
-
-                                                #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                                else:
-                                                    print('Seu adversário venceu essa Rodada!')
-                                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                    time.sleep(2)
-                                                    count_points_player2 += round_value
-                                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                              
-                                                    continue
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print('Você perdeu!!')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-
-                                    #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                        rounds[0].append(round_loose)
-                                        rounds[1].append(round_win)
-                                        print('Você Perdeu!!')
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-                                #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')          
-                                    print('Você perdeu!!')
-                                    time.sleep(2)
-                                    count_points_player2 += round_value
-                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                              
-                                    continue
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    # Rodada 1 - Player 2 vence
-                    # Rodada 2
-                    else:
-                        print('Seu adversário venceu essa Rodada!')
-                        time.sleep(2)
-                        count_round_player2 += 1
-                        rounds[0].append(round_loose)
-                        rounds[1].append(round_win)
-                        time.sleep(2)
-                        screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
-
-                        time.sleep(2)
-                        if not player2_truco and not player1_truco:
-                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
-                            
-
-
-                        if isround_over == True:
-                            time.sleep(2)
-                            continue
-                        enemy_played_card = random.choice(player2_cards)
-                        player2_cards.remove(enemy_played_card)
-                        screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
-
-                                
-                        while True:
-                            print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                            print(f'1 - {player1_cards[0]}')
-                            print(f'2 - {player1_cards[1]}')
-                            print(f'4 - Pedir Truco')
-                            card_option = input('Escolha uma das opções acima: ').strip()
-                            card_in_table = ''
-                            match card_option:
-                                case '1':
-                                    played_card = player1_cards[0]
-                                    print(f'Você jogou a carta: {played_card}')
-                                    card_in_table = played_card
-                                    player1_cards.remove(played_card)
-                                    break
-                                case '2':
-                                    played_card = player1_cards[1]
-                                    print(f'Você jogou a carta: {played_card}')
-                                    card_in_table = played_card
-                                    player1_cards.remove(played_card)
-                                    break
-                                case '4':
-                                    if player1_truco:
-                                        print('\nO Jogo já está Trucado!')
-                                        continue
-
-                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                    if isround_over:
-                                        break 
-                                case _:
-                                    print('Opção inválida! Tente novamente')
-                        if isround_over == True:
-                                      
-                            time.sleep(2)
-                            continue
-                        else:      
-                            screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '2', True, True, rounds)
-                            print('\n')
-                            time.sleep(2)
-
-                            index_card_player1 = 0
-                            index_card_player2 = 0
-                            player1_has_manilha = False
-                            player2_has_manilha = False
-
-
-                            for i in order_strength:
-                                if card_in_table[0] == i:
-                                    index_card_player1 = order_strength.index(i)
-                                elif enemy_played_card[0] == i:
-                                    index_card_player2 = order_strength.index(i)
-
-                            if card_in_table in manilhas:
-                                player1_has_manilha = True
-                            if enemy_played_card in manilhas:
-                                player2_has_manilha = True
-
-                            #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2
-
-                            if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                print('Você venceu a Rodada')
-                                rounds[0].append(round_win)
-                                rounds[1].append(round_loose)
-                                count_round_player1 += 1
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                    time.sleep(2)
-
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                
-
-                            #Rodada 2 - Player2 vence rodada 1 e player 1 vence rodada 2 com manilha
-
-                            elif player1_has_manilha == True and player2_has_manilha == False:
-                                print('Você venceu essa Rodada!')
-                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                rounds[0].append(round_win)
-                                rounds[1].append(round_loose)
-                                count_round_player1 += 1
-                                time.sleep(2)
-                                screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
-
-                                while True:
-                                    print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                    print(f'1 - {player1_cards[0]}')
-                                    print(f'4 - Pedir Truco')
-                                    card_option = input('Escolha uma das opções acima: ').strip()
-                                    card_in_table = ''
-                                    match card_option:
-                                        case '1':
-                                            played_card = player1_cards[0]
-                                            print(f'Você jogou a carta: {played_card}')
-                                            card_in_table = played_card
-                                            player1_cards.remove(played_card)
-                                            break
-                                        case '4':
-                                            if player1_truco:
-                                                print('\nO Jogo já está Trucado!')
-                                                continue
-
-                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                            if isround_over:
-                                                break 
-                                        case _:
-                                            print('Opção inválida! Tente novamente')
-                                if isround_over == True:
-                                              
-                                    time.sleep(2)
-                                    continue
-                                else:      
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                    time.sleep(2)
-
-                                    enemy_played_card = random.choice(player2_cards)
-                                    player2_cards.remove(enemy_played_card)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                    
-
-                                    
-                                    print('\n')
-                                    time.sleep(2)
-                                    
-                                    index_card_player1 = 0
-                                    index_card_player2 = 0
-                                    player1_has_manilha = False
-                                    player2_has_manilha = False
-
-
-                                    for i in order_strength:
-                                        if card_in_table[0] == i:
-                                            index_card_player1 = order_strength.index(i)
-                                        elif enemy_played_card[0] == i:
-                                            index_card_player2 = order_strength.index(i)
-
-                                    if card_in_table in manilhas:
-                                        player1_has_manilha = True
-                                    if enemy_played_card in manilhas:
-                                        player2_has_manilha = True
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                    if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                        print('Você venceu a Rodada')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-                                        
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                    elif player1_has_manilha == True and player2_has_manilha == False:
-                                        print('Você venceu essa Rodada!')
-                                        print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                        print('Você ganhou!!')
-                                        time.sleep(2)
-                                        count_points_player1 += round_value
-                                        points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                  
-                                        continue
-
-
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                    elif player2_has_manilha == True and player1_has_manilha == False:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-
-                                    elif player1_has_manilha == True and player2_has_manilha == True:
-                                        for i in suits_manilha:
-                                            if card_in_table[2] == i:
-                                                index_card_player1 = suits_manilha.index(i)
-                                            elif enemy_played_card[2] == i:
-                                                index_card_player2 = suits_manilha.index(i)
-
-                                    
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                        if index_card_player1 > index_card_player2:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-                                    #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                    else:
-                                        print('Seu adversário venceu essa Rodada!')
-                                        print('Você perdeu!!')
-                                        time.sleep(2)
-                                        count_points_player2 += round_value
-                                        points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                  
-                                        continue
-
-                            #Rodada 2 - Player1 vence rodada 1 e player 2 vence rodada 2 com manilha
-
-                            elif player2_has_manilha == True and player1_has_manilha == False:
-                                rounds[0].append(round_loose)
-                                rounds[1].append(round_win)
-                                print('Seu adversário venceu essa Rodada!')
-                                print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                print('Você Perdeu!!')
-                                count_points_player2 += round_value
-                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                          
-                                time.sleep(2)
-                                continue
-                            
-
-                            elif player1_has_manilha == True and player2_has_manilha == True:
-                                for i in suits_manilha:
-                                    if card_in_table[2] == i:
-                                        index_card_player1 = suits_manilha.index(i)
-                                    elif enemy_played_card[2] == i:
-                                        index_card_player2 = suits_manilha.index(i)
-
-                                #Rodada 2 - Player1 vence rodada 1 e 2 com manilha mais forte que a do adversário
-                                if index_card_player1 > index_card_player2:
-                                    print('Você venceu essa Rodada!')
-                                    print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                    time.sleep(2)
-                                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '', False, False, rounds)
-
-                                    while True:
-                                        print('\nSua vez de Jogar, qual carta você quer jogar? ')
-                                        print(f'1 - {player1_cards[0]}')
-                                        print(f'4 - Pedir Truco')
-                                        card_option = input('Escolha uma das opções acima: ').strip()
-                                        card_in_table = ''
-                                        match card_option:
-                                            case '1':
-                                                played_card = player1_cards[0]
-                                                print(f'Você jogou a carta: {played_card}')
-                                                card_in_table = played_card
-                                                player1_cards.remove(played_card)
-                                                break
-                                            case '4':
-                                                if player1_truco:
-                                                    print('\nO Jogo já está Trucado!')
-                                                    continue
-
-                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
-
-                                                if isround_over:
-                                                    break 
-                                    if isround_over == True:
-                                                  
-                                        time.sleep(2)
-                                        continue
-                                    else:      
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '3', True, False, rounds)     
-                                        time.sleep(2)
-
-                                        enemy_played_card = random.choice(player2_cards)
-                                        player2_cards.remove(enemy_played_card)
-                                        screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, '3', True, True, rounds)     
-                                        
-
-                                        
-                                        print('\n')
-                                        time.sleep(2)
-                                        
-                                        index_card_player1 = 0
-                                        index_card_player2 = 0
-                                        player1_has_manilha = False
-                                        player2_has_manilha = False
-
-
-
-                                        for i in order_strength:
-                                            if card_in_table[0] == i:
-                                                index_card_player1 = order_strength.index(i)
-                                            elif enemy_played_card[0] == i:
-                                                index_card_player2 = order_strength.index(i)
-
-                                        if card_in_table in manilhas:
-                                            player1_has_manilha = True
-                                        if enemy_played_card in manilhas:
-                                            player2_has_manilha = True
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence
-                                        if index_card_player1 > index_card_player2 and player1_has_manilha == False and player2_has_manilha == False:
-                                            print('Você venceu a Rodada')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-                                            
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manilha
-                                        elif player1_has_manilha == True and player2_has_manilha == False:
-                                            print('Você venceu essa Rodada!')
-                                            print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                            print('Você ganhou!!')
-                                            time.sleep(2)
-                                            count_points_player1 += round_value
-                                            points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                      
-                                            continue
-
-
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 e 3 com manilha
-                                        elif player2_has_manilha == True and player1_has_manilha == False:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print(f'Você jogou {card_in_table} e seu adversário jogou a manilha {enemy_played_card}')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-
-                                        elif player1_has_manilha == True and player2_has_manilha == True:
-                                            for i in suits_manilha:
-                                                if card_in_table[2] == i:
-                                                    index_card_player1 = suits_manilha.index(i)
-                                                elif enemy_played_card[2] == i:
-                                                    index_card_player2 = suits_manilha.index(i)
-
-                                        
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player1 vence com manila mais forte que o adversário
-                                            if index_card_player1 > index_card_player2:
-                                                print('Você venceu essa Rodada!')
-                                                print(f'Você jogou a manilha {card_in_table} e seu adversário jogou a carta {enemy_played_card}')
-                                                print('Você ganhou!!')
-                                                time.sleep(2)
-                                                count_points_player1 += round_value
-                                                points_player1 = f'0{count_points_player1}' if count_points_player1 < 10 else str(count_points_player1)
-                                                          
-                                                continue
-
-                                            #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence com manila mais forte que a sua
-                                            else:
-                                                print('Seu adversário venceu essa Rodada!')
-                                                print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                                time.sleep(2)
-                                                count_points_player2 += round_value
-                                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                          
-                                                continue
-                                        #Rodada 3 - Player1 vence rodada 1, player 2 vence rodada 2 com manilha, player2 vence rodada 3
-                                        else:
-                                            print('Seu adversário venceu essa Rodada!')
-                                            print('Você perdeu!!')
-                                            time.sleep(2)
-                                            count_points_player2 += round_value
-                                            points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                                      
-                                            continue
-
-                                #Rodada 2 - Player1 vence rodada 1 e player2 vence rodada 2 com manilha mais forte que a sua
-                                else:
-                                    print('Seu adversário venceu essa Rodada!')
-                                    print(f'A sua manilha {card_in_table} é mais fraco que a do adversário {enemy_played_card}')
-                                    rounds[0].append(round_loose)
-                                    rounds[1].append(round_win)
-                                    print('Você Perdeu!!')
-                                    count_points_player2 += round_value
-                                    points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                              
-                                    time.sleep(2)
-                                    continue
-
-                            #Rodada 3 - player1 vence rodada 1 e player2 vence rodada 2
-                            else:
-                                print('Seu adversário venceu essa Rodada!')          
-                                print('Você perdeu!!')
-                                time.sleep(2)
-                                count_points_player2 += round_value
-                                points_player2 = f'0{count_points_player2}' if count_points_player2 < 10 else str(count_points_player2)
-                                          
-                                continue
             
             if count_points_player1 >= 12:
                 print('Você venceu a partida!')
@@ -4351,48 +1302,6 @@ def start_game(number_player,  deck):
             elif count_points_player2 >= 12:
                 print('Você perdeu a partida!')
                 print(f'Você fez {count_points_player1} pontos e seus adversário fez {count_points_player2} pontos')
-
-
-    
-
-
-                    
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 deck_dirty = [['4 ♥', '5 ♥', '6 ♥', '7 ♥', 'Q ♥', 'J ♥', 'K ♥', 'A ♥', '2 ♥', '3 ♥'], 
               ['4 ♦', '5 ♦', '6 ♦', '7 ♦', 'Q ♦', 'J ♦', 'K ♦', 'A ♦', '2 ♦', '3 ♦'], 
@@ -4403,8 +1312,6 @@ deck_clean = [['Q ♥', 'J ♥', 'K ♥', 'A ♥', '2 ♥', '3 ♥'],
               ['Q ♦', 'J ♦', 'K ♦', 'A ♦', '2 ♦', '3 ♦'], 
               ['Q ♠', 'J ♠', 'K ♠', 'A ♠', '2 ♠', '3 ♠'], 
               ['Q ♣', 'J ♣', 'K ♣', 'A ♣', '2 ♣', '3 ♣']]
-
-
 
 print('\n♥ ♦ Bem-Vindo ao Truco! ♠ ♣')
     
