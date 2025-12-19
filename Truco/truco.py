@@ -765,7 +765,6 @@ def start_game(number_player,  deck):
                 player2_truco = False
 
                 list_card_players, manilha_list = shuffle_deck(deck, number_player=2)
-                time.sleep(2)
                 vira = list_card_players[-1]
                 number_vira = vira[0]
                 suit_vira = vira[2]
