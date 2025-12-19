@@ -97,6 +97,7 @@ def shuffle_deck(deck, number_player):
         manilha = order_strength[index_vira + 1]
     manilha_list = [f'{manilha} ♣', f'{manilha} ♥', f'{manilha} ♠', f'{manilha} ♦']
     print(f'As Manilhas são: {manilha_list}')
+    time.sleep(2)
     return list_card_players, manilha_list
 
 def screen(vira, player1_cards, points_player1, points_player2, card_in_table, enemy_played_card, what_round, player1_discard, player2_discard, rounds):
@@ -764,8 +765,6 @@ def start_game(number_player,  deck):
                 player2_truco = False
 
                 list_card_players, manilha_list = shuffle_deck(deck, number_player=2)
-                print(f'Cartas dos jogadores: {list_card_players}')
-                print(f'Manilhas: {manilha_list}')
                 time.sleep(2)
                 vira = list_card_players[-1]
                 number_vira = vira[0]
@@ -785,8 +784,6 @@ def start_game(number_player,  deck):
                 player2_has_manilha = False
                 
                 #Rodada 1
-                print(f'Jogador 1 cartas: {player1_cards}')
-                print(f'Jogador 2 cartas: {player2_cards}')
                 screen(vira, player1_cards, points_player1, points_player2, '', '', '1', False, False, rounds)
 
                 while True:
