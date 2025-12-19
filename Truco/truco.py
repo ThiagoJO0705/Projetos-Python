@@ -515,89 +515,121 @@ def screen(vira, player1_cards, points_player1, points_player2, card_in_table, e
         print(f'│ └─────────────────┘                                          └─────────────────────┘│')
         print(f'└─────────────────────────────────────────────────────────────────────────────────────┘')
 
-def p1_truco(p2_cards, man_list, r_value, isr_over, c_p_p2, p_p2, s_man, c_p_p1, p_p1, p1_tc, rounds):                                       
-    print('\nVocê pediu Truco! Esperando o Adversário responder.')
-    p1_tc = True
-    time.sleep(1)
+def p1_truco(p2_cards, man_list, r_value, isr_over, c_p_p2, p_p2, s_man, c_p_p1, p_p1, p1_tc, rounds, p2_tc):
+
     strong_cards = 0   
     for card in p2_cards:
         if card in man_list or card[0] == '3' or card[0] == '2':
             strong_cards += 1
-    if strong_cards >= 2 or strong_cards == 1 and '★' in rounds[1]:
-        r_value = 3
-        print('O Adversário pediu 6! Você aceita ?')
-        print('1 - Aceitar')
-        print('2 - Correr')
-        print('3 - Pedir 9')
-        truco_choice = input('Escolha uma das opções acima: ')
-        while True:
-            match truco_choice:
-                case '1':
-                    print('Você aceitou! A rodada está valendo 6 pontos.')
-                    r_value = 6
-                    break
-                case '2':
-                    print('Você correu! O Adversário ganhou a rodada.')
-                    c_p_p2 += r_value
-                    isr_over = True
-                    p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
-                    break
-                case '3':
-                    print('Você pediu 9! Esperando o Adversário responder.')
-                    time.sleep(1)
-                    ai_has_strong_manilha_card = False
-                    ai_has_weak_manilha_card = False
-                    for card in p2_cards:
-                        if card in man_list and card[2] in s_man[2:4]:
-                            ai_has_strong_manilha_card = True
-                        elif card in man_list and card[2] in s_man[0:2]:
-                            ai_has_weak_manilha_card = True
-                    if ai_has_strong_manilha_card:
-                        while True:
-                            r_value = 9
-                            print('O Adversário pediu 12! Você aceita ?')
-                            print('1 - Aceitar')
-                            print('2 - Correr')
-                            truco_choice = input('Escolha uma das opções acima: ')
-                            match truco_choice:
-                                case '1': 
-                                    print('Você aceitou! A rodada está valendo 12 pontos')
-                                    r_value = 12
-                                    break
-                                case '2':
-                                    print('Você correu! O Adversário ganhou a rodada.')
-                                    c_p_p2 += r_value
-                                    isr_over = True
-                                    p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
-                                    break
-                                case _:
-                                    print('Opção inválida! Tente novamente')
-                    elif ai_has_weak_manilha_card:
-                        print('O Adversário aceitou! A rodada está valendo 9.')
-                        r_value = 9
-                        break
-                    else:
-                        r_value = 9
-                        print('Você ganhou a rodada! O Adversário correu.')
-                        c_p_p1 += r_value
-                        isr_over = True
-                        p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
-                        break
-                    break
-                case _:
-                    print('Opção inválida! Tente novame')
-    elif strong_cards == 1 or '★' in rounds[1]:
-        print('O Adversário aceitou o Truco! ')
-        r_value = 3
-    else:
-        print('O Adversário recusou o Truco! Você ganha a rodada.')
-        c_p_p1 += r_value
-        isr_over = True
-        p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
-    return r_value, isr_over, p1_tc, p_p1, p_p2 
+
+    if p2_tc == True and r_value == 3:
+        p1_tc = True
+        print('\nVocê pediu 6! Esperando o Adversário...')
+        time.sleep(1.5)
+        ai_has_strong_manilha_card = False
+        time.sleep(1.5)
+        for card in p2_cards:
+            if card in man_list and card[2] in s_man[2:4]:
+                ai_has_strong_manilha_card = True
+        
+        if ai_has_strong_manilha_card or strong_cards > 1 or strong_cards > 0 and '★' in rounds[1]:
+            r_value = 6
+            print(f'O Adversário aceitou! A rodada está valendo {r_value} pontos')
+        else:
+            print(f'O Adversário correu! Você ganhou a rodada')
+            c_p_p1 += r_value
+            isr_over = True
+            p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
+
+    elif p2_tc == False and p1_tc == False:                                       
+        print('\nVocê pediu Truco! Esperando o Adversário responder.')
+        time.sleep(1.5)
+        random_acceptance = [True, False]
+        choice = random.choice(random_acceptance)
+        if choice == True:
+            p1_tc = True
+            time.sleep(1.5)
+            if strong_cards > 1 or strong_cards > 0 and '★' in rounds[1]:
+                r_value = 3
+                print('O Adversário pediu 6! Você aceita ?')
+                print('1 - Aceitar')
+                print('2 - Correr')
+                print('3 - Pedir 9')
+                truco_choice = input('Escolha uma das opções acima: ')
+                while True:
+                    match truco_choice:
+                        case '1':
+                            r_value = 6
+                            print(f'Você aceitou! A rodada está valendo {r_value} pontos.')
+                            break
+                        case '2':
+                            print('Você correu! O Adversário ganhou a rodada.')
+                            c_p_p2 += r_value
+                            isr_over = True
+                            p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
+                            break
+                        case '3':
+                            print('Você pediu 9! Esperando o Adversário responder.')
+                            time.sleep(1.5)
+                            ai_has_strong_manilha_card = False
+                            ai_has_weak_manilha_card = False
+                            for card in p2_cards:
+                                if card in man_list and card[2] in s_man[2:4]:
+                                    ai_has_strong_manilha_card = True
+                                elif card in man_list and card[2] in s_man[0:2]:
+                                    ai_has_weak_manilha_card = True
+                            if ai_has_strong_manilha_card:
+                                while True:
+                                    r_value = 9
+                                    print('O Adversário pediu 12! Você aceita ?')
+                                    print('1 - Aceitar')
+                                    print('2 - Correr')
+                                    truco_choice = input('Escolha uma das opções acima: ')
+                                    match truco_choice:
+                                        case '1': 
+                                            r_value = 12
+                                            print('Você aceitou! A rodada está valendo {r_value} pontos')
+                                            break
+                                        case '2':
+                                            print('Você correu! O Adversário ganhou a rodada.')
+                                            c_p_p2 += r_value
+                                            isr_over = True
+                                            p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
+                                            break
+                                        case _:
+                                            print('Opção inválida! Tente novamente')
+                            elif ai_has_weak_manilha_card:
+                                r_value = 9
+                                print('O Adversário aceitou! A rodada está valendo {r_value}.')
+                                break
+                            else:
+                                r_value = 9
+                                print('Você ganhou a rodada! O Adversário correu.')
+                                c_p_p1 += r_value
+                                isr_over = True
+                                p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
+                                break
+                            break
+                        case _:
+                            print('Opção inválida! Tente novame')
+            elif strong_cards == 1 or '★' in rounds[1]:
+                print('O Adversário aceitou o Truco! ')
+                r_value = 3
+            else:
+                print('O Adversário recusou o Truco! Você ganha a rodada.')
+                c_p_p1 += r_value
+                isr_over = True
+                p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
+        else:
+            print('O Adversário recusou o Truco! Você ganha a rodada.')
+            c_p_p1 += r_value
+            isr_over = True
+            p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
+    return r_value, isr_over, p1_tc, p_p1, p_p2, c_p_p1, c_p_p2 
 
 def p2_truco(p2_cards, man_list, r_value, isr_over, c_p_p1, p_p1, c_p_p2, p_p2, s_man, p2_tc, rounds):
     strong_cards = 0   
+    next_val = 0
     for card in p2_cards:
         if card in man_list or card[0] == '3' or card[0] == '2':
             strong_cards += 1
@@ -608,63 +640,65 @@ def p2_truco(p2_cards, man_list, r_value, isr_over, c_p_p1, p_p1, c_p_p2, p_p2, 
     elif strong_cards == 1 and '★' in rounds[1]: 
         should_ask = True
         
-    if should_ask:
-        next_val = 3
-        if r_value == 3: next_val = 6
-        elif r_value == 6: next_val = 9
-        elif r_value == 9: next_val = 12
-        
-        print(f'\nO Adversário pediu Truco! Você aceita?')
-        p2_tc = True
-        time.sleep(1)
-        
-        print('1 - Aceitar')
-        print('2 - Correr')
-        if next_val < 12:
-            print(f'3 - Pedir {next_val + 3}')
+    random_acceptance = [True, False]
+    choice = random.choice(random_acceptance)
+    if choice == True:
+        if should_ask:
+            next_val = 3
+            if r_value == 3: next_val = 6
+            elif r_value == 6: next_val = 9
+            elif r_value == 9: next_val = 12
             
-        truco_choice = input('Escolha uma das opções acima: ').strip()
-        
-        while True:
-            match truco_choice:
-                case '1':
-                    print(f'Você aceitou! A rodada está valendo {next_val} pontos.')
-                    r_value = next_val
-                    break
-                case '2':
-                    print('Você correu! O Adversário ganhou a rodada.')
-                    c_p_p2 += r_value
-                    isr_over = True
-                    p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
-                    break
-                case '3':
-                    if next_val >= 12:
-                        print('Opção inválida! O jogo já vale 12.')
-                        truco_choice = input('Tente novamente: ')
-                        continue
-
-                    raised_val = next_val + 3
-                    print(f'Você pediu {raised_val}! Esperando o Adversário responder...')
-                    time.sleep(1)
-                    
-                    ai_accepts = False
-                    has_top_manilha = False
-                    for card in p2_cards:
-                        if card in man_list and card[2] in s_man[2:4]:
-                            has_top_manilha = True
-                    
-                    if has_top_manilha or strong_cards >= 2:
-                        print(f'O Adversário aceitou! A rodada está valendo {raised_val}.')
-                        r_value = raised_val
-                    else:
-                        print('Você ganhou a rodada! O Adversário correu.')
-                        c_p_p1 += next_val
+            print(f'\nO Adversário pediu Truco! Você aceita?')
+            p2_tc = True
+            time.sleep(1.5)
+            
+            print('1 - Aceitar')
+            print('2 - Correr')
+            if next_val < 12:
+                print(f'3 - Pedir {next_val + 3}')
+                
+            truco_choice = input('Escolha uma das opções acima: ').strip()
+            
+            while True:
+                match truco_choice:
+                    case '1':
+                        print(f'Você aceitou! A rodada está valendo {next_val} pontos.')
+                        r_value = 3
+                        break
+                    case '2':
+                        print('Você correu! O Adversário ganhou a rodada.')
+                        c_p_p2 += r_value
                         isr_over = True
-                        p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
-                    break
-                case _:
-                    print('Opção inválida! Tente novamente')
-                    truco_choice = input('Escolha: ')
+                        p_p2 = f'0{c_p_p2}' if c_p_p2 < 10 else str(c_p_p2)
+                        break
+                    case '3':
+                        if next_val >= 12:
+                            print('Opção inválida! O jogo já vale 12.')
+                            truco_choice = input('Tente novamente: ')
+                            continue
+                        raised_val = next_val + 3
+                        print(f'Você pediu {raised_val}! Esperando o Adversário responder...')
+                        time.sleep(1.5)
+                        
+                        ai_accepts = False
+                        has_top_manilha = False
+                        for card in p2_cards:
+                            if card in man_list and card[2] in s_man[2:4]:
+                                has_top_manilha = True
+                        
+                        if has_top_manilha or strong_cards >= 2:
+                            print(f'O Adversário aceitou! A rodada está valendo {raised_val}.')
+                            r_value = raised_val
+                        else:
+                            print('Você ganhou a rodada! O Adversário correu.')
+                            c_p_p1 += next_val
+                            isr_over = True
+                            p_p1 = f'0{c_p_p1}' if c_p_p1 < 10 else str(c_p_p1)
+                        break
+                    case _:
+                        print('Opção inválida! Tente novamente')
+                        truco_choice = input('Escolha: ')
 
     return r_value, isr_over, p2_tc, c_p_p1, p_p1, c_p_p2, p_p2
 
@@ -677,11 +711,10 @@ def start_game(number_player,  deck):
         case 2:
             order_strength = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3']
             suits_manilha = ['♦', '♠', '♥', '♣']
-
-            count_points_player1 = 0
-            count_points_player2 = 0
             points_player1 = '00'
             points_player2 = '00'
+            count_points_player2 = 0
+            count_points_player1 = 0
             while count_points_player1 < 12 and count_points_player2 < 12:
                 list_card_players, manilha_list = shuffle_deck(deck, number_player=2)
                 print(f'Cartas dos jogadores: {list_card_players}')
@@ -738,11 +771,11 @@ def start_game(number_player,  deck):
                             player1_cards.remove(played_card)
                             break
                         case '4':
-                            if player1_truco or player2_truco:
+                            if player1_truco:
                                 print('\nO Jogo já está Trucado!')
                                 continue
 
-                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                             if isround_over:
                                 break 
@@ -753,17 +786,17 @@ def start_game(number_player,  deck):
                     time.sleep(2)
                     continue
                 else:
-                    if player1_truco or player2_truco:
-                        print('\nO Jogo já está Trucado!')
 
-                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                    print('Vez do seu adersário de Jogar...')
+                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '1', True, False, rounds)
+                    if not player2_truco and not player1_truco:
+                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                        
+
 
                     if isround_over == True:
                         time.sleep(2)
                         continue
-
-                    print('Vez do seu adersário de Jogar...')
-                    screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '1', True, False, rounds)
                     
                     time.sleep(2)        
 
@@ -824,11 +857,11 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    if player1_truco or player2_truco:
+                                    if player1_truco:
                                         print('\nO Jogo já está Trucado!')
                                         continue
 
-                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                     if isround_over:
                                         break 
@@ -842,6 +875,14 @@ def start_game(number_player,  deck):
                         else:
                             print('Vez do seu adersário de Jogar...')
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)        
+                            if not player2_truco and not player1_truco:
+                                round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                
+
+
+                            if isround_over == True:
+                                time.sleep(2)
+                                continue
                             
                             time.sleep(2)        
                             enemy_played_card = random.choice(player2_cards)
@@ -904,6 +945,14 @@ def start_game(number_player,  deck):
                                 screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
 
                                 time.sleep(2)
+                                if not player2_truco and not player1_truco:
+                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                    
+
+
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
                                 screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
@@ -923,11 +972,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -1067,6 +1116,14 @@ def start_game(number_player,  deck):
                                     screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
 
                                     time.sleep(2)
+                                    if not player2_truco and not player1_truco:
+                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                            
+
+
+                                    if isround_over == True:
+                                        time.sleep(2)
+                                        continue
                                     enemy_played_card = random.choice(player2_cards)
                                     player2_cards.remove(enemy_played_card)
 
@@ -1087,11 +1144,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break                                            
@@ -1208,6 +1265,14 @@ def start_game(number_player,  deck):
                                 
 
                                 time.sleep(2)
+                                if not player2_truco and not player1_truco:
+                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                    
+
+
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
 
@@ -1230,11 +1295,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -1369,10 +1434,10 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    if player1_truco or player2_truco:
+                                    if player1_truco:
                                         print('\nO Jogo já está Trucado!')
                                         continue  
-                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                     if isround_over:
                                         break 
@@ -1385,7 +1450,15 @@ def start_game(number_player,  deck):
                         else:
                             print('Vez do seu adersário de Jogar...')
                             screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
-                            
+                            if not player2_truco and not player1_truco:
+                                round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                               
+
+
+                            if isround_over == True:
+                                time.sleep(2)
+                                continue
+                    
                             time.sleep(2)        
                             enemy_played_card = random.choice(player2_cards)
                             player2_cards.remove(enemy_played_card)
@@ -1451,6 +1524,14 @@ def start_game(number_player,  deck):
                                 screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
 
                                 time.sleep(2)
+                                if not player2_truco and not player1_truco:
+                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                    
+
+
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
                                 screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
@@ -1470,11 +1551,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -1615,6 +1696,14 @@ def start_game(number_player,  deck):
                                     screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
 
                                     time.sleep(2)
+                                    if not player2_truco and not player1_truco:
+                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                        
+
+
+                                    if isround_over == True:
+                                        time.sleep(2)
+                                        continue
                                     enemy_played_card = random.choice(player2_cards)
                                     player2_cards.remove(enemy_played_card)
 
@@ -1637,11 +1726,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -1756,6 +1845,14 @@ def start_game(number_player,  deck):
                                 
 
                                 time.sleep(2)
+                                if not player2_truco and not player1_truco:
+                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                    
+
+
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
 
@@ -1778,11 +1875,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -1931,6 +2028,14 @@ def start_game(number_player,  deck):
                         screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
 
                         time.sleep(2)
+                        if not player2_truco and not player1_truco:
+                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                            
+
+
+                        if isround_over == True:
+                            time.sleep(2)
+                            continue
                         enemy_played_card = random.choice(player2_cards)
                         player2_cards.remove(enemy_played_card)
                         screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
@@ -1958,11 +2063,11 @@ def start_game(number_player,  deck):
                                     break
                                 case '4':
                                         
-                                    if player1_truco or player2_truco:
+                                    if player1_truco:
                                         print('\nO Jogo já está Trucado!')
                                         continue
                                         
-                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
                                         
                                     if isround_over:
                                         break 
@@ -2017,11 +2122,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -2163,11 +2268,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -2323,11 +2428,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -2527,11 +2632,11 @@ def start_game(number_player,  deck):
                                         player1_cards.remove(played_card)
                                         break
                                     case '4':
-                                        if player1_truco or player2_truco:
+                                        if player1_truco:
                                             print('\nO Jogo já está Trucado!')
                                             continue
 
-                                        round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                        round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                         if isround_over:
                                             break 
@@ -2544,7 +2649,15 @@ def start_game(number_player,  deck):
                             else:
                                 print('Vez do seu adersário de Jogar...')
                                 screen(vira, player1_cards, points_player1, points_player2, card_in_table, '', '2', True, False, rounds)               
-                                
+                                if not player2_truco and not player1_truco:
+                                    round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                    
+
+
+                                if isround_over == True:
+                                    time.sleep(2)
+                                    continue
+                    
                                 time.sleep(2)        
                                 enemy_played_card = random.choice(player2_cards)
                                 player2_cards.remove(enemy_played_card)
@@ -2610,6 +2723,14 @@ def start_game(number_player,  deck):
                                     screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)  
 
                                     time.sleep(2)
+                                    if not player2_truco and not player1_truco:
+                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                        
+
+
+                                    if isround_over == True:
+                                        time.sleep(2)
+                                        continue
                                     enemy_played_card = random.choice(player2_cards)
                                     player2_cards.remove(enemy_played_card)
                                     screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '3', False, True, rounds)
@@ -2629,11 +2750,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -2771,6 +2892,14 @@ def start_game(number_player,  deck):
                                         screen(vira, player1_cards, points_player1, points_player2, '', '', '3', False, False, rounds)
 
                                         time.sleep(2)
+                                        if not player2_truco and not player1_truco:
+                                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                            
+
+
+                                        if isround_over == True:
+                                            time.sleep(2)
+                                            continue
                                         enemy_played_card = random.choice(player2_cards)
                                         player2_cards.remove(enemy_played_card)
 
@@ -2793,11 +2922,11 @@ def start_game(number_player,  deck):
                                                     player1_cards.remove(played_card)
                                                     break
                                                 case '4':
-                                                    if player1_truco or player2_truco:
+                                                    if player1_truco:
                                                         print('\nO Jogo já está Trucado!')
                                                         continue
 
-                                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                     if isround_over:
                                                         break 
@@ -2913,6 +3042,14 @@ def start_game(number_player,  deck):
                                     
 
                                     time.sleep(2)
+                                    if not player2_truco and not player1_truco:
+                                        round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                        
+
+
+                                    if isround_over == True:
+                                        time.sleep(2)
+                                        continue
                                     enemy_played_card = random.choice(player2_cards)
                                     player2_cards.remove(enemy_played_card)
 
@@ -2935,11 +3072,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -3077,6 +3214,14 @@ def start_game(number_player,  deck):
                             screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
 
                             time.sleep(2)
+                            if not player2_truco and not player1_truco:
+                                round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                                
+
+
+                            if isround_over == True:
+                                time.sleep(2)
+                                continue
                             enemy_played_card = random.choice(player2_cards)
                             player2_cards.remove(enemy_played_card)
                             screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
@@ -3103,11 +3248,11 @@ def start_game(number_player,  deck):
                                         player1_cards.remove(played_card)
                                         break
                                     case '4':
-                                        if player1_truco or player2_truco:
+                                        if player1_truco:
                                             print('\nO Jogo já está Trucado!')
                                             continue
 
-                                        round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                        round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                         if isround_over:
                                             break 
@@ -3162,11 +3307,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -3308,11 +3453,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
@@ -3469,11 +3614,11 @@ def start_game(number_player,  deck):
                                                     player1_cards.remove(played_card)
                                                     break
                                                 case '4':
-                                                    if player1_truco or player2_truco:
+                                                    if player1_truco:
                                                         print('\nO Jogo já está Trucado!')
                                                         continue
 
-                                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                     if isround_over:
                                                         break 
@@ -3660,6 +3805,14 @@ def start_game(number_player,  deck):
                         screen(vira, player1_cards, points_player1, points_player2, '', '', '2', False, False, rounds)  
 
                         time.sleep(2)
+                        if not player2_truco and not player1_truco:
+                            round_value, isround_over, player2_truco, count_points_player1, points_player1, count_points_player2, points_player2 = p2_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player1, points_player1, count_points_player2, points_player2, suits_manilha, player2_truco, rounds)
+                            
+
+
+                        if isround_over == True:
+                            time.sleep(2)
+                            continue
                         enemy_played_card = random.choice(player2_cards)
                         player2_cards.remove(enemy_played_card)
                         screen(vira, player1_cards, points_player1, points_player2, '', enemy_played_card, '2', False, True, rounds)
@@ -3686,11 +3839,11 @@ def start_game(number_player,  deck):
                                     player1_cards.remove(played_card)
                                     break
                                 case '4':
-                                    if player1_truco or player2_truco:
+                                    if player1_truco:
                                         print('\nO Jogo já está Trucado!')
                                         continue
 
-                                    round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                    round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                     if isround_over:
                                         break 
@@ -3745,11 +3898,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -3891,11 +4044,11 @@ def start_game(number_player,  deck):
                                             player1_cards.remove(played_card)
                                             break
                                         case '4':
-                                            if player1_truco or player2_truco:
+                                            if player1_truco:
                                                 print('\nO Jogo já está Trucado!')
                                                 continue
 
-                                            round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                            round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                             if isround_over:
                                                 break 
@@ -4052,11 +4205,11 @@ def start_game(number_player,  deck):
                                                 player1_cards.remove(played_card)
                                                 break
                                             case '4':
-                                                if player1_truco or player2_truco:
+                                                if player1_truco:
                                                     print('\nO Jogo já está Trucado!')
                                                     continue
 
-                                                round_value, isround_over, player1_truco, points_player1, points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds)
+                                                round_value, isround_over, player1_truco, points_player1, points_player2, count_points_player1, count_points_player2 = p1_truco(player2_cards, manilha_list, round_value, isround_over, count_points_player2, points_player2, suits_manilha, count_points_player1, points_player1, player1_truco, rounds, player2_truco)
 
                                                 if isround_over:
                                                     break 
