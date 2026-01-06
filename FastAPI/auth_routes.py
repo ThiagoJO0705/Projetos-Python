@@ -1,6 +1,8 @@
-from fastapi import APIRouter
-from models import User, db
+from fastapi import APIRouter, Depends, HTTPException
+from models import User
 from sqlalchemy.orm import sessionmaker
+from dependencies import get_session
+from main import bcrypt_context
 
 auth_router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -12,18 +14,18 @@ async def read_auth():
     return {'message': 'Você acessou a rota de autenticação!'}
 
 @auth_router.post('/signup')
-async def signup(email: str, password: str, name : str):
+async def signup(email: str, password: str, name : str, session = Depends(get_session)):
     '''
     Rota para cadastro de novos usuários
     '''
-    Session = sessionmaker(bind=db)
-    session = Session()
     user = session.query(User).filter(User.email == email).first()
     if user:
-        return {'message': 'Já existe um usuário com esse email!'}
-    new_user = User(name, email, password)
-    session.add(new_user)
-    session.commit()
-    return {'message': 'Usuário cadastrado com sucesso!'}
+        raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
+    else:
+        encrypted_password = bcrypt_context.hash(password)
+        new_user = User(name, email, encrypted_password)
+        session.add(new_user)
+        session.commit()
+        return {'message': f'Usuário cadastrado com sucesso: {email}'}
 
     
