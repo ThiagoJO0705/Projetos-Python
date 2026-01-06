@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from models import User
 from sqlalchemy.orm import sessionmaker
-from dependencies import get_session
+from dependencies import get_session, verify_token
 from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from schemas import UserSchema, LoginSchema
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ def create_token(id_user: int, token_duration=timedelta(minutes=ACCESS_TOKEN_EXP
     return encoded_jwt
 
 
-def authenticate_user(email: str, password: str, session: Session):
+def authenticate_user(email, password, session):
     '''
     Função para autenticação de usuário
     '''
@@ -70,4 +70,13 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
         return {'access_token': access_token, 
                 'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
+    
 
+@auth_router.post('/refresh')
+async def refresh_token(usuario: User = Depends(verify_token)):
+    '''
+    Rota para renovação de token de acesso
+    '''
+    access_token = create_token(usuario.id)
+    return {'access_token': access_token,
+            'token_type': 'Bearer'}
