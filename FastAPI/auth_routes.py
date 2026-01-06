@@ -11,15 +11,12 @@ from datetime import datetime, timedelta, timezone
 auth_router = APIRouter(prefix='/auth', tags=['auth'])
 
 
-def create_token(id_user: int):
+def create_token(id_user: int, token_duration=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
     '''
     Função para criação de token JWT
     '''
-    expiration_date = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    dict_info = {
-        'sub': str(id_user),
-        'exp': expiration_date
-    }
+    expiration_date = datetime.now(timezone.utc) + token_duration
+    dict_info = {'sub': str(id_user), 'exp': expiration_date}
     encoded_jwt = jwt.encode(dict_info, SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
@@ -69,6 +66,8 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
         raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
     else:
         access_token = create_token(user.id)
+        refresh_token = create_token(user.id, token_duration=timedelta(days=7))
         return {'access_token': access_token, 
+                'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
 
