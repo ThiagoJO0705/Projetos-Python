@@ -2,11 +2,39 @@ from fastapi import APIRouter, Depends, HTTPException
 from models import User
 from sqlalchemy.orm import sessionmaker
 from dependencies import get_session
-from main import bcrypt_context
-from schemas import UserSchema
+from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
+from schemas import UserSchema, LoginSchema
 from sqlalchemy.orm import Session
+from jose import jwt, JWTError
+from datetime import datetime, timedelta, timezone
 
 auth_router = APIRouter(prefix='/auth', tags=['auth'])
+
+
+def create_token(id_user: int):
+    '''
+    Função para criação de token JWT
+    '''
+    expiration_date = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    dict_info = {
+        'sub': str(id_user),
+        'exp': expiration_date
+    }
+    encoded_jwt = jwt.encode(dict_info, SECRET_KEY, ALGORITHM)
+    return encoded_jwt
+
+
+def authenticate_user(email: str, password: str, session: Session):
+    '''
+    Função para autenticação de usuário
+    '''
+    user = session.query(User).filter(User.email == email).first()
+    if not user:
+        return False
+    elif not bcrypt_context.verify(password, user.password):
+        return False
+    return user
+
 
 @auth_router.get('/')
 async def read_auth():
@@ -30,4 +58,17 @@ async def signup(user_schema: UserSchema, session = Depends(get_session)):
         session.commit()
         return {'message': f'Usuário cadastrado com sucesso: {user_schema.email}'}
 
-    
+
+@auth_router.post('/signin')
+async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
+    '''
+    Rota para login de usuários
+    '''
+    user = authenticate_user(login_schema.email, login_schema.password, session)
+    if not user:
+        raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
+    else:
+        access_token = create_token(user.id)
+        return {'access_token': access_token, 
+                'token_type': 'Bearer'}
+
