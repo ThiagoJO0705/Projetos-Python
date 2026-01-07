@@ -39,4 +39,15 @@ async def cancel_order(order_id: int, session: Session = Depends(get_session), u
     return {'message': f'Pedido número: {order.id} cancelado com sucesso!',
             'order': order}
 
-
+@order_router.get('/list')
+async def list_orders(session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    '''
+    Rota para listagem de pedidos
+    '''
+    if not user.admin:
+        raise HTTPException(status_code=401, detail='Você não tem permissão para fazer essa operação!')
+    else:
+        orders = session.query(Order).all()
+        return {
+            'orders': orders
+        }
