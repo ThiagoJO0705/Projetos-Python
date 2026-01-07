@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies import get_session, verify_token
-from schemas import OrderSchema, OrderItemSchema
+from schemas import OrderSchema, OrderItemSchema, ResponseOrderSchema
 from models import Order, User, OrderItem
+from typing import List
 
 order_router = APIRouter(prefix='/orders', tags=['orders'], dependencies=[Depends(verify_token)])
 
@@ -123,13 +124,11 @@ async def get_order(order_id: int, session: Session = Depends(get_session), user
     }
 
 
-@order_router.get('/list/user-orders')
+@order_router.get('/list/user-orders', response_model=List[ResponseOrderSchema])
 async def list_user_orders(session: Session = Depends(get_session), user: User = Depends(verify_token)):
     '''
     Rota para listagem de pedidos do usuário autenticado
     '''
     orders = session.query(Order).filter(Order.user == user.id).all()
-    return {
-        'orders': orders
-    }
+    return orders
     
