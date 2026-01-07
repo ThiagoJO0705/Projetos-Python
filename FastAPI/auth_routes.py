@@ -7,6 +7,7 @@ from schemas import UserSchema, LoginSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordRequestForm
 
 auth_router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -40,6 +41,7 @@ async def read_auth():
     '''
     return {'message': 'Você acessou a rota de autenticação!'}
 
+
 @auth_router.post('/signup')
 async def signup(user_schema: UserSchema, session = Depends(get_session)):
     '''
@@ -69,6 +71,21 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
         refresh_token = create_token(user.id, token_duration=timedelta(days=7))
         return {'access_token': access_token, 
                 'refresh_token': refresh_token,
+                'token_type': 'Bearer'}
+    
+
+@auth_router.post('/signin-form')
+async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    '''
+    Rota para login de usuários
+    '''
+    user = authenticate_user(form_data.username, form_data.password, session)
+    if not user:
+        raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
+    else:
+        access_token = create_token(user.id)
+        refresh_token = create_token(user.id, token_duration=timedelta(days=7))
+        return {'access_token': access_token, 
                 'token_type': 'Bearer'}
     
 
