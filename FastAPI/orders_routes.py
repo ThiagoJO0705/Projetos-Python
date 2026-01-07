@@ -90,3 +90,46 @@ async def remove_item_from_order(order_item_id: int, session: Session = Depends(
     return {'message': f'Item removido do pedido {order.id} com sucesso!',
             'quantity_itens': len(order.itens),
             'order': order}
+
+
+@order_router.post('/order/finalize/{order_id}')
+async def finalize_order(order_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    ''' 
+    Rota para finalizar o pedido
+    '''
+    order = session.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=400, detail='Pedido não encontrado!')
+    if not user.admin and order.user != user.id:
+        raise HTTPException(status_code=401, detail='Você não tem permissão para finalizar este pedido!')
+    order.status = 'FINALIZADO'
+    session.commit()
+    return {'message': f'Pedido número: {order.id} finalizado com sucesso!',
+            'order': order}
+
+@order_router.get('/order/{order_id}')
+async def get_order(order_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    '''
+    Rota para obter os detalhes de um pedido específico
+    '''
+    order = session.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=400, detail='Pedido não encontrado!')
+    if not user.admin and order.user != user.id:
+        raise HTTPException(status_code=401, detail='Você não tem permissão para ver este pedido!')
+    return {
+        'quantity_itens': len(order.itens),
+        'order': order
+    }
+
+
+@order_router.get('/list/user-orders')
+async def list_user_orders(session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    '''
+    Rota para listagem de pedidos do usuário autenticado
+    '''
+    orders = session.query(Order).filter(Order.user == user.id).all()
+    return {
+        'orders': orders
+    }
+    
