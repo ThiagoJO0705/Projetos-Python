@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy_utils import ChoiceType
 
 #conexão
@@ -37,13 +37,17 @@ class Order(Base):
 
     id = Column('id', Integer, primary_key=True, autoincrement=True)
     status = Column('status', String) #ChoiceType(ORDER_STATUS)
-    user = Column('user', ForeignKey('users.id'))
+    user = Column('user', ForeignKey('users.id')) 
     price = Column('price', Float)
+    itens = relationship('OrderItem', cascade='all, delete')
 
     def __init__(self, user, status='PENDENTE', price=0):
         self.user = user
         self.price = price
         self.status = status
+
+    def price_update(self):
+        self.price = sum([itens.quantity * itens.unit_price for itens in self.itens])
 
 class OrderItem(Base):
 
@@ -62,3 +66,8 @@ class OrderItem(Base):
         self.size = size
         self.unit_price = unit_price
         self.order = order
+
+
+
+#migrations -> alembic revision --autogenerate -m "initial migration"
+#executar -> alembic upgrade head

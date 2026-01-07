@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies import get_session, verify_token
-from schemas import OrderSchema
-from models import Order, User
+from schemas import OrderSchema, OrderItemSchema
+from models import Order, User, OrderItem
 
 order_router = APIRouter(prefix='/orders', tags=['orders'], dependencies=[Depends(verify_token)])
 
@@ -51,3 +51,23 @@ async def list_orders(session: Session = Depends(get_session), user: User = Depe
         return {
             'orders': orders
         }
+    
+
+@order_router.post('/order/add-item/{order_id}')
+async def add_item_to_order(order_id: int, order_item_schema: OrderItemSchema, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    ''' 
+    Rota para adicionar itens ao pedido
+    '''
+    order = session.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=400, detail='Pedido não existe!')
+    if not user.admin and order.user != user.id:
+        raise HTTPException(status_code=401, detail='Você não tem permissão para adicionar itens a este pedido!')
+    order_item = OrderItem(quantity=order_item_schema.quantity, flavor=order_item_schema.flavor, size=order_item_schema.size,
+                            unit_price=order_item_schema.unit_price, order=order_id)
+    session.add(order_item)
+    order.price_update()
+    session.commit()
+    return {'message': f'Item adicionado ao pedido {order.id} com sucesso!',
+            'order_flavor': order_item.flavor,
+            'order_price': order.price}
