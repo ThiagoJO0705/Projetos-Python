@@ -72,7 +72,7 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
                 'token_type': 'Bearer'}
     
 
-@auth_router.post('/refresh')
+@auth_router.get('/refresh')
 async def refresh_token(usuario: User = Depends(verify_token)):
     '''
     Rota para renovação de token de acesso

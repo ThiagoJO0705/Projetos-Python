@@ -17,7 +17,7 @@ def get_session():
 def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_session)):
     try:
         dict_info = jwt.decode(token, SECRET_KEY, ALGORITHM)
-        user_id: str = dict_info.get('sub')
+        user_id = int(dict_info.get('sub'))
     except JWTError:
         raise HTTPException(status_code=401, detail='Acesso Negado! Verifique a validade do token.')
     user = session.query(User).filter(User.id == user_id).first()
