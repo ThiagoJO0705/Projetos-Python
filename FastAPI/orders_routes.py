@@ -69,5 +69,24 @@ async def add_item_to_order(order_id: int, order_item_schema: OrderItemSchema, s
     order.price_update()
     session.commit()
     return {'message': f'Item adicionado ao pedido {order.id} com sucesso!',
-            'order_flavor': order_item.flavor,
+            'order_item': order_item.flavor,
             'order_price': order.price}
+
+
+@order_router.post('/order/remove-item/{order_item_id}')
+async def remove_item_from_order(order_item_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    ''' 
+    Rota para remover itens do pedido
+    '''
+    order_item = session.query(OrderItem).filter(OrderItem.id == order_item_id).first()
+    order = session.query(Order).filter(Order.id == order_item.order).first()
+    if not order_item:
+        raise HTTPException(status_code=400, detail='Item do pedido não existe!')
+    if not user.admin and order.user != user.id :
+        raise HTTPException(status_code=401, detail='Você não tem permissão para remover itens deste pedido!')
+    session.delete(order_item)
+    order.price_update()
+    session.commit()
+    return {'message': f'Item removido do pedido {order.id} com sucesso!',
+            'quantity_itens': len(order.itens),
+            'order': order}
