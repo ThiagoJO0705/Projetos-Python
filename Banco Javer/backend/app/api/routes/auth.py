@@ -26,11 +26,11 @@ def authenticate_customer(email, password, session):
     Função para autenticação de usuário
     '''
     customer = session.query(Customer).filter(Customer.email == email).first()
-    if not Customer:
+    if not customer:
         return False
     elif not bcrypt_context.verify(password, customer.password):
         return False
-    return Customer
+    return customer
 
 
 @auth.post('/signup')
