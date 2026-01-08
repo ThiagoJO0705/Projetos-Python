@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float
 from sqlalchemy.orm import declarative_base
 
 
-db = create_engine('sqlite:///banco.db')
+db = create_engine('sqlite:///database.db')
 
 Base = declarative_base()
 
@@ -18,7 +18,7 @@ class Customer(Base):
     is_account_holder = Column('account_holder', Boolean, default=True)
     is_admin = Column('admin', Boolean, default=False)
 
-    def __init__(self, name, email, password, phone_number, account_balance, is_account_holder=True, is_admin=False):
+    def __init__(self, name, email, password, phone_number, account_balance=0.0, is_account_holder=True, is_admin=False):
         self.name = name
         self.email = email
         self.password = password
