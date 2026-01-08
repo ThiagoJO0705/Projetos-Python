@@ -1,8 +1,14 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float
 from sqlalchemy.orm import declarative_base
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-db = create_engine('sqlite:///database.db')
+DB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "database")
+
+DB_PATH = os.path.join(DB_DIR, "database.db")
+
+db = create_engine(f'sqlite:///{DB_PATH}')
 
 Base = declarative_base()
 

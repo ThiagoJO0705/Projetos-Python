@@ -28,7 +28,7 @@ def authenticate_customer(email, password, session):
     customer = session.query(Customer).filter(Customer.email == email).first()
     if not Customer:
         return False
-    elif not bcrypt_context.verify(password, Customer.password):
+    elif not bcrypt_context.verify(password, customer.password):
         return False
     return Customer
 
