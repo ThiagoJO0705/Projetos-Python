@@ -1,14 +1,24 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr
 
-class CustomerSchema(BaseModel):
+class CustomerCreate(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
     phone_number: str
+    account_balance: float = 0.0
+
+    class Config:
+        from_attributes = True
+
+class CustomerResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone_number: str
     account_balance: float
-    is_account_holder: Optional[bool]
-    is_admin: Optional[bool]
+    is_account_holder: bool
+    is_admin: bool
 
     class Config:
         from_attributes = True

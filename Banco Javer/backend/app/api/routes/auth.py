@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.customer import Customer
-from sqlalchemy.orm import sessionmaker
 from api.dependencies import get_session, verify_token
 from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from schemas.schemas import CustomerSchema, LoginSchema
+from schemas.schemas import CustomerCreate, CustomerResponse, LoginSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
@@ -33,20 +32,28 @@ def authenticate_customer(email, password, session):
     return customer
 
 
-@auth.post('/signup')
-async def signup(customer_schema: CustomerSchema, session = Depends(get_session)):
+@auth.post('/signup', response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
+async def signup(customer_create_schema: CustomerCreate, session: Session = Depends(get_session)):
     '''
-    Rota para cadastro de novos usuários
+    Rota para cadastro de novos usuários - Força is_account_holder como True
     '''
-    customer = session.query(Customer).filter(Customer.email == customer_schema.email).first()
+    customer = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
     if customer:
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
-    else:
-        encrypted_password = bcrypt_context.hash(customer_schema.password)
-        new_customer = Customer(name=customer_schema.name, email=customer_schema.email, password=encrypted_password, phone_number=customer_schema.phone_number, account_balance=customer_schema.account_balance, is_account_holder=customer_schema.is_account_holder, is_admin=customer_schema.is_admin)
-        session.add(new_customer)
-        session.commit()
-        return {'message': f'Usuário cadastrado com sucesso: {customer_schema.email}'}
+
+    encrypted_password = bcrypt_context.hash(customer_create_schema.password)
+    new_customer = Customer(
+        name=customer_create_schema.name,
+        email=customer_create_schema.email,
+        password=encrypted_password,
+        phone_number=customer_create_schema.phone_number,
+        account_balance=customer_create_schema.account_balance,
+        is_account_holder=True, 
+        is_admin=False           
+    )
+    session.add(new_customer)
+    session.commit()
+    return new_customer
 
 
 @auth.post('/signin')
