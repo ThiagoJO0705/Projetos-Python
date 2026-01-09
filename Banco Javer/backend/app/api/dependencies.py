@@ -23,6 +23,8 @@ def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends
     customer = session.query(Customer).filter(Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(status_code=401, detail='Acesso Inválido!')
+    if not customer.is_active:
+        raise HTTPException(status_code=401, detail='Acesso Negado! Sua conta está desativada!')
     return customer
 
 
