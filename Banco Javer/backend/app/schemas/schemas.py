@@ -20,6 +20,7 @@ class CustomerResponse(BaseModel):
     cpf: str
     account_balance: float
     is_account_holder: bool
+    is_active: bool
     is_admin: bool
 
     class Config:

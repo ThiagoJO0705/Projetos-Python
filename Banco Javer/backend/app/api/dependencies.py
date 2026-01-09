@@ -30,5 +30,10 @@ def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends
 
 def verify_account_holder(customer: Customer = Depends(verify_token)):
     if not customer.is_account_holder:
-        raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser correntista.')
+        raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser Correntista.')
+    return customer
+
+def verify_admin(customer: Customer = Depends(verify_token)):
+    if not customer.is_admin:
+        raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser Admin.')
     return customer

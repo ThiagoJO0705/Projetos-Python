@@ -19,6 +19,8 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl='auth/signin-form')
 
 from api.routes.auth import auth
 from api.routes.banking import banking
+from api.routes.admin import admin
 
 app.include_router(auth)
 app.include_router(banking)
+app.include_router(admin)
