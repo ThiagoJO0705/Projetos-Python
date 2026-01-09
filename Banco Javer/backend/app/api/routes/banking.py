@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.dependencies import verify_token, get_session
+from api.dependencies import verify_token, get_session, verify_account_holder
 from sqlalchemy.orm import Session
 from models.customer import Customer
 
@@ -13,7 +13,7 @@ def generate_score(balance):
 
 @banking.get('/balance')
 
-async def get_balance(customer: Customer = Depends(verify_token)):
+async def get_balance(customer: Customer = Depends(verify_account_holder)):
     '''
         Rota para consultar saldo e score atual
     '''
@@ -22,7 +22,7 @@ async def get_balance(customer: Customer = Depends(verify_token)):
             'score': score}
 
 @banking.post('/deposit')
-async def deposit(deposit_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
+async def deposit(deposit_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_account_holder)):
     '''
         Rota para depósito de dinheiro
     '''
@@ -36,7 +36,7 @@ async def deposit(deposit_value: float, session: Session = Depends(get_session),
     raise HTTPException(status_code=400, detail='Valor inválido. O depósito deve ser um número positivo.')
 
 @banking.post('/payment')
-async def payment(payment_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
+async def payment(payment_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_account_holder)):
     '''
         Rota para efetuar pagamento algo ou alguém
     '''

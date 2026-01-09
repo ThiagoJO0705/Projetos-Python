@@ -13,6 +13,7 @@ def get_session():
     finally:
         session.close()
 
+
 def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_session)):
     try:
         dict_info = jwt.decode(token, SECRET_KEY, ALGORITHM)
@@ -22,4 +23,10 @@ def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends
     customer = session.query(Customer).filter(Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(status_code=401, detail='Acesso Inválido!')
+    return customer
+
+
+def verify_account_holder(customer: Customer = Depends(verify_token)):
+    if not customer.is_account_holder:
+        raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser correntista.')
     return customer

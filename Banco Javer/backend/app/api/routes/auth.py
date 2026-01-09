@@ -49,7 +49,7 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
         password=encrypted_password,
         phone_number=customer_create_schema.phone_number,
         account_balance=customer_create_schema.account_balance,
-        is_account_holder=True, 
+        is_account_holder=False, 
         is_admin=False           
     )
     session.add(new_customer)
