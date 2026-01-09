@@ -6,6 +6,7 @@ from schemas.schemas import CustomerCreate, CustomerResponse, LoginSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordRequestForm
 
 auth = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -35,7 +36,7 @@ def authenticate_customer(email, password, session):
 @auth.post('/signup', response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
 async def signup(customer_create_schema: CustomerCreate, session: Session = Depends(get_session)):
     '''
-    Rota para cadastro de novos usuários - Força is_account_holder como True
+    Rota para cadastro de novos usuários
     '''
     customer = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
     if customer:
@@ -71,6 +72,22 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
                 'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
     
+
+@auth.post('/signin-form')
+async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    '''
+    Rota para login de usuários
+    '''
+    user = authenticate_customer(form_data.username, form_data.password, session)
+    if not user:
+        raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
+    else:
+        access_token = create_token(user.id)
+        refresh_token = create_token(user.id, token_duration=timedelta(days=7))
+        return {'access_token': access_token, 
+                'refresh_token': refresh_token,
+                'token_type': 'Bearer'}
+
 
 @auth.post('/refresh')
 async def refresh_token(customer: Customer = Depends(verify_token)):
