@@ -6,6 +6,7 @@ class CustomerCreate(BaseModel):
     email: EmailStr
     password: str
     phone_number: str
+    cpf: str
     account_balance: float = 0.0
 
     class Config:
@@ -16,6 +17,7 @@ class CustomerResponse(BaseModel):
     name: str
     email: str
     phone_number: str
+    cpf: str
     account_balance: float
     is_account_holder: bool
     is_admin: bool
