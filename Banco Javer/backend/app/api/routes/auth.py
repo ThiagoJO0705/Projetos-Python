@@ -38,9 +38,12 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
     '''
     Rota para cadastro de novos usuários
     '''
-    customer = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
-    if customer:
+    customer_email = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
+    if customer_email:
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
+    customer_cpf = session.query(Customer).filter(Customer.cpf == customer_create_schema.cpf).first()
+    if customer_cpf:
+        raise HTTPException(status_code=400, detail='CPF do usuário já está vinculado a outra conta!')
 
     encrypted_password = bcrypt_context.hash(customer_create_schema.password)
     new_customer = Customer(
@@ -48,8 +51,10 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
         email=customer_create_schema.email,
         password=encrypted_password,
         phone_number=customer_create_schema.phone_number,
+        cpf=customer_create_schema.cpf,
         account_balance=customer_create_schema.account_balance,
-        is_account_holder=False, 
+        is_account_holder=True,
+        is_active=True, 
         is_admin=False           
     )
     session.add(new_customer)
