@@ -41,10 +41,10 @@ async def payment(payment_value: float, session: Session = Depends(get_session),
     '''
         Rota para efetuar pagamento algo ou alguém
     '''
-    if payment_value > customer.account_balance:
-        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
     if payment_value <= 0:
         raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
+    if payment_value > customer.account_balance:
+        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
     customer.account_balance -= round(payment_value, 2)
     session.commit()
     new_score = generate_score(customer.account_balance)
@@ -54,10 +54,10 @@ async def payment(payment_value: float, session: Session = Depends(get_session),
 
 @banking.post('/pix')
 async def pix(pix_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
-    if pix_value > customer.account_balance:
-        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
     if pix_value <= 0:
         raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
+    if pix_value > customer.account_balance:
+        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
     customer.account_balance -= round(pix_value, 2)
     session.commit()
     new_score = generate_score(customer.account_balance)
