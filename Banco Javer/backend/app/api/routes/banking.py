@@ -3,7 +3,7 @@ from api.dependencies import verify_token, get_session, verify_account_holder, g
 from sqlalchemy.orm import Session
 from models.customer import Customer
 
-banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_token)])
+banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
 
 @banking.get('/balance')
 
