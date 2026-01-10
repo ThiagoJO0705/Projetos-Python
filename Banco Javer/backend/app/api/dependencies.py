@@ -33,7 +33,15 @@ def verify_account_holder(customer: Customer = Depends(verify_token)):
         raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser Correntista.')
     return customer
 
+
 def verify_admin(customer: Customer = Depends(verify_token)):
     if not customer.is_admin:
         raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser Admin.')
     return customer
+
+
+def generate_score(balance):
+    if balance > 0:
+        return round(balance * 0.1, 2)
+    else:
+        return 0.0

@@ -1,16 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.dependencies import verify_token, get_session, verify_account_holder
+from api.dependencies import verify_token, get_session, verify_account_holder, generate_score
 from sqlalchemy.orm import Session
 from models.customer import Customer
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_token)])
-
-def generate_score(balance):
-    if balance > 0:
-        return round(balance * 0.1, 2)
-    else:
-        return 0.0
-    
 
 @banking.get('/balance')
 

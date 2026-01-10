@@ -26,6 +26,13 @@ class Customer(Base):
     is_active = Column('is_active', Boolean, default=True)
     is_admin = Column('is_admin', Boolean, default=False)
 
+    @property
+    def score(self):
+        if self.account_balance > 0:
+            return round(self.account_balance * 0.1, 2)
+        return 0.0
+
+
     def __init__(self, name, email, password, phone_number, cpf, account_balance=0.0, is_account_holder=True, is_active=True, is_admin=False):
         self.name = name
         self.email = email
