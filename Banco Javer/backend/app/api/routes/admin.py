@@ -35,9 +35,20 @@ async def update_customer(customer_id: int, update_customer_schema: CustomerUpda
     if not customer:
         raise HTTPException(status_code=404, detail='Usuário não existe!')
     update_dict = update_customer_schema.model_dump(exclude_unset=True)
+    if "email" in update_dict:
+        existing_email = session.query(Customer).filter(Customer.email == update_dict["email"],  Customer.id != customer_id).first()
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado em outra conta.")
+
+    if "cpf" in update_dict:
+        existing_cpf = session.query(Customer).filter(Customer.cpf == update_dict["cpf"], Customer.id != customer_id).first()
+        if existing_cpf:
+            raise HTTPException(status_code=400, detail="Este CPF já está vinculado a outra conta.")
+
     for key, value in update_dict.items():
         setattr(customer, key, value)
     session.commit()
+    session.refresh(customer)
     return customer
 
 
