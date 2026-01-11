@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.dependencies import verify_token, get_session, verify_account_holder, generate_score
+from app.api.dependencies import verify_token, get_session, verify_account_holder, generate_score
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from models.customer import Customer
-from models.transaction import Transaction
-from schemas.schemas import PixSending
-from schemas.enums import TransactionDirection, TransactionType
+from app.models.customer import Customer
+from app.models.transaction import Transaction
+from app.schemas.schemas import PixSending
+from app.schemas.enums import TransactionDirection, TransactionType
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
 

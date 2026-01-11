@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from api.dependencies import verify_admin, get_session, generate_score
+from app.api.dependencies import verify_admin, get_session, generate_score
 from sqlalchemy.orm import Session
-from models.customer import Customer
-from schemas.schemas import CustomerResponse, CustomerUpdate
+from app.models.customer import Customer
+from app.schemas.schemas import CustomerResponse, CustomerUpdate
 from typing import List, Optional
 
 admin = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(verify_admin)])
