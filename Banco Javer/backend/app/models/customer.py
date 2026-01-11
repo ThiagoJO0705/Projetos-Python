@@ -1,30 +1,21 @@
-import os
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float
-from sqlalchemy.orm import declarative_base
-
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-DB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "database")
-
-DB_PATH = os.path.join(DB_DIR, "database.db")
-
-db = create_engine(f'sqlite:///{DB_PATH}')
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, Boolean, Float
+from sqlalchemy.orm import relationship
+from app.database import Base
 
 class Customer(Base):
     __tablename__ = "customers"
 
-    id = Column('id', Integer, primary_key=True, autoincrement=True)
-    name = Column('name', String, nullable=False)
-    email = Column('email', String, nullable=False, unique=True)
-    password = Column('password', String, nullable=False)
-    phone_number = Column('phone_number', String, nullable=False)
-    cpf = Column('cpf', String, nullable=False, unique=True)
-    account_balance = Column('account_balance', Float, default=0.0)
-    is_account_holder = Column('is_account_holder', Boolean, default=True)
-    is_active = Column('is_active', Boolean, default=True)
-    is_admin = Column('is_admin', Boolean, default=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    phone_number = Column(String, nullable=False, unique=True)
+    cpf = Column(String, nullable=False, unique=True)
+    account_balance = Column(Float, default=0.0)
+    is_account_holder = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
+    transactions = relationship("Transaction", back_populates="customer", foreign_keys="[Transaction.customer_id]")
 
     @property
     def score(self):
