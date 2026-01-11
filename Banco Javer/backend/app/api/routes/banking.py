@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.customer import Customer
 from app.models.transaction import Transaction
-from app.schemas.schemas import PixSending
+from app.schemas.schemas import PixSending, PixResponse
 from app.schemas.enums import TransactionDirection, TransactionType
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
@@ -49,7 +49,7 @@ async def payment(payment_value: float, session: Session = Depends(get_session),
             'new_balance': customer.account_balance,
             'new_score': new_score}
 
-@banking.post('/pix')
+@banking.post('/pix', response_model=PixResponse)
 async def pix(pix: PixSending, session: Session = Depends(get_session), sender: Customer = Depends(verify_token)):
     receiver = session.query(Customer).filter(or_(Customer.email == pix.pix_key, Customer.cpf == pix.pix_key, Customer.phone_number == pix.pix_key)).first()
     if not receiver:
@@ -80,8 +80,17 @@ async def pix(pix: PixSending, session: Session = Depends(get_session), sender: 
         description=f'Pix recebido de {sender.name}',
         direction=TransactionDirection.CREDIT
     )
-    sender.account_balance -= round(pix.pix_value, 2)
-    receiver.account_balance += round(pix.pix_value, 2)
-    session.add(new_transaction_sender, new_transaction_receiver)
+    sender.account_balance -= round(pix.pix_amount, 2)
+    receiver.account_balance += round(pix.pix_amount, 2)
+    session.add(new_transaction_sender)
+    session.add(new_transaction_receiver)
     session.commit()
-    return 
+    session.refresh(new_transaction_sender)
+    session.refresh(sender) 
+
+    return {
+        'message': 'Pix enviado com sucesso!',
+        'new_balance': sender.account_balance,
+        'new_score': sender.score,
+        'extract': new_transaction_sender 
+        }

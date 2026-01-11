@@ -41,6 +41,9 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
     customer_email = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
     if customer_email:
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
+    customer_phone = session.query(Customer).filter(Customer.phone_number == customer_create_schema.phone_number).first()
+    if customer_phone:
+        raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
     customer_cpf = session.query(Customer).filter(Customer.cpf == customer_create_schema.cpf).first()
     if customer_cpf:
         raise HTTPException(status_code=400, detail='CPF do usuário já está vinculado a outra conta!')
@@ -52,7 +55,7 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
         password=encrypted_password,
         phone_number=customer_create_schema.phone_number,
         cpf=customer_create_schema.cpf,
-        account_balance=customer_create_schema.account_balance,
+        account_balance=0.0,
         is_account_holder=True,
         is_active=True, 
         is_admin=False           
