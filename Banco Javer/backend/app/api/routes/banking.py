@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.customer import Customer
 from app.models.transaction import Transaction
-from app.schemas.schemas import PixSending, TransactionResponse, PaymentRequest
+from app.schemas.schemas import PixSending, TransactionResponse, PaymentRequest, TransactionSchema
 from app.schemas.enums import TransactionDirection, TransactionType
+from typing import List
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
 
@@ -109,3 +110,13 @@ async def pix(pix: PixSending, session: Session = Depends(get_session), sender: 
         'new_score': sender.score,
         'extract': new_transaction_sender 
         }
+
+
+@banking.get('/statement',  response_model=List[TransactionSchema])
+async def get_statement(session: Session = Depends(get_session), customer: Customer = Depends(verify_account_holder)):
+    """
+    Retorna o histórico completo de transações do usuário logado.
+    As transações são ordenadas da mais recente para a mais antiga.
+    """
+    transactions = session.query(Transaction).filter(Transaction.customer_id == customer.id).order_by(Transaction.created_at.desc()).all()
+    return transactions

@@ -1,8 +1,8 @@
-"""Initial Migration
+"""Initial Migrantion and add Numeric type to fields of balance and amount
 
-Revision ID: 565f85e158c7
+Revision ID: 052c97a45f81
 Revises: 
-Create Date: 2026-01-10 23:45:21.345418
+Create Date: 2026-01-11 19:30:44.936654
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '565f85e158c7'
+revision: str = '052c97a45f81'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,7 +28,7 @@ def upgrade() -> None:
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('phone_number', sa.String(), nullable=False),
     sa.Column('cpf', sa.String(), nullable=False),
-    sa.Column('account_balance', sa.Float(), nullable=True),
+    sa.Column('account_balance', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('is_account_holder', sa.Boolean(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('is_admin', sa.Boolean(), nullable=True),
@@ -42,7 +42,7 @@ def upgrade() -> None:
     sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('type', sa.Enum('DEPOSIT', 'PIX', 'TED', 'TEF', 'BANK_SLIP', name='transactiontype'), nullable=False),
     sa.Column('direction', sa.Enum('CREDIT', 'DEBIT', name='transactiondirection'), nullable=False),
-    sa.Column('amount', sa.Float(), nullable=False),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('related_customer_id', sa.Integer(), nullable=True),
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),

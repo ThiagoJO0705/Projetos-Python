@@ -1,20 +1,20 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float
+from sqlalchemy import Column, Integer, String, Boolean, Float, Numeric
 from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Customer(Base):
     __tablename__ = "customers"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
-    phone_number = Column(String, nullable=False, unique=True)
-    cpf = Column(String, nullable=False, unique=True)
-    account_balance = Column(Float, default=0.0)
-    is_account_holder = Column(Boolean, default=True)
-    is_active = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
+    id = Column('id', Integer, primary_key=True, autoincrement=True)
+    name = Column('name', String, nullable=False)
+    email = Column('email', String, nullable=False, unique=True)
+    password = Column('password', String, nullable=False)
+    phone_number = Column('phone_number', String, nullable=False, unique=True)
+    cpf = Column('cpf',String, nullable=False, unique=True)
+    account_balance = Column('account_balance', Numeric(precision=10, scale=2), default=0.0)
+    is_account_holder = Column('is_account_holder', Boolean, default=True)
+    is_active = Column('is_active', Boolean, default=True)
+    is_admin = Column('is_admin', Boolean, default=False)
     transactions = relationship("Transaction", back_populates="customer", foreign_keys="[Transaction.customer_id]")
 
     @property
@@ -30,7 +30,7 @@ class Customer(Base):
         self.password = password
         self.phone_number = phone_number
         self.cpf = cpf
-        self.account_balance = account_balance
+        self.account_balance = round(account_balance, 2)
         self.is_account_holder = is_account_holder
         self.is_active = is_active
         self.is_admin = is_admin
