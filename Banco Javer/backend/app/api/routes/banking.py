@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.customer import Customer
 from app.models.transaction import Transaction
-from app.schemas.schemas import PixSending, PixResponse
+from app.schemas.schemas import PixSending, TransactionResponse, PaymentRequest
 from app.schemas.enums import TransactionDirection, TransactionType
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
@@ -33,23 +33,38 @@ async def deposit(deposit_value: float, session: Session = Depends(get_session),
                 'new_score': new_score}
     raise HTTPException(status_code=400, detail='Valor inválido. O depósito deve ser um número positivo.')
 
-@banking.post('/payment')
-async def payment(payment_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
+@banking.post('/payment', response_model=TransactionResponse)
+async def payment(payment_data: PaymentRequest, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
     '''
-        Rota para efetuar pagamento algo ou alguém
-    '''
-    if payment_value <= 0:
-        raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
-    if payment_value > customer.account_balance:
-        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
-    customer.account_balance -= round(payment_value, 2)
-    session.commit()
-    new_score = generate_score(customer.account_balance)
-    return {'payment_value': payment_value,
-            'new_balance': customer.account_balance,
-            'new_score': new_score}
+        Rota para efetuar pagamento (Boleto, Conta, etc.)
 
-@banking.post('/pix', response_model=PixResponse)
+    '''
+    if payment_data.amount <= 0:
+        raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
+    if payment_data.amount > customer.account_balance:
+        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
+    if payment_data.method == TransactionType.DEPOSIT:
+        raise HTTPException(status_code=400, detail='Operação inválida. Não é possível usar Depósito como forma de pagamento.')
+    new_transaction = Transaction(
+        customer_id=customer.id,
+        type=payment_data.method,
+        direction=TransactionDirection.DEBIT,
+        amount=payment_data.amount,
+        description=f"[{payment_data.method.value}] {payment_data.description}"
+    )
+    customer.account_balance = round(customer.account_balance - payment_data.amount, 2)
+    session.add(new_transaction)
+    session.commit()
+    session.refresh(customer)
+    session.refresh(new_transaction)
+    return {
+        'message': 'Pagamento efetuado com sucesso!',
+        'new_balance': customer.account_balance,
+        'new_score': customer.score,
+        'extract': new_transaction
+    }
+
+@banking.post('/pix', response_model=TransactionResponse)
 async def pix(pix: PixSending, session: Session = Depends(get_session), sender: Customer = Depends(verify_token)):
     receiver = session.query(Customer).filter(or_(Customer.email == pix.pix_key, Customer.cpf == pix.pix_key, Customer.phone_number == pix.pix_key)).first()
     if not receiver:

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
+from app.schemas.enums import TransactionType
 
 class CustomerCreate(BaseModel):
     name: str
@@ -57,7 +58,7 @@ class PixSending(BaseModel):
         from_attributes = True
 
 
-class TransactionResponse(BaseModel):
+class TransactionSchema(BaseModel):
     id: int
     amount: float
     type: str
@@ -69,11 +70,17 @@ class TransactionResponse(BaseModel):
         from_attributes = True
 
 
-class PixResponse(BaseModel):
+class TransactionResponse(BaseModel):
     message: str
     new_balance: float
     new_score: float
-    extract: TransactionResponse # Aqui usamos o schema de transação que você já tem
+    extract: TransactionSchema
 
     class Config:
         from_attributes = True
+
+
+class PaymentRequest(BaseModel):
+    amount: float
+    method: TransactionType
+    description: str
