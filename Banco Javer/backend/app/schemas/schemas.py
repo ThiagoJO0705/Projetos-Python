@@ -46,3 +46,8 @@ class CustomerUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PixSending(BaseModel):
+    pix_key: str
+    pix_amount: float
