@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, Float, Numeric
 from sqlalchemy.orm import relationship
 from app.database import Base
+from decimal import Decimal
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -19,8 +20,9 @@ class Customer(Base):
 
     @property
     def score(self):
-        if self.account_balance > 0:
-            return round(self.account_balance * 0.1, 2)
+        if self.account_balance and float(self.account_balance) > 0:
+            balance_as_decimal = Decimal(str(self.account_balance))
+            return round(balance_as_decimal * Decimal('0.1'), 2)
         return 0.0
 
 
@@ -30,7 +32,7 @@ class Customer(Base):
         self.password = password
         self.phone_number = phone_number
         self.cpf = cpf
-        self.account_balance = round(account_balance, 2)
+        self.account_balance = round(float(account_balance or 0), 2)
         self.is_account_holder = is_account_holder
         self.is_active = is_active
         self.is_admin = is_admin

@@ -7,6 +7,7 @@ from app.models.transaction import Transaction
 from app.schemas.schemas import PixSending, TransactionResponse, PaymentRequest, TransactionSchema
 from app.schemas.enums import TransactionDirection, TransactionType
 from typing import List
+from decimal import Decimal
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
 
@@ -26,9 +27,18 @@ async def deposit(deposit_value: float, session: Session = Depends(get_session),
         Rota para depósito de dinheiro
     '''
     if deposit_value > 0:
-        customer.account_balance += round(deposit_value, 2)
-        session.commit()
+        customer.account_balance += Decimal(str(round(deposit_value, 2)))
         new_score = generate_score(customer.account_balance)
+        session.commit()
+        new_transaction = Transaction(
+            customer_id=customer.id,
+            type=TransactionType.DEPOSIT,
+            direction=TransactionDirection.CREDIT,
+            amount=deposit_value,
+            description="Depósito em dinheiro"
+        )
+        session.add(new_transaction)
+        session.commit()
         return {'deposit_value': deposit_value,
                 'new_balance': customer.account_balance,
                 'new_score': new_score}
@@ -40,12 +50,12 @@ async def payment(payment_data: PaymentRequest, session: Session = Depends(get_s
         Rota para efetuar pagamento (Boleto, Conta, etc.)
 
     '''
+    if payment_data.method == TransactionType.DEPOSIT:
+        raise HTTPException(status_code=400, detail='Operação inválida. Não é possível usar Depósito como forma de pagamento.')
     if payment_data.amount <= 0:
         raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
     if payment_data.amount > customer.account_balance:
         raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
-    if payment_data.method == TransactionType.DEPOSIT:
-        raise HTTPException(status_code=400, detail='Operação inválida. Não é possível usar Depósito como forma de pagamento.')
     new_transaction = Transaction(
         customer_id=customer.id,
         type=payment_data.method,
@@ -53,7 +63,7 @@ async def payment(payment_data: PaymentRequest, session: Session = Depends(get_s
         amount=payment_data.amount,
         description=f"[{payment_data.method.value}] {payment_data.description}"
     )
-    customer.account_balance = round(customer.account_balance - payment_data.amount, 2)
+    customer.account_balance = Decimal(str(round(customer.account_balance - payment_data.amount, 2)))
     session.add(new_transaction)
     session.commit()
     session.refresh(customer)
@@ -67,6 +77,8 @@ async def payment(payment_data: PaymentRequest, session: Session = Depends(get_s
 
 @banking.post('/pix', response_model=TransactionResponse)
 async def pix(pix: PixSending, session: Session = Depends(get_session), sender: Customer = Depends(verify_token)):
+    if pix.pix_amount <= 0:
+        raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
     receiver = session.query(Customer).filter(or_(Customer.email == pix.pix_key, Customer.cpf == pix.pix_key, Customer.phone_number == pix.pix_key)).first()
     if not receiver:
         raise HTTPException(status_code=404, detail='Transação negada. Chave Pix não encontrada.')
@@ -76,8 +88,6 @@ async def pix(pix: PixSending, session: Session = Depends(get_session), sender: 
         raise HTTPException(status_code=400, detail='Transação negada. Conta do destinatário está desativada.')
     if not receiver.is_account_holder:
         raise HTTPException(status_code=400, detail='Transação negada. O destinatário não é Correntista.')
-    if pix.pix_amount <= 0:
-        raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
     if pix.pix_amount > sender.account_balance:
         raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
     new_transaction_sender = Transaction(
@@ -96,8 +106,8 @@ async def pix(pix: PixSending, session: Session = Depends(get_session), sender: 
         description=f'Pix recebido de {sender.name}',
         direction=TransactionDirection.CREDIT
     )
-    sender.account_balance -= round(pix.pix_amount, 2)
-    receiver.account_balance += round(pix.pix_amount, 2)
+    sender.account_balance -= Decimal(str(round(pix.pix_amount, 2)))
+    receiver.account_balance += Decimal(str(round(pix.pix_amount, 2)))
     session.add(new_transaction_sender)
     session.add(new_transaction_receiver)
     session.commit()

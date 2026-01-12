@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 from app.schemas.enums import TransactionType
+from decimal import Decimal
 
 class CustomerCreate(BaseModel):
     name: str
@@ -20,8 +21,8 @@ class CustomerResponse(BaseModel):
     email: str
     phone_number: str
     cpf: str
-    account_balance: float
-    score: float
+    account_balance: Decimal
+    score: Decimal
     is_account_holder: bool
     is_active: bool
     is_admin: bool
@@ -52,7 +53,7 @@ class CustomerUpdate(BaseModel):
 
 class PixSending(BaseModel):
     pix_key: str
-    pix_amount: float
+    pix_amount: Decimal
 
     class Config:
         from_attributes = True
@@ -60,7 +61,7 @@ class PixSending(BaseModel):
 
 class TransactionSchema(BaseModel):
     id: int
-    amount: float
+    amount: Decimal
     type: str
     direction: str
     description: Optional[str]
@@ -72,8 +73,8 @@ class TransactionSchema(BaseModel):
 
 class TransactionResponse(BaseModel):
     message: str
-    new_balance: float
-    new_score: float
+    new_balance: Decimal
+    new_score: Decimal
     extract: TransactionSchema
 
     class Config:
@@ -81,6 +82,6 @@ class TransactionResponse(BaseModel):
 
 
 class PaymentRequest(BaseModel):
-    amount: float
+    amount: Decimal
     method: TransactionType
     description: str

@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from app.main import SECRET_KEY, ALGORITHM, oauth2_schema
 from app.database import db
+from decimal import Decimal
 
 
 def get_session():
@@ -45,7 +46,6 @@ def verify_admin(customer: Customer = Depends(verify_token)):
 
 
 def generate_score(balance):
-    if balance > 0:
-        return round(balance * 0.1, 2)
-    else:
-        return 0.0
+    if balance and float(balance) > 0:
+        return round(Decimal(str(balance)) * Decimal('0.1'), 2)
+    return 0.0
