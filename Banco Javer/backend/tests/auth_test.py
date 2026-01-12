@@ -1,7 +1,7 @@
 from app.models.customer import Customer
 from jose import jwt
 from app.main import SECRET_KEY, ALGORITHM
-from decimal import Decimal
+
 
 USER_DATA = {
     'name': 'Thiago Teste',
