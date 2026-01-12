@@ -54,9 +54,9 @@ A aplicação adota os princípios de Clean Architecture e Separation of Concern
 1. Realize o clone do repositório para sua máquina local.
 2. Navegue até o diretório raiz do projeto (`backend`).
 3. Execute a instalação global das dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+pip install -r requirements.txt
+```
 
 ### Gestão do Banco de Dados
 Para inicializar a estrutura das tabelas e aplicar as restrições de integridade, execute as migrações:
@@ -71,7 +71,7 @@ python -m uvicorn app.main:app --reload
 ```
 
 ### Garantia de Qualidade e Cobertura de Testes
-O projeto foi submetido a rigorosos testes unitários e de integração para validar todos os fluxos de sucesso e exceção. Foi atingido o índice de 100% de cobertura de código.
+O projeto foi submetido a rigorosos testes unitários e de integração para validar todos os fluxos de sucesso e exceção. Foi atingido o índice de 99% de cobertura de código.
 
 - Para executar a suíte de testes:
 ```bash
