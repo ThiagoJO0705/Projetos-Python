@@ -1,6 +1,7 @@
 from app.models.customer import Customer
 from jose import jwt
 from app.main import SECRET_KEY, ALGORITHM
+from decimal import Decimal
 
 USER_DATA = {
     'name': 'Thiago Teste',
@@ -120,11 +121,11 @@ def test_customer_score_calculation():
     """Testa se a lógica de 10% do score no modelo está correta"""
     customer = Customer(
         name="Teste", email="t@t.com", password="1", 
-        phone_number="1", cpf="1", account_balance=500.0
+        phone_number="1", cpf="1", account_balance="500.0"
     )
-    assert customer.score == 50.0
+    assert float(customer.score) == 50.0
     customer.account_balance = 0
-    assert customer.score == 0.0
+    assert float(customer.score) == 0.0
 
 
 def test_refresh_token_success(client):
