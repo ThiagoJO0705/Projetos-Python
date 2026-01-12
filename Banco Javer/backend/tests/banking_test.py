@@ -1,4 +1,5 @@
 import pytest
+from app.models.customer import Customer
 
 SENDER_DATA = {
     "name": "Sender User", 
@@ -96,4 +97,87 @@ def test_payment_with_deposit_method_forbidden(client, auth_headers):
     response = client.post("/banking/payment", json=payment_data, headers=auth_headers)
     assert response.status_code == 400
     assert "Depósito" in response.json()["detail"]
+
+
+def test_pix_success(client, auth_headers, session):
+    """
+    Valida uma transferência via Pix entre dois usuários, checando o saldo de ambos.
+    """
+    client.post("/auth/signup", json=RECEIVER_DATA)
+    client.post("/banking/deposit", params={"deposit_value": 100.0}, headers=auth_headers)
+    pix_data = {"pix_key": RECEIVER_DATA["cpf"], "pix_amount": 30.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 200
+    assert float(response.json()["new_balance"]) == 70.0
+    receiver = session.query(Customer).filter(Customer.cpf == RECEIVER_DATA["cpf"]).first()
+    assert float(receiver.account_balance) == 30.0
+
+
+def test_pix_invalid_amount(client, auth_headers):
+    """
+    Verifica se transferências Pix com valores inválidos são interrompidas precocemente.
+    """
+    pix_data = {"pix_key": RECEIVER_DATA["cpf"], "pix_amount": -5.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "maior que zero" in response.json()["detail"]
+
+
+def test_pix_key_not_found(client, auth_headers):
+    """
+    Garante o retorno de erro 404 quando uma chave Pix não é localizada no sistema.
+    """
+    pix_data = {"pix_key": "99999999999", "pix_amount": 10.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 404
+
+
+def test_pix_to_self(client, auth_headers):
+    """
+    Impede que um usuário realize uma transferência Pix para o próprio CPF/Email.
+    """
+    pix_data = {"pix_key": SENDER_DATA["cpf"], "pix_amount": 10.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "si mesmo" in response.json()["detail"]
+
+
+def test_pix_insufficient_funds(client, auth_headers):
+    """
+    Valida a trava de segurança de saldo insuficiente especificamente para a operação de Pix.
+    """
+    client.post("/auth/signup", json=RECEIVER_DATA)
+    pix_data = {"pix_key": RECEIVER_DATA["cpf"], "pix_amount": 1000.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "insuficiente" in response.json()["detail"]
+
+
+def test_pix_to_inactive_receiver(client, auth_headers, session):
+    """
+    Testa o bloqueio de envio de Pix para destinatários que tiveram a conta desativada.
+    """
+    client.post("/auth/signup", json=RECEIVER_DATA)
+    user = session.query(Customer).filter(Customer.email == RECEIVER_DATA["email"]).first()
+    user.is_active = False
+    session.commit()
+    pix_data = {"pix_key": RECEIVER_DATA["cpf"], "pix_amount": 10.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "desativada" in response.json()["detail"]
+
+
+def test_pix_to_non_holder_receiver(client, auth_headers, session):
+    """
+    Garante que o Pix não seja concluído se o destinatário não possuir uma conta corrente ativa.
+    """
+    client.post("/auth/signup", json=RECEIVER_DATA)
+    user = session.query(Customer).filter(Customer.email == RECEIVER_DATA["email"]).first()
+    user.is_account_holder = False
+    session.commit()
+    pix_data = {"pix_key": RECEIVER_DATA["cpf"], "pix_amount": 10.0}
+    response = client.post("/banking/pix", json=pix_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "Correntista" in response.json()["detail"]
+
 
