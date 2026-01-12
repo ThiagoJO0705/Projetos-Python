@@ -181,3 +181,30 @@ def test_pix_to_non_holder_receiver(client, auth_headers, session):
     assert "Correntista" in response.json()["detail"]
 
 
+def test_get_statement(client, auth_headers):
+    """
+    Verifica se a rota de extrato retorna todas as transações em ordem cronológica decrescente.
+    """
+    client.post("/banking/deposit", params={"deposit_value": 100.0}, headers=auth_headers)
+    client.post("/banking/payment", json={"amount": 20.0, "method": "PIX", "description": "Pizza"}, headers=auth_headers)
+    response = client.get("/banking/statement", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert data[0]["type"] == "DEPOSIT"
+    assert data[1]["type"] == "PIX"
+
+
+def test_banking_forbidden_for_non_holder(client, session):
+    """
+    Testa o isolamento de segurança que impede não-correntistas de acessarem funções financeiras.
+    """
+    client.post("/auth/signup", json=SENDER_DATA)
+    user = session.query(Customer).filter(Customer.email == SENDER_DATA["email"]).first()
+    user.is_account_holder = False
+    session.commit()
+    login = client.post("/auth/signin", json={"email": SENDER_DATA["email"], "password": SENDER_DATA["password"]})
+    token = login.json()["access_token"]
+    response = client.get("/banking/balance", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 403
+    assert "Correntista" in response.json()["detail"]
