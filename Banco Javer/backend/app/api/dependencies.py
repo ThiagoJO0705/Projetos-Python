@@ -18,8 +18,11 @@ def get_session():
 def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_session)):
     try:
         dict_info = jwt.decode(token, SECRET_KEY, ALGORITHM)
-        customer_id = int(dict_info.get('sub'))
-    except JWTError:
+        customer_id_str = int(dict_info.get('sub'))
+        if customer_id_str is None:
+            raise JWTError() 
+        customer_id = int(customer_id_str)
+    except (JWTError, TypeError, ValueError):
         raise HTTPException(status_code=401, detail='Acesso Negado! Verifique a validade do token.')
     customer = session.query(Customer).filter(Customer.id == customer_id).first()
     if not customer:

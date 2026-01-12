@@ -41,12 +41,12 @@ async def signup(customer_create_schema: CustomerCreate, session: Session = Depe
     customer_email = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
     if customer_email:
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
-    customer_phone = session.query(Customer).filter(Customer.phone_number == customer_create_schema.phone_number).first()
-    if customer_phone:
-        raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
     customer_cpf = session.query(Customer).filter(Customer.cpf == customer_create_schema.cpf).first()
     if customer_cpf:
         raise HTTPException(status_code=400, detail='CPF do usuário já está vinculado a outra conta!')
+    customer_phone = session.query(Customer).filter(Customer.phone_number == customer_create_schema.phone_number).first()
+    if customer_phone:
+        raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
 
     encrypted_password = bcrypt_context.hash(customer_create_schema.password)
     new_customer = Customer(
@@ -73,6 +73,8 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
     customer = authenticate_customer(login_schema.email, login_schema.password, session)
     if not customer:
         raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
+    if not customer.is_active:
+        raise HTTPException(status_code=401, detail='Acesso Negado. Usuário está com a conta desativada!')
     else:
         access_token = create_token(customer.id)
         refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
