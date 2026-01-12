@@ -113,3 +113,14 @@ def test_signin_form_fail(client):
     response = client.post('/auth/signin-form', data=form_data)
     assert response.status_code == 400
 
+
+def test_customer_score_calculation():
+    """Testa se a lógica de 10% do score no modelo está correta"""
+    customer = Customer(
+        name="Teste", email="t@t.com", password="1", 
+        phone_number="1", cpf="1", account_balance=500.0
+    )
+    assert customer.score == 50.0
+    customer.account_balance = 0
+    assert customer.score == 0.0
+
