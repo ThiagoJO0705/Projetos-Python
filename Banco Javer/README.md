@@ -77,7 +77,7 @@ python -m uvicorn app.main:app --reload
 ```
 
 ### Garantia de Qualidade e Cobertura de Testes
-O projeto foi submetido a rigorosos testes unitários e de integração para validar todos os fluxos de sucesso e exceção. Foi atingido o índice de 99% de cobertura de código.
+O projeto foi submetido a rigorosos testes unitários e de integração para validar todos os fluxos de sucesso e exceção. Foi atingido o índice de 100% de cobertura de código.
 
 - Para executar a suíte de testes:
 ```bash

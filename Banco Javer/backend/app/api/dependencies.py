@@ -20,8 +20,6 @@ def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends
     try:
         dict_info = jwt.decode(token, SECRET_KEY, ALGORITHM)
         customer_id_str = int(dict_info.get('sub'))
-        if customer_id_str is None:
-            raise HTTPException(status_code=401, detail='Acesso Negado! Verifique a validade do token.')
         customer_id = int(customer_id_str)
     except (JWTError, TypeError, ValueError):
         raise HTTPException(status_code=401, detail='Acesso Negado! Verifique a validade do token.')
