@@ -60,3 +60,57 @@ def test_get_customers_name_filter_no_results(client, admin_headers):
     response = client.get('/admin/customers?name=NomeQueNaoExiste', headers=admin_headers)
     assert response.status_code == 200
     assert len(response.json()) == 0
+
+def test_update_customer_success(client, admin_headers, session):
+    '''Valida a atualização parcial dos dados de um cliente via método PATCH.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    response = client.patch(f'/admin/customers/{user.id}', json={'name': 'Novo Nome'}, headers=admin_headers)
+    assert response.status_code == 200
+    assert response.json()['name'] == 'Novo Nome'
+
+def test_update_customer_no_changes(client, admin_headers, session):
+    '''Garante que o endpoint de atualização responda com sucesso mesmo que nenhum dado novo seja enviado.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    response = client.patch(f'/admin/customers/{user.id}', json={}, headers=admin_headers)
+    assert response.status_code == 200
+
+def test_update_customer_full_fields(client, admin_headers, session):
+    '''Cobre a atualização simultânea de múltiplos campos do cliente, incluindo E-mail e CPF.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    new_data = {
+        'name': 'Novo Nome',
+        'email': 'novissimo@email.com',
+        'cpf': '99999999998',
+        'is_active': True,
+        'is_account_holder': False
+    }
+    response = client.patch(f'/admin/customers/{user.id}', json=new_data, headers=admin_headers)
+    assert response.status_code == 200
+    assert response.json()['email'] == 'novissimo@email.com'
+
+def test_update_customer_duplicate_email(client, admin_headers, session):
+    '''Testa o impedimento de atualização de e-mail quando o novo valor já está em uso por outro usuário.'''
+    client.post('/auth/signup', json=USER_DATA) 
+    user_target = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    response = client.patch(f'/admin/customers/{user_target.id}', json={'email': ADMIN_DATA['email']}, headers=admin_headers)
+    assert response.status_code == 400
+
+def test_update_customer_duplicate_cpf(client, admin_headers, session):
+    '''Testa o impedimento de atualização de CPF quando o novo valor já está cadastrado no sistema.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user_target = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    response = client.patch(f'/admin/customers/{user_target.id}', json={'cpf': ADMIN_DATA['cpf']}, headers=admin_headers)
+    assert response.status_code == 400
+
+def test_update_customer_not_found(client, admin_headers):
+    '''Garante erro 404 ao tentar atualizar um cliente com ID inexistente.'''
+    response = client.patch('/admin/customers/999', json={'name': 'X'}, headers=admin_headers)
+    assert response.status_code == 404
