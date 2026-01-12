@@ -1,4 +1,6 @@
 from app.models.customer import Customer
+from jose import jwt
+from app.main import SECRET_KEY, ALGORITHM
 
 USER_DATA = {
     'name': 'Thiago Teste',
@@ -124,3 +126,64 @@ def test_customer_score_calculation():
     customer.account_balance = 0
     assert customer.score == 0.0
 
+
+def test_refresh_token_success(client):
+    """Testa se o refresh token gera um novo access token com sucesso"""
+    client.post('/auth/signup', json=USER_DATA)
+    login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
+    refresh_token = login_res.json()['refresh_token']
+    headers = {"Authorization": f"Bearer {refresh_token}"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+    assert response.json()["token_type"] == "Bearer"
+
+
+def test_refresh_token_with_inactive_user(client, session):
+    """Testa se um usuário desativado consegue usar o refresh token"""
+    client.post('/auth/signup', json=USER_DATA)
+    login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
+    refresh_token = login_res.json()['refresh_token']
+    from app.models.customer import Customer
+    user = session.query(Customer).filter(Customer.email == USER_DATA["email"]).first()
+    user.is_active = False
+    session.commit()
+    headers = {"Authorization": f"Bearer {refresh_token}"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 401
+    assert "desativada" in response.json()['detail']
+
+
+def test_refresh_token_malformed(client):
+    """Testa acesso com token que não é um JWT real"""
+    headers = {"Authorization": "Bearer token_que_nao_existe"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 401
+    assert "Acesso Negado" in response.json()['detail']
+
+
+def test_verify_token_invalid_jwt(client):
+    """Testa um token que não é um JWT válido"""
+    headers = {"Authorization": "Bearer token_completamente_errado"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 401
+    assert "Acesso Negado" in response.json()['detail']
+
+
+def test_verify_token_user_not_found(client):
+    """Testa um token que tem um ID de usuário que não existe no banco"""
+    payload = {"sub": "999", "exp": 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 401
+    assert "Inválido" in response.json()['detail']
+
+
+def test_verify_token_no_sub_payload(client):
+    """Testa um token válido mas que não tem a claim 'sub'"""
+    payload = {"foo": "bar", "exp": 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 401
