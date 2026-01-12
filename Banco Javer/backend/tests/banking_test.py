@@ -56,3 +56,44 @@ def test_deposit_invalid_value(client, auth_headers):
     assert "positivo" in response.json()["detail"]
 
 
+def test_payment_success(client, auth_headers):
+    """
+    Testa a realização de um pagamento com sucesso, verificando o abatimento no saldo.
+    """
+    client.post("/banking/deposit", params={"deposit_value": 100.0}, headers=auth_headers)
+    payment_data = {"amount": 40.0, "method": "BANK SLIP", "description": "Luz"}
+    response = client.post("/banking/payment", json=payment_data, headers=auth_headers)
+    assert response.status_code == 200
+    assert float(response.json()["new_balance"]) == 60.0
+    assert "BANK SLIP" in response.json()["extract"]["description"]
+
+
+def test_payment_invalid_amount(client, auth_headers):
+    """
+    Verifica se o sistema barra pagamentos com valor zero ou negativo.
+    """
+    payment_data = {"amount": 0, "method": "BANK SLIP", "description": "Nada"}
+    response = client.post("/banking/payment", json=payment_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "maior que zero" in response.json()["detail"]
+
+
+def test_payment_insufficient_funds(client, auth_headers):
+    """
+    Valida se um pagamento é negado quando o saldo do cliente é menor que o valor cobrado.
+    """
+    payment_data = {"amount": 1000.0, "method": "TED", "description": "Carro"}
+    response = client.post("/banking/payment", json=payment_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "insuficiente" in response.json()["detail"]
+
+
+def test_payment_with_deposit_method_forbidden(client, auth_headers):
+    """
+    Garante que o tipo DEPOSIT não possa ser usado indevidamente como método de saída no pagamento.
+    """
+    payment_data = {"amount": 10.0, "method": "DEPOSIT", "description": "Fraude"}
+    response = client.post("/banking/payment", json=payment_data, headers=auth_headers)
+    assert response.status_code == 400
+    assert "Depósito" in response.json()["detail"]
+
