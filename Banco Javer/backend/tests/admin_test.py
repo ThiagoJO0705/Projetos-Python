@@ -114,3 +114,72 @@ def test_update_customer_not_found(client, admin_headers):
     '''Garante erro 404 ao tentar atualizar um cliente com ID inexistente.'''
     response = client.patch('/admin/customers/999', json={'name': 'X'}, headers=admin_headers)
     assert response.status_code == 404
+
+def test_disable_customer_success(client, admin_headers, session):
+    '''Valida o processo de desativação (soft delete) de um cliente e confirma a alteração no banco de dados.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    user_id = user.id
+
+    response = client.delete(f'/admin/customers/disable/{user_id}', headers=admin_headers)
+    assert response.status_code == 200
+    
+    updated_user = session.query(Customer).filter(Customer.id == user_id).first()
+    assert updated_user.is_active is False
+
+def test_disable_customer_already_inactive(client, admin_headers, session):
+    '''Garante que o sistema retorne erro 400 ao tentar desativar um cliente que já está inativo.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    user.is_active = False
+    session.commit()
+    
+    response = client.delete(f'/admin/customers/disable/{user.id}', headers=admin_headers)
+    assert response.status_code == 400
+
+def test_disable_self_forbidden(client, admin_headers, session):
+    '''Testa a regra de negócio que impede que um administrador desative a própria conta.'''
+    admin = session.query(Customer).filter(Customer.email == ADMIN_DATA['email']).first()
+    response = client.delete(f'/admin/customers/disable/{admin.id}', headers=admin_headers)
+    assert response.status_code == 400
+    assert 'Autodesativação de conta' in response.json()['detail']
+
+def test_disable_customer_not_found(client, admin_headers):
+    '''Valida o retorno de erro 404 ao tentar desativar um ID de cliente inexistente.'''
+    response = client.delete('/admin/customers/disable/999', headers=admin_headers)
+    assert response.status_code == 404
+
+def test_activate_customer_success(client, admin_headers, session):
+    '''Valida o sucesso da reativação de um cliente previamente desativado.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    client.delete(f'/admin/customers/disable/{user.id}', headers=admin_headers)
+    
+    response = client.patch(f'/admin/customer/activate/{user.id}', headers=admin_headers)
+    assert response.status_code == 200
+    assert 'ativada' in response.json()['message']
+
+def test_activate_customer_already_active(client, admin_headers, session):
+    '''Garante erro 400 ao tentar ativar um cliente que já se encontra em estado ativo.'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    
+    response = client.patch(f'/admin/customer/activate/{user.id}', headers=admin_headers)
+    assert response.status_code == 400
+    assert 'já está ativa' in response.json()['detail']
+
+def test_activate_customer_not_found(client, admin_headers):
+    '''Valida o retorno de erro 404 ao tentar ativar um cliente inexistente.'''
+    response = client.patch('/admin/customer/activate/999', headers=admin_headers)
+    assert response.status_code == 404
+
+def test_disable_last_admin_logic(client, admin_headers, session):
+    '''Verifica se o sistema permite desativar um administrador quando ainda resta outro administrador ativo no banco.'''
+    client.post('/auth/signup', json={'name':'Admin2','email':'a2@a.com','password':'1','phone_number':'5','cpf':'5'})
+    admin2 = session.query(Customer).filter(Customer.email == 'a2@a.com').first()
+    admin2.is_admin = True
+    session.commit()
+    
+    res = client.delete(f'/admin/customers/disable/{admin2.id}', headers=admin_headers)
+    assert res.status_code == 200
+    
