@@ -12,7 +12,7 @@ USER_DATA = {
 }
 
 def test_signup_success(client):
-    """Testa o cadastro de um novo usuário com sucesso"""
+    '''Testa o cadastro de um novo usuário com sucesso'''
     response = client.post('/auth/signup', json=USER_DATA)
     assert response.status_code == 201
     data = response.json()
@@ -53,7 +53,7 @@ def test_signup_duplicate_phone(client):
 
 
 def test_signup_invalid_email(client):
-    """Testa se o Pydantic barra e-mail mal formatado"""
+    '''Testa se o Pydantic barra e-mail mal formatado'''
     invalid_data = USER_DATA.copy()
     invalid_data['email'] = 'email_sem_arroba.com'
     response = client.post('/auth/signup', json=invalid_data)
@@ -100,28 +100,28 @@ def test_signin_inactive_user(client, session):
 
 
 def test_signin_form_success(client):
-    """Testa o login via formulário (OAuth2), usado pelo Swagger"""
+    '''Testa o login via formulário (OAuth2), usado pelo Swagger'''
     client.post('/auth/signup', json=USER_DATA)
     form_data = {
-        "username": USER_DATA["email"], 
-        "password": USER_DATA["password"]
+        'username': USER_DATA['email'], 
+        'password': USER_DATA['password']
     }
     response = client.post('/auth/signin-form', data=form_data)
     assert response.status_code == 200
-    assert "access_token" in response.json()
+    assert 'access_token' in response.json()
 
 def test_signin_form_fail(client):
-    """Testa falha no login via formulário"""
-    form_data = {"username": "errado@banco.com", "password": "123"}
+    '''Testa falha no login via formulário'''
+    form_data = {'username': 'errado@banco.com', 'password': '123'}
     response = client.post('/auth/signin-form', data=form_data)
     assert response.status_code == 400
 
 
 def test_customer_score_calculation():
-    """Testa se a lógica de 10% do score no modelo está correta"""
+    '''Testa se a lógica de 10% do score no modelo está correta'''
     customer = Customer(
-        name="Teste", email="t@t.com", password="1", 
-        phone_number="1", cpf="1", account_balance="500.0"
+        name='Teste', email='t@t.com', password='1', 
+        phone_number='1', cpf='1', account_balance='500.0'
     )
     assert float(customer.score) == 50.0
     customer.account_balance = 0
@@ -129,62 +129,62 @@ def test_customer_score_calculation():
 
 
 def test_refresh_token_success(client):
-    """Testa se o refresh token gera um novo access token com sucesso"""
+    '''Testa se o refresh token gera um novo access token com sucesso'''
     client.post('/auth/signup', json=USER_DATA)
     login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
     refresh_token = login_res.json()['refresh_token']
-    headers = {"Authorization": f"Bearer {refresh_token}"}
+    headers = {'Authorization': f'Bearer {refresh_token}'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 200
-    assert "access_token" in response.json()
-    assert response.json()["token_type"] == "Bearer"
+    assert 'access_token' in response.json()
+    assert response.json()['token_type'] == 'Bearer'
 
 
 def test_refresh_token_with_inactive_user(client, session):
-    """Testa se um usuário desativado consegue usar o refresh token"""
+    '''Testa se um usuário desativado consegue usar o refresh token'''
     client.post('/auth/signup', json=USER_DATA)
     login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
     refresh_token = login_res.json()['refresh_token']
     from app.models.customer import Customer
-    user = session.query(Customer).filter(Customer.email == USER_DATA["email"]).first()
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
     user.is_active = False
     session.commit()
-    headers = {"Authorization": f"Bearer {refresh_token}"}
+    headers = {'Authorization': f'Bearer {refresh_token}'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 401
-    assert "desativada" in response.json()['detail']
+    assert 'desativada' in response.json()['detail']
 
 
 def test_refresh_token_malformed(client):
-    """Testa acesso com token que não é um JWT real"""
-    headers = {"Authorization": "Bearer token_que_nao_existe"}
+    '''Testa acesso com token que não é um JWT real'''
+    headers = {'Authorization': 'Bearer token_que_nao_existe'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 401
-    assert "Acesso Negado" in response.json()['detail']
+    assert 'Acesso Negado' in response.json()['detail']
 
 
 def test_verify_token_invalid_jwt(client):
-    """Testa um token que não é um JWT válido"""
-    headers = {"Authorization": "Bearer token_completamente_errado"}
+    '''Testa um token que não é um JWT válido'''
+    headers = {'Authorization': 'Bearer token_completamente_errado'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 401
-    assert "Acesso Negado" in response.json()['detail']
+    assert 'Acesso Negado' in response.json()['detail']
 
 
 def test_verify_token_user_not_found(client):
-    """Testa um token que tem um ID de usuário que não existe no banco"""
-    payload = {"sub": "999", "exp": 9999999999}
+    '''Testa um token que tem um ID de usuário que não existe no banco'''
+    payload = {'sub': '999', 'exp': 9999999999}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {'Authorization': f'Bearer {token}'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 401
-    assert "Inválido" in response.json()['detail']
+    assert 'Inválido' in response.json()['detail']
 
 
 def test_verify_token_no_sub_payload(client):
-    """Testa um token válido mas que não tem a claim 'sub'"""
-    payload = {"foo": "bar", "exp": 9999999999}
+    '''Testa um token válido mas que não tem a claim 'sub'''
+    payload = {'foo': 'bar', 'exp': 9999999999}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {'Authorization': f'Bearer {token}'}
     response = client.post('/auth/refresh', headers=headers)
     assert response.status_code == 401
