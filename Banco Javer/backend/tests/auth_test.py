@@ -1,3 +1,5 @@
+from app.models.customer import Customer
+
 USER_DATA = {
     'name': 'Thiago Teste',
     'email': 'thiago@teste.com',
@@ -53,4 +55,61 @@ def test_signup_invalid_email(client):
     invalid_data['email'] = 'email_sem_arroba.com'
     response = client.post('/auth/signup', json=invalid_data)
     assert response.status_code == 422
+
+
+def test_signin_success(client):
+    '''Testa o login com credenciais corretas'''
+    client.post('/auth/signup', json=USER_DATA)
+    login_data = {'email': USER_DATA['email'], 'password': USER_DATA['password']}
+    response = client.post('/auth/signin', json=login_data)
+    assert response.status_code == 200
+    assert 'access_token' in response.json()
+    assert 'refresh_token' in response.json()
+    assert response.json()['token_type'] == 'Bearer'
+
+
+def test_signin_wrong_password(client):
+    '''Testa erro de senha incorreta'''
+    client.post('/auth/signup', json=USER_DATA)
+    login_data = {'email': USER_DATA['email'], 'password': 'senha_errada'}
+    response = client.post('/auth/signin', json=login_data)
+    assert response.status_code == 400
+    assert 'inválidas' in response.json()['detail']
+
+
+def test_signin_user_not_found(client):
+    '''Testa erro de usuário inexistente'''
+    login_data = {'email': 'naoexiste@banco.com', 'password': '123'}
+    response = client.post('/auth/signin', json=login_data)
+    assert response.status_code == 400
+
+
+def test_signin_inactive_user(client, session):
+    '''Testa se usuário desativado consegue logar'''
+    client.post('/auth/signup', json=USER_DATA)
+    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
+    user.is_active = False
+    session.commit()
+    login_data = {'email': USER_DATA['email'], 'password': USER_DATA['password']}
+    response = client.post('/auth/signin', json=login_data)
+    assert response.status_code == 401 
+    assert 'desativada' in response.json()['detail']
+
+
+def test_signin_form_success(client):
+    """Testa o login via formulário (OAuth2), usado pelo Swagger"""
+    client.post('/auth/signup', json=USER_DATA)
+    form_data = {
+        "username": USER_DATA["email"], 
+        "password": USER_DATA["password"]
+    }
+    response = client.post('/auth/signin-form', data=form_data)
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+def test_signin_form_fail(client):
+    """Testa falha no login via formulário"""
+    form_data = {"username": "errado@banco.com", "password": "123"}
+    response = client.post('/auth/signin-form', data=form_data)
+    assert response.status_code == 400
 
