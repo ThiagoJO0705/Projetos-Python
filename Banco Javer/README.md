@@ -64,6 +64,12 @@ Para inicializar a estrutura das tabelas e aplicar as restrições de integridad
 alembic upgrade head
 ```
 
+### Configuração das Variáveis de Ambiente
+O projeto utiliza variáveis de ambiente para gerenciar chaves de segurança e conexões.
+1. Na pasta `backend`, localize o arquivo `.env.example`.
+2. Crie uma cópia deste arquivo e renomeie para `.env`.
+3. Preencha a `SECRET_KEY` com uma hash segura.
+
 ### Execução da Aplicação
 Para iniciar o servidor em ambiente de desenvolvimento, execute o comando abaixo a partir do diretório raiz do backend:
 ```bash
