@@ -1,5 +1,8 @@
 import pytest
 from app.models.customer import Customer
+from jose import jwt
+from app.api.dependencies import SECRET_KEY, ALGORITHM, verify_admin, generate_score, get_session
+from app.main import app
 
 ADMIN_DATA = {
     'name': 'Admin User',
@@ -183,3 +186,52 @@ def test_disable_last_admin_logic(client, admin_headers, session):
     res = client.delete(f'/admin/customers/disable/{admin2.id}', headers=admin_headers)
     assert res.status_code == 200
     
+def test_disable_last_admin_trigger(client, admin_headers, session):
+    '''Força o disparo da exceção de segurança que impede a desativação do último administrador ativo do sistema.'''
+    admin_no_banco = session.query(Customer).filter(Customer.is_admin == True).first()
+    usuario_fantasma = Customer(
+        name='Fantasma', email='f@f.com', password='1', 
+        phone_number='9', cpf='9', is_admin=True
+    )
+    
+    app.dependency_overrides[verify_admin] = lambda: usuario_fantasma
+    
+    response = client.delete(f'/admin/customers/disable/{admin_no_banco.id}', headers=admin_headers)
+    
+    assert response.status_code == 400
+    assert 'último administrador' in response.json()['detail']
+    app.dependency_overrides.clear()
+
+def test_generate_score_with_zero_or_negative():
+    '''Valida se a função de geração de score retorna 0.0 para entradas zeradas ou negativas.'''
+    assert generate_score(0) == 0.0
+    assert generate_score(-100) == 0.0
+
+def test_verify_admin_fail_not_admin(client):
+    '''Garante que a dependência de verificação de admin bloqueie usuários comuns com erro 403.'''
+    client.post('/auth/signup', json={'name':'X','email':'x@x.com','password':'1','phone_number':'2','cpf':'3'})
+    login = client.post('/auth/signin', json={'email': 'x@x.com', 'password': '1'})
+    token = login.json()['access_token']
+    
+    response = client.get('/admin/customers', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 403
+    assert 'necessário ser Admin' in response.json()['detail']
+
+def test_real_get_session():
+    '''Testa manualmente o gerador de sessão para garantir a cobertura dos blocos try/finally de conexão com o banco.'''
+    gen = get_session()
+    session = next(gen)
+    assert session is not None
+    try:
+        next(gen)
+    except StopIteration:
+        pass
+
+def test_verify_token_missing_sub_claim(client):
+    '''Testa a falha de autenticação quando um token JWT é válido mas não contém a claim de identificação do usuário.'''
+    payload = {'nome': 'teste', 'exp': 9999999999, 'sub': None}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    
+    response = client.get('/banking/balance', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 401
+    assert 'Acesso Negado' in response.json()['detail']
