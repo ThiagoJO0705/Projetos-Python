@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, Numeric, DateTime, ForeignKey, Enum
 from app.schemas.enums import TransactionType
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from database import Base
+from app.dbconfig import Base
 
 class Transaction(Base):
     __tablename__ = 'transactions'

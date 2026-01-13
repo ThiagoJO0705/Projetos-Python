@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Enum
 from app.schemas.enums import AssetType
-from database import Base
+from app.dbconfig import Base
 
 class Asset(Base):
     __tablename__ = 'assets'
