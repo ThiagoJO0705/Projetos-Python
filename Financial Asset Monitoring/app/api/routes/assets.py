@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from app.api.dependencies import get_session
-from app.schemas.schemas import AssetSchema, SearchResponse
+from app.api.dependencies import get_session, verify_token
+from app.schemas.schemas import AssetSchema, SearchResponse, AssetPrice, TickerSchema
 from app.schemas.enums import AssetType
 from sqlalchemy.orm import Session
+from app.models.user import User
 from app.models.asset import Asset
 from typing import List, Optional
 import yfinance as yf
@@ -38,8 +39,8 @@ async def get_assets(type: Optional[str] = Query(None, example="AÇÕES ,CRIPTO 
     Lista todos os ativos cadastrados no banco de dados
     '''
     assets = session.query(Asset)
+    type = type.upper()
     if type is not None:
-        type.upper()
         assets = assets.filter(type == Asset.type)
     assets = assets.all()
     return assets
@@ -66,11 +67,40 @@ async def search_assets(name: str):
     
 
 
-@assets.get('/price/{ticker}')
-async def get_price():
-    pass
+@assets.get('/price/{ticker}', response_model=AssetPrice)
+async def get_price(ticker: str):
+    """ Retorna o preço atual de um ativo específico """
+    try:
+        tck = yf.Ticker(ticker)
+        price = tck.fast_info.last_price
+        currency = tck.fast_info.currency
+        asset_price = AssetPrice(
+            ticker=ticker.upper(),
+            price=round(price, 2),
+            currency=currency)
+        return asset_price
+    except Exception:
+        raise HTTPException(status_code=404, detail="Não foi possível obter o preço deste ticker")
 
 
 @assets.post('/')
-async def post_asset():
-    pass
+async def post_asset(ticker_schema: TickerSchema, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    existing = session.query(Asset).filter(Asset.ticker == ticker_schema.ticker).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ativo já cadastrado")
+    tck = yf.Ticker(ticker_schema.ticker)
+    try:
+        info = tck.info
+        if not info or 'symbol' not in info:
+            raise HTTPException(status_code=400, detail="Ticker inválido ou não encontrado no Yahoo Finance.")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Erro ao validar Ticker. Verifique a conexão ou o código digitado.")
+    new_asset = Asset(
+        name=info.get('longName') or info.get('shortName'),
+        ticker=ticker_schema.ticker.upper(),
+        type=map_yahoo_type(info)
+    )
+    session.add(new_asset)
+    session.commit()
+    session.refresh(new_asset)
+    return new_asset

@@ -41,3 +41,20 @@ class SearchResponse(BaseModel):
     short_name: str
     stock_exchange: str
     type: AssetType
+
+    class Config:
+        from_attributes = True
+
+class AssetPrice(BaseModel):
+    ticker: str
+    price: float
+    currency: str
+
+    class Config:
+        from_attributes = True
+
+class TickerSchema(BaseModel):
+    ticker: str
+
+    class Config:
+        from_attributes = True
