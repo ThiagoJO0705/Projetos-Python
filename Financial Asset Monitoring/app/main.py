@@ -19,6 +19,7 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl='auth/signin-form')
 
 
 from app.api.routes.auth import auth
-
+from app.api.routes.assets import assets
 
 app.include_router(auth)
+app.include_router(assets)
