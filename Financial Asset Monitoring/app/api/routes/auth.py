@@ -25,7 +25,7 @@ def authenticate_user(email, password, session):
     '''
     Função para autenticação de usuário
     '''
-    user = session.query(User).filter(user.email == email).first()
+    user = session.query(User).filter(User.email == email).first()
     if not user:
         return False
     elif not bcrypt_context.verify(password, user.password):
