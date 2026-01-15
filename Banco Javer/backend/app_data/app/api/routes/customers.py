@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import Optional, List
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app_data.models.customer import Customer 
 from app_data.schemas.schemas import CustomerCreate, CustomerResponse
@@ -31,9 +33,21 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
         session.rollback()
         raise HTTPException(status_code=400, detail=f"Ocorreu um erro ao tentar salvar no banco de dados.")
 
-@customers.get('/')
-async def get_all_customers():
-    pass
+@customers.get('/', response_model=List[CustomerResponse])
+async def get_all_customers(is_active: Optional[bool] = Query(None), is_account_holder: Optional[bool] = Query(None), name: Optional[str] = Query(None), is_admin: Optional[bool] = Query(None), session: Session = Depends(get_session)):
+    """
+    Retorna todos os clientes com opção de filtros
+    """
+    query = session.query(Customer)
+    if is_active is not None:
+        query = query.filter(Customer.is_active == is_active)
+    if is_account_holder is not None:
+        query = query.filter(Customer.is_account_holder == is_account_holder)
+    if name:
+        query = query.filter(Customer.name.contains(name))
+    if is_admin is not None:
+        query = query.filter(Customer.is_admin == is_admin)
+    return query.all()
 
 @customers.get('/{customer_id}', response_model=CustomerResponse)
 async def get_customer_by_id(customer_id: int, session: Session = Depends(get_session)):
