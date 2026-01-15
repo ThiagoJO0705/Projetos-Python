@@ -88,12 +88,12 @@ async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: 
     '''
     Rota para login de usuários
     '''
-    user = authenticate_customer(form_data.username, form_data.password, session)
-    if not user:
+    customer = authenticate_customer(form_data.username, form_data.password, session)
+    if not customer:
         raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
     else:
-        access_token = create_token(user.id)
-        refresh_token = create_token(user.id, token_duration=timedelta(days=7))
+        access_token = create_token(customer.id)
+        refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
         return {'access_token': access_token, 
                 'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
@@ -105,7 +105,7 @@ async def refresh_token(customer: Customer = Depends(verify_token)):
     Rota para renovação de token de acesso
     '''
     access_token = create_token(customer.id)
-    refresh_token = create_token(user.id, token_duration=timedelta(days=7))
+    refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
     return {'access_token': access_token,
             'refresh_token': refresh_token,
             'token_type': 'Bearer'}
