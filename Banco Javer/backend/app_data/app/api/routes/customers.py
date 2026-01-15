@@ -49,6 +49,18 @@ async def get_all_customers(is_active: Optional[bool] = Query(None), is_account_
         query = query.filter(Customer.is_admin == is_admin)
     return query.all()
 
+@customers.get('/filter', response_model=CustomerResponse)
+async def filter_customer(email: Optional[str] = Query(None), cpf: Optional[str] = Query(None), phone_number: Optional[str] = Query(None), session: Session = Depends(get_session)):
+    """
+    Busca um único cliente por e-mail, CPF ou Telefone.
+    """
+    if not any([email, cpf, phone_number]):
+        raise HTTPException(status_code=400, detail="É necessário informar ao menos um critério de busca (email, cpf ou phone_number).")
+    customer = session.query(Customer).filter(or_(Customer.email == email, Customer.cpf == cpf, Customer.phone_number == phone_number)).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Nenhum usuário encontrado com os critérios fornecidos.")
+    return customer
+
 @customers.get('/{customer_id}', response_model=CustomerResponse)
 async def get_customer_by_id(customer_id: int, session: Session = Depends(get_session)):
     """
@@ -59,9 +71,6 @@ async def get_customer_by_id(customer_id: int, session: Session = Depends(get_se
         raise HTTPException(status_code=404, detail='Usuário não encontrado!')
     return customer
 
-@customers.get('/filter')
-async def filter_customer():
-    pass
 
 @customers.patch('/{customer_id}')
 async def update_customer():
