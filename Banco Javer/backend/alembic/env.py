@@ -22,9 +22,9 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.database import Base
-from app.models.customer import Customer
-from app.models.transaction import Transaction  
+from app_data.app.dbconfig import Base
+from app_data.models.customer import Customer
+from app_data.models.transaction import Transaction  
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
