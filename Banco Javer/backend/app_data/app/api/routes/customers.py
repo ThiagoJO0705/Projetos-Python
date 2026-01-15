@@ -35,9 +35,15 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
 async def get_all_customers():
     pass
 
-@customers.get('/{customer_id}')
-async def get_customer_by_id():
-    pass
+@customers.get('/{customer_id}', response_model=CustomerResponse)
+async def get_customer_by_id(customer_id: int, session: Session = Depends(get_session)):
+    """
+    Busca um cliente específico pelo ID.
+    """
+    customer = session.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Usuário não encontrado!')
+    return customer
 
 @customers.get('/filter')
 async def filter_customer():
