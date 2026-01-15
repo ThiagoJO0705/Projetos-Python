@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Float, Numeric
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app_data.app.dbconfig import Base
 from decimal import Decimal
 
 class Customer(Base):

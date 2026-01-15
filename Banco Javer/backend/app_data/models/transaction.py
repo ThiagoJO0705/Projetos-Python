@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.database import Base
-from app.schemas.enums import TransactionType, TransactionDirection
+from app_data.app.dbconfig import Base
+from ..schemas.enums import TransactionType, TransactionDirection
 
 class Transaction(Base):
     __tablename__ = "transactions"
