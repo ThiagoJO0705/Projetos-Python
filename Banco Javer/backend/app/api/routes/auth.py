@@ -105,7 +105,9 @@ async def refresh_token(customer: Customer = Depends(verify_token)):
     Rota para renovação de token de acesso
     '''
     access_token = create_token(customer.id)
+    refresh_token = create_token(user.id, token_duration=timedelta(days=7))
     return {'access_token': access_token,
+            'refresh_token': refresh_token,
             'token_type': 'Bearer'}
 
     
