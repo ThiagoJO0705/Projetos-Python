@@ -29,8 +29,10 @@ def validate_market_price(ticker: str, price_sent: float, date: datetime):
     return True
 
 @transactions.post("/", response_model=TransactionResponse)
-async def create_transaction(data: TransactionCreate, session: Session = Depends(get_session),user: User = Depends(verify_token)
-):
+async def create_transaction(data: TransactionCreate, session: Session = Depends(get_session),user: User = Depends(verify_token)):
+    '''
+    Rota para criar uma transação feita em algum momento
+    '''
     asset = session.query(Asset).filter(Asset.ticker == data.ticker.upper()).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Ativo não cadastrado. Cadastre o ativo em /assets primeiro.")

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from .enums import AssetType, TransactionType
 from datetime import datetime
 
@@ -75,6 +75,38 @@ class TransactionResponse(BaseModel):
     price: float
     type: TransactionType
     timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+class AssetPerformance(BaseModel):
+    ticker: str
+    quantity: float
+    average_price: float
+    current_price: float
+    total_invested: float
+    current_value: float
+    profit_loss: float
+    profit_loss_pct: float
+
+    class Config:
+        from_attributes = True
+
+class ProfileDashboard(BaseModel):
+    user_email: str
+    total_transactions: int
+    total_invested: float 
+    current_balance: float 
+    overall_profit_loss: float 
+    status: str 
+    assets: List[AssetPerformance]
+
+    class Config:
+        from_attributes = True
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone_number: Optional[str] = None
 
     class Config:
         from_attributes = True

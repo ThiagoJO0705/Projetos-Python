@@ -21,7 +21,9 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl='auth/signin-form')
 from app.api.routes.auth import auth
 from app.api.routes.assets import assets
 from app.api.routes.transactions import transactions 
+from app.api.routes.profile import profile 
 
 app.include_router(auth)
 app.include_router(assets)
 app.include_router(transactions)
+app.include_router(profile)
