@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app_data.models.customer import Customer 
-from app_data.schemas.schemas import CustomerCreate, CustomerResponse
+from app_data.schemas.schemas import CustomerCreate, CustomerResponse, CustomerUpdate
 from app_data.app.dbconfig import get_session 
 
 customers = APIRouter(prefix='/customers', tags=['customers'])
@@ -72,6 +72,27 @@ async def get_customer_by_id(customer_id: int, session: Session = Depends(get_se
     return customer
 
 
-@customers.patch('/{customer_id}')
-async def update_customer():
-    pass
+@customers.patch('/{customer_id}', response_model=CustomerResponse)
+async def update_customer(customer_id: int, customer_in: CustomerUpdate, session: Session = Depends(get_session)):
+    """
+    Atualiza dados pessoais do cliente e status de conta
+    """
+    customer = session.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Usuário não encontrado!')
+    update_dict = customer_in.model_dump(exclude_unset=True)
+    for field in ["email", "cpf", "phone_number"]:
+        if field in update_dict:
+            value = update_dict[field]
+            existing_value = session.query(Customer).filter(getattr(Customer, field) == value, Customer.id != customer_id).first()
+            if existing_value:
+                raise HTTPException(status_code=400, detail=f"Este {field} já está sendo usado por outro usuário.")
+    for field, value in update_dict.items():
+        setattr(customer, field, value)
+    try:
+        session.commit()
+        session.refresh(customer)
+        return customer
+    except Exception:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar o usuário {customer.name} (ID: {customer_id})")

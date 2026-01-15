@@ -22,7 +22,6 @@ class CustomerUpdate(BaseModel):
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
     cpf: Optional[str] = None
-    account_balance: Optional[Decimal] = None
     is_account_holder: Optional[bool] = None
     is_active: Optional[bool] = None
     is_admin: Optional[bool] = None
