@@ -1,20 +1,8 @@
-from sqlalchemy.orm import sessionmaker, Session
 from app.models.customer import Customer
 from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from app.main import SECRET_KEY, ALGORITHM, oauth2_schema
-from app.database import db
 from decimal import Decimal
-
-
-def get_session():
-    try:
-        Session = sessionmaker(bind=db)
-        session = Session() 
-        yield session
-    finally:
-        session.close()
-
 
 def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_session)):
     try:
