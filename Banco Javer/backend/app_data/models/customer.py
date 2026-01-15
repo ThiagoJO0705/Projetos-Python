@@ -18,14 +18,6 @@ class Customer(Base):
     is_admin = Column('is_admin', Boolean, default=False)
     transactions = relationship("Transaction", back_populates="customer", foreign_keys="[Transaction.customer_id]")
 
-    @property
-    def score(self):
-        if self.account_balance and float(self.account_balance) > 0:
-            balance_as_decimal = Decimal(str(self.account_balance))
-            return round(balance_as_decimal * Decimal('0.1'), 2)
-        return 0.0
-
-
     def __init__(self, name, email, password, phone_number, cpf, account_balance=0.0, is_account_holder=True, is_active=True, is_admin=False):
         self.name = name
         self.email = email
