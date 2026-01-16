@@ -13,9 +13,15 @@ class CustomerBase(BaseModel):
     is_active: bool = True
     is_admin: bool = False
 
+    class Config:
+        from_attributes = True
+
 class CustomerCreate(CustomerBase):
     password: str  
     account_balance: Decimal = Decimal('0.00')
+
+    class Config:
+        from_attributes = True
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
@@ -26,9 +32,14 @@ class CustomerUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_admin: Optional[bool] = None
 
+    class Config:
+        from_attributes = True
+
 class CustomerResponse(CustomerBase):
     id: int
     account_balance: Decimal
+    class Config:
+        from_attributes = True
     
 
 class TransactionCreate(BaseModel):
@@ -38,6 +49,8 @@ class TransactionCreate(BaseModel):
     amount: Decimal
     related_customer_id: Optional[int] = None
     description: Optional[str] = None
+    class Config:
+        from_attributes = True
 
 
 class TransactionResponse(BaseModel):
@@ -50,3 +63,11 @@ class TransactionResponse(BaseModel):
     description: Optional[str]
     created_at: datetime
 
+    class Config:
+        from_attributes = True
+
+class CustomerAuthResponse(CustomerResponse):
+    password: str 
+
+    class Config:
+        from_attributes = True

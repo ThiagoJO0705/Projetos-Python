@@ -33,7 +33,7 @@ class CustomerService:
     @staticmethod
     async def get_by_filter(params: dict):
         '''Busca por email, cpf ou telefone para Login/Pix'''
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(f'{BASE_URL}/filter', params=params)
             if response.status_code != 200:
                 return None
