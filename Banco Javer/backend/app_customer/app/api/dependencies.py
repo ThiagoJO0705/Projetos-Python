@@ -21,7 +21,7 @@ async def verify_token(token: str = Depends(oauth2_schema)):
     return customer
 
 
-def verify_account_holder(customer: Customer = Depends(verify_token)):
+def verify_account_holder(customer: dict = Depends(verify_token)):
     '''Valida se o usuário é correntista.'''
     if not customer.get('is_account_holder'):
         raise HTTPException(status_code=403, detail='Você não tem permissão para fazer essa operação, é necessário ser Correntista.')

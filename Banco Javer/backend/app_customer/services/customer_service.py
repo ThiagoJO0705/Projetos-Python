@@ -47,3 +47,14 @@ class CustomerService:
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail=response.json().get('detail'))
             return response.json()
+        
+    @staticmethod
+    async def get_all(params: dict):
+        '''
+        Lista todos os clientes
+        '''
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'{BASE_URL}/', params=params)
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail='Erro ao recuperar lista de clientes da base de dados.')            
+            return response.json()

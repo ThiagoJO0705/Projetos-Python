@@ -17,9 +17,9 @@ bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='auth/signin-form')
 
 
-from app.api.routes.auth import auth
-from app.api.routes.banking import banking
-from app.api.routes.admin import admin
+from app_customer.app.api.routes.auth import auth
+from app_customer.app.api.routes.banking import banking
+from app_customer.app.api.routes.admin import admin
 
 app.include_router(auth)
 app.include_router(banking)
