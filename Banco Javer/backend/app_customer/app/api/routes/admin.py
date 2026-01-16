@@ -69,19 +69,18 @@ async def disable_customer(customer_id: int, user: dict = Depends(verify_token))
     }
 
 
-@admin.patch('/customer/activate/{customer_id}')
-async def activate_customer(customer_id: int, session: Session = Depends(get_session), admin: Customer = Depends(verify_admin)):
+@admin.patch('/customer/activate/{customer_id}', dependencies=[Depends(verify_admin)])
+async def activate_customer(customer_id: int):
     '''
     Rota para ativar a conta de um cliente
     '''
-    customer = session.query(Customer).filter(Customer.id == customer_id).first()
-    if not customer:
+    target_customer = await CustomerService.get_by_id(customer_id)
+    if not target_customer:
         raise HTTPException(status_code=404, detail='Usuário não existe!')
-    if customer.is_active:
+    if target_customer['is_active']:
         raise HTTPException(status_code=400, detail='A conta deste usuário já está ativa!')
-    customer.is_account_holder = True
-    customer.is_active = True
-    session.commit()
+    activate_data = {'is_active': True, 'is_account_holder': True}
+    updated_user = await CustomerService.update(customer_id, activate_data)
     return {
-        'message': f'A conta do usuário {customer.name} (ID: {customer.id}) foi ativada.'
+        'message': f'A conta do usuário {target_customer} (ID: {target_customer['id']}) foi ativada.'
     }
