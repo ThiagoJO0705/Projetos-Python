@@ -30,3 +30,20 @@ class CustomerService:
             customer['score'] = CustomerService.calculate_score(Decimal(customer['account_balance']))
             return customer
 
+    @staticmethod
+    async def get_by_filter(params: dict):
+        """Busca por email, cpf ou telefone para Login/Pix"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{BASE_URL}/filter", params=params)
+            if response.status_code != 200:
+                return None
+            return response.json()
+
+    @staticmethod
+    async def update(customer_id: int, data: dict):
+        '''Atualiza dados do cliente'''
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(f"{BASE_URL}/{customer_id}", json=data)
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=response.json().get("detail"))
+            return response.json()
