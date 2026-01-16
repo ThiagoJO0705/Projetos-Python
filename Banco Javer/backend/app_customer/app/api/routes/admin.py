@@ -25,29 +25,22 @@ async def get_customers(is_active: Optional[bool] = Query(None), is_account_hold
 
 
 @admin.patch('/customers/{customer_id}', response_model=CustomerResponse)
-async def update_customer(customer_id: int, update_customer_schema: CustomerUpdate, session: Session = Depends(get_session)):
+async def update_customer(customer_id: int, update_customer_schema: CustomerUpdate, user: dict = Depends(verify_token)):
     '''
     Rota para alterar dados de um cliente
     '''
-    customer = session.query(Customer).filter(Customer.id == customer_id).first()
-    if not customer:
-        raise HTTPException(status_code=404, detail='Usuário não existe!')
+    is_admin = user.get('is_admin')
+    is_owner = user.get('id') == customer_id
+    if not is_admin and not is_owner:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para alterar dados de terceiros.")
     update_dict = update_customer_schema.model_dump(exclude_unset=True)
-    if 'email' in update_dict:
-        existing_email = session.query(Customer).filter(Customer.email == update_dict['email'],  Customer.id != customer_id).first()
-        if existing_email:
-            raise HTTPException(status_code=400, detail='Este e-mail já está cadastrado em outra conta.')
-
-    if 'cpf' in update_dict:
-        existing_cpf = session.query(Customer).filter(Customer.cpf == update_dict['cpf'], Customer.id != customer_id).first()
-        if existing_cpf:
-            raise HTTPException(status_code=400, detail='Este CPF já está vinculado a outra conta.')
-
-    for key, value in update_dict.items():
-        setattr(customer, key, value)
-    session.commit()
-    session.refresh(customer)
-    return customer
+    if not is_admin:
+        update_dict.pop("is_admin", None)
+        update_dict.pop("is_account_holder", None)
+        update_dict.pop("is_active", None)
+    updated_user = await CustomerService.update(customer_id, update_dict)
+    updated_user['score'] = generate_score(Decimal(str(updated_user['account_balance'])))
+    return updated_user
 
 
 @admin.delete('/customers/disable/{customer_id}')
