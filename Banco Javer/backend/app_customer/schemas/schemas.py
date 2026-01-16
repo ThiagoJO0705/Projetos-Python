@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
-from app.schemas.enums import TransactionType
+from app_customer.schemas.enums import TransactionType
 from decimal import Decimal
 
 class CustomerCreate(BaseModel):

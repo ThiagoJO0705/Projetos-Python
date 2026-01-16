@@ -5,6 +5,7 @@ from app_customer.schemas.schemas import CustomerCreate, CustomerResponse, Login
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
+from ..dependencies import verify_token
 
 auth = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -23,10 +24,10 @@ async def authenticate_customer(email, password):
     '''
     Função para autenticação de usuário
     '''
-    customer = await CustomerService.get_by_filter({"email": email})
+    customer = await CustomerService.get_by_filter({'email': email})
     if not customer:
         return False
-    elif not bcrypt_context.verify(password, customer.password):
+    elif not bcrypt_context.verify(password, customer['password']):
         return False
     return customer
 
@@ -36,11 +37,11 @@ async def signup(customer_create_schema: CustomerCreate):
     '''
     Rota para cadastro de novos usuários
     '''
-    if await CustomerService.get_by_filter({"email": customer_create_schema.email}):
+    if await CustomerService.get_by_filter({'email': customer_create_schema.email}):
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
-    if await CustomerService.get_by_filter({"cpf": customer_create_schema.cpf}):
+    if await CustomerService.get_by_filter({'cpf': customer_create_schema.cpf}):
         raise HTTPException(status_code=400, detail='CPF do usuário já está vinculado a outra conta!')
-    if await CustomerService.get_by_filter({"phone_number": customer_create_schema.phone_number}):
+    if await CustomerService.get_by_filter({'phone_number': customer_create_schema.phone_number}):
         raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
     encrypted_password = bcrypt_context.hash(customer_create_schema.password)
     new_customer = {
@@ -54,7 +55,9 @@ async def signup(customer_create_schema: CustomerCreate):
         "is_active": True,
         "is_admin": False
     }
-    return await CustomerService.create(new_customer)
+    created_user = created_user = await CustomerService.create(new_customer)
+    created_user['score'] = 0.0
+    return created_user
 
 
 @auth.post('/signin')
@@ -76,7 +79,7 @@ async def login(login_schema: LoginSchema):
     
 
 @auth.post('/signin-form')
-async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+async def login_form(form_data: OAuth2PasswordRequestForm = Depends()):
     '''
     Rota para login de usuários
     '''
@@ -92,12 +95,13 @@ async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: 
 
 
 @auth.post('/refresh')
-async def refresh_token(customer: Customer = Depends(verify_token)):
+async def refresh_token(customer: dict = Depends(verify_token)):
     '''
     Rota para renovação de token de acesso
     '''
-    access_token = create_token(customer.id)
-    refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
+    customer_id = customer.get('id')
+    access_token = create_token(customer_id)
+    refresh_token = create_token(customer_id, token_duration=timedelta(days=7))
     return {'access_token': access_token,
             'refresh_token': refresh_token,
             'token_type': 'Bearer'}
