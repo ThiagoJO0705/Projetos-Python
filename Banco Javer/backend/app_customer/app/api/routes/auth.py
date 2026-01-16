@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.models.customer import Customer
-from app.api.dependencies import get_session, verify_token
-from app.main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from app.schemas.schemas import CustomerCreate, CustomerResponse, LoginSchema
-from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+from app_customer.services.customer_service import CustomerService
+from app_customer.app.main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
+from app_customer.schemas.schemas import CustomerCreate, CustomerResponse, LoginSchema
+from jose import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -21,11 +19,11 @@ def create_token(id_customer: int, token_duration=timedelta(minutes=ACCESS_TOKEN
     return encoded_jwt
 
 
-def authenticate_customer(email, password, session):
+async def authenticate_customer(email, password):
     '''
     Função para autenticação de usuário
     '''
-    customer = session.query(Customer).filter(Customer.email == email).first()
+    customer = await CustomerService.get_by_filter({"email": email})
     if not customer:
         return False
     elif not bcrypt_context.verify(password, customer.password):
@@ -34,35 +32,29 @@ def authenticate_customer(email, password, session):
 
 
 @auth.post('/signup', response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
-async def signup(customer_create_schema: CustomerCreate, session: Session = Depends(get_session)):
+async def signup(customer_create_schema: CustomerCreate):
     '''
     Rota para cadastro de novos usuários
     '''
-    customer_email = session.query(Customer).filter(Customer.email == customer_create_schema.email).first()
-    if customer_email:
+    if await CustomerService.get_by_filter({"email": customer_create_schema.email}):
         raise HTTPException(status_code=400, detail='Email do usuário já cadastrado!')
-    customer_cpf = session.query(Customer).filter(Customer.cpf == customer_create_schema.cpf).first()
-    if customer_cpf:
+    if await CustomerService.get_by_filter({"cpf": customer_create_schema.cpf}):
         raise HTTPException(status_code=400, detail='CPF do usuário já está vinculado a outra conta!')
-    customer_phone = session.query(Customer).filter(Customer.phone_number == customer_create_schema.phone_number).first()
-    if customer_phone:
+    if await CustomerService.get_by_filter({"phone_number": customer_create_schema.phone_number}):
         raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
-
     encrypted_password = bcrypt_context.hash(customer_create_schema.password)
-    new_customer = Customer(
-        name=customer_create_schema.name,
-        email=customer_create_schema.email,
-        password=encrypted_password,
-        phone_number=customer_create_schema.phone_number,
-        cpf=customer_create_schema.cpf,
-        account_balance=0.0,
-        is_account_holder=True,
-        is_active=True, 
-        is_admin=False           
-    )
-    session.add(new_customer)
-    session.commit()
-    return new_customer
+    new_customer = {
+        "name": customer_create_schema.name,
+        "email": customer_create_schema.email,
+        "password": encrypted_password,
+        "phone_number": customer_create_schema.phone_number,
+        "cpf": customer_create_schema.cpf,
+        "account_balance": 0.0,
+        "is_account_holder": True,
+        "is_active": True,
+        "is_admin": False
+    }
+    return await CustomerService.create(new_customer)
 
 
 @auth.post('/signin')
