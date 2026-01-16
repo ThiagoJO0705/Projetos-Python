@@ -45,15 +45,15 @@ async def signup(customer_create_schema: CustomerCreate):
         raise HTTPException(status_code=400, detail='Telefone do usuário já está vinculado a outra conta!')
     encrypted_password = bcrypt_context.hash(customer_create_schema.password)
     new_customer = {
-        "name": customer_create_schema.name,
-        "email": customer_create_schema.email,
-        "password": encrypted_password,
-        "phone_number": customer_create_schema.phone_number,
-        "cpf": customer_create_schema.cpf,
-        "account_balance": 0.0,
-        "is_account_holder": True,
-        "is_active": True,
-        "is_admin": False
+        'name': customer_create_schema.name,
+        'email': customer_create_schema.email,
+        'password': encrypted_password,
+        'phone_number': customer_create_schema.phone_number,
+        'cpf': customer_create_schema.cpf,
+        'account_balance': 0.0,
+        'is_account_holder': True,
+        'is_active': True,
+        'is_admin': False
     }
     created_user = created_user = await CustomerService.create(new_customer)
     created_user['score'] = 0.0
