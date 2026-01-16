@@ -1,78 +1,70 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.api.dependencies import verify_token, get_session, verify_account_holder, generate_score
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from app.models.customer import Customer
-from app.models.transaction import Transaction
-from app.schemas.schemas import PixSending, TransactionResponse, PaymentRequest, TransactionSchema
-from app.schemas.enums import TransactionDirection, TransactionType
+from app_customer.app.api.dependencies import verify_token, verify_account_holder, generate_score
+from app_customer.services.customer_service import CustomerService
+from app_customer.services.transaction_services import TransactionService
+from app_customer.schemas.schemas import PixSending, TransactionResponse, PaymentRequest, TransactionSchema
+from app_customer.schemas.enums import TransactionDirection, TransactionType
 from typing import List
 from decimal import Decimal
 
 banking = APIRouter(prefix='/banking', tags=['banking'], dependencies=[Depends(verify_account_holder)])
 
 @banking.get('/balance')
-
-async def get_balance(customer: Customer = Depends(verify_token)):
+async def get_balance(customer: dict = Depends(verify_token)):
     '''
         Rota para consultar saldo e score atual
     '''
-    score = generate_score(customer.account_balance)
-    return {'balance': customer.account_balance,
-            'score': score}
+    balance = Decimal(str(customer['account_balance']))
+    return {'balance': balance,
+            'score': generate_score(balance)}
 
 @banking.post('/deposit')
-async def deposit(deposit_value: float, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
+async def deposit(deposit_value: float, customer: dict = Depends(verify_token)):
     '''
         Rota para depósito de dinheiro
     '''
-    if deposit_value > 0:
-        customer.account_balance += Decimal(str(round(deposit_value, 2)))
-        new_score = generate_score(customer.account_balance)
-        session.commit()
-        new_transaction = Transaction(
-            customer_id=customer.id,
-            type=TransactionType.DEPOSIT,
-            direction=TransactionDirection.CREDIT,
-            amount=deposit_value,
-            description="Depósito em dinheiro"
-        )
-        session.add(new_transaction)
-        session.commit()
-        return {'deposit_value': deposit_value,
-                'new_balance': customer.account_balance,
-                'new_score': new_score}
-    raise HTTPException(status_code=400, detail='Valor inválido. O depósito deve ser um número positivo.')
+    if deposit_value <= 0:
+        raise HTTPException(status_code=400, detail='O depósito deve ser um número positivo.')
+    new_transaction = {
+        'customer_id': customer['id'],
+        'type': TransactionType.DEPOSIT,
+        'direction': TransactionDirection.CREDIT,
+        'amount': Decimal(str(round(deposit_value, 2))),
+        'description': 'Depósito em dinheiro'
+    }
+    result = await TransactionService.register(new_transaction)
+    updated_customer = await CustomerService.get_by_id(customer['id'])
+    return {'deposit_value': deposit_value,
+            'new_balance': updated_customer['account_balance'],
+            'new_score': generate_score(updated_customer['account_balance'])}
 
 @banking.post('/payment', response_model=TransactionResponse)
-async def payment(payment_data: PaymentRequest, session: Session = Depends(get_session), customer: Customer = Depends(verify_token)):
+async def payment(payment_data: PaymentRequest, customer: dict = Depends(verify_token)):
     '''
         Rota para efetuar pagamento (Boleto, Conta, etc.)
 
     '''
+    balance = Decimal(str(customer['account_balance']))
     if payment_data.method == TransactionType.DEPOSIT:
-        raise HTTPException(status_code=400, detail='Operação inválida. Não é possível usar Depósito como forma de pagamento.')
+        raise HTTPException(status_code=400, detail='Operação inválida para pagamentos.')
     if payment_data.amount <= 0:
-        raise HTTPException(status_code=400, detail='Transação negada. O valor solicitado deve ser maior que zero.')
-    if payment_data.amount > customer.account_balance:
-        raise HTTPException(status_code=400, detail='Transação negada. Saldo atual insuficiente para o valor solicitado.')
-    new_transaction = Transaction(
-        customer_id=customer.id,
-        type=payment_data.method,
-        direction=TransactionDirection.DEBIT,
-        amount=payment_data.amount,
-        description=f"[{payment_data.method.value}] {payment_data.description}"
-    )
-    customer.account_balance = Decimal(str(round(customer.account_balance - payment_data.amount, 2)))
-    session.add(new_transaction)
-    session.commit()
-    session.refresh(customer)
-    session.refresh(new_transaction)
+        raise HTTPException(status_code=400, detail='O valor deve ser maior que zero.')
+    if payment_data.amount > balance:
+        raise HTTPException(status_code=400, detail='Saldo insuficiente.')
+    new_transaction = {
+        'customer_id': customer['id'],
+        'type': payment_data.method,
+        'direction': TransactionDirection.DEBIT,
+        'amount': payment_data.amount,
+        'description': f'[{payment_data.method.value}] {payment_data.description}'
+    }
+    extract = await TransactionService.register(new_transaction)
+    new_balance = balance - payment_data.amount
     return {
         'message': 'Pagamento efetuado com sucesso!',
-        'new_balance': customer.account_balance,
-        'new_score': customer.score,
-        'extract': new_transaction
+        'new_balance': new_balance,
+        'new_score': generate_score(new_balance),
+        'extract': extract
     }
 
 @banking.post('/pix', response_model=TransactionResponse)
@@ -124,9 +116,9 @@ async def pix(pix: PixSending, session: Session = Depends(get_session), sender: 
 
 @banking.get('/statement',  response_model=List[TransactionSchema])
 async def get_statement(session: Session = Depends(get_session), customer: Customer = Depends(verify_account_holder)):
-    """
+    '''
     Retorna o histórico completo de transações do usuário logado.
     As transações são ordenadas da mais recente para a mais antiga.
-    """
+    '''
     transactions = session.query(Transaction).filter(Transaction.customer_id == customer.id).order_by(Transaction.created_at.desc()).all()
     return transactions
