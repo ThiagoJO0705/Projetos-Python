@@ -58,18 +58,18 @@ async def signup(customer_create_schema: CustomerCreate):
 
 
 @auth.post('/signin')
-async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
+async def login(login_schema: LoginSchema):
     '''
     Rota para login de usuários
     '''
-    customer = authenticate_customer(login_schema.email, login_schema.password, session)
+    customer = await authenticate_customer(login_schema.email, login_schema.password)
     if not customer:
         raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
-    if not customer.is_active:
+    if not customer['is_active']:
         raise HTTPException(status_code=401, detail='Acesso Negado. Usuário está com a conta desativada!')
     else:
-        access_token = create_token(customer.id)
-        refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
+        access_token = create_token(customer['id'])
+        refresh_token = create_token(customer['id'], token_duration=timedelta(days=7))
         return {'access_token': access_token, 
                 'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
@@ -80,12 +80,12 @@ async def login_form(form_data: OAuth2PasswordRequestForm = Depends(), session: 
     '''
     Rota para login de usuários
     '''
-    customer = authenticate_customer(form_data.username, form_data.password, session)
+    customer = await authenticate_customer(form_data.username, form_data.password)
     if not customer:
         raise HTTPException(status_code=400, detail='Usuário não encontrado ou credenciais inválidas!')
     else:
-        access_token = create_token(customer.id)
-        refresh_token = create_token(customer.id, token_duration=timedelta(days=7))
+        access_token = create_token(customer['id'])
+        refresh_token = create_token(customer['id'], token_duration=timedelta(days=7))
         return {'access_token': access_token, 
                 'refresh_token': refresh_token,
                 'token_type': 'Bearer'}
