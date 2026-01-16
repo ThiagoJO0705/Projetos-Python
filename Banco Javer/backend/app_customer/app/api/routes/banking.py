@@ -29,7 +29,7 @@ async def deposit(deposit_value: float, customer: dict = Depends(verify_token)):
         'customer_id': customer['id'],
         'type': TransactionType.DEPOSIT,
         'direction': TransactionDirection.CREDIT,
-        'amount': Decimal(str(round(deposit_value, 2))),
+        'amount': float(deposit_value),
         'description': 'Depósito em dinheiro'
     }
     result = await TransactionService.register(new_transaction)
@@ -55,7 +55,7 @@ async def payment(payment_data: PaymentRequest, customer: dict = Depends(verify_
         'customer_id': customer['id'],
         'type': payment_data.method,
         'direction': TransactionDirection.DEBIT,
-        'amount': payment_data.amount,
+        'amount': float(payment_data.amount),
         'description': f'[{payment_data.method.value}] {payment_data.description}'
     }
     extract = await TransactionService.register(new_transaction)
@@ -86,7 +86,7 @@ async def pix(pix: PixSending, sender: dict = Depends(verify_token)):
         'customer_id': sender['id'],
         'type': TransactionType.PIX,
         'direction': TransactionDirection.DEBIT,
-        'amount': pix.pix_amount,
+        'amount': float(pix.pix_amount),
         'related_customer_id': receiver['id'],
         'description': f'Pix enviado para {receiver['name']}'
     })
