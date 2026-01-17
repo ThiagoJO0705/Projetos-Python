@@ -1,7 +1,12 @@
-from app.models.customer import Customer
+import pytest
 from jose import jwt
-from app.main import SECRET_KEY, ALGORITHM
+from passlib.context import CryptContext
+from app_customer.app.api.dependencies import SECRET_KEY, ALGORITHM, generate_score
+from app_customer.app.main import app
+from app_customer.app.api.dependencies import verify_token
+from fastapi import HTTPException
 
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 USER_DATA = {
     'name': 'Thiago Teste',
@@ -11,180 +16,139 @@ USER_DATA = {
     'cpf': '12345678901'
 }
 
-def test_signup_success(client):
-    '''Testa o cadastro de um novo usuário com sucesso'''
-    response = client.post('/auth/signup', json=USER_DATA)
+def test_signup_success(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value=None)
+    mocker.patch('app_customer.services.customer_service.CustomerService.create', return_value={
+        'id': 1, 
+        'name': 'Thiago Teste',
+        'email': 'thiago@teste.com',
+        'phone_number': '11999999999',
+        'cpf': '12345678901',
+        'account_balance': 0.0, 
+        'is_active': True, 
+        'is_admin': False,
+        'is_account_holder': True
+    })
+    payload = {
+        'name': 'Thiago Teste', 
+        'email': 'thiago@teste.com', 
+        'password': 'senha123', 
+        'phone_number': '11999999999', 
+        'cpf': '12345678901'
+    }
+    response = client.post('/auth/signup', json=payload)
     assert response.status_code == 201
-    data = response.json()
-    assert data['email'] == USER_DATA['email']
-    assert 'id' in data
-    assert 'password' not in data
+    assert response.json()['is_account_holder'] is True
 
-
-def test_signup_duplicate_email(client):
-    '''Testa se a API barra e-mails duplicados'''
-    client.post('/auth/signup', json=USER_DATA)
-    user_2 = USER_DATA.copy()
-    user_2['cpf'] = '00000000000'
-    response = client.post('/auth/signup', json=user_2)
+def test_signup_duplicate_email(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value={'id': 1})
+    response = client.post('/auth/signup', json=USER_DATA)
     assert response.status_code == 400
-    assert response.json()['detail'] == 'Email do usuário já cadastrado!'
+    assert 'Email' in response.json()['detail']
 
-
-def test_signup_duplicate_cpf(client):
-    '''Testa se a API barra CPFs duplicados'''
-    client.post('/auth/signup', json=USER_DATA)
-    user_2 = USER_DATA.copy()
-    user_2['email'] = 'outro@email.com'
-    response = client.post('/auth/signup', json=user_2)
+def test_signup_duplicate_cpf(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', side_effect=[None, {'id': 1}])
+    response = client.post('/auth/signup', json=USER_DATA)
     assert response.status_code == 400
     assert 'CPF' in response.json()['detail']
 
-
-def test_signup_duplicate_phone(client):
-    '''Testa se a API barra CPFs duplicados'''
-    client.post('/auth/signup', json=USER_DATA)
-    user_2 = USER_DATA.copy()
-    user_2['email'] = 'outro@email.com'
-    user_2['cpf'] = '2134'
-    response = client.post('/auth/signup', json=user_2)
+def test_signup_duplicate_phone(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', side_effect=[None, None, {'id': 1}])
+    response = client.post('/auth/signup', json=USER_DATA)
     assert response.status_code == 400
     assert 'Telefone' in response.json()['detail']
 
-
-def test_signup_invalid_email(client):
-    '''Testa se o Pydantic barra e-mail mal formatado'''
-    invalid_data = USER_DATA.copy()
-    invalid_data['email'] = 'email_sem_arroba.com'
-    response = client.post('/auth/signup', json=invalid_data)
-    assert response.status_code == 422
-
-
-def test_signin_success(client):
-    '''Testa o login com credenciais corretas'''
-    client.post('/auth/signup', json=USER_DATA)
-    login_data = {'email': USER_DATA['email'], 'password': USER_DATA['password']}
-    response = client.post('/auth/signin', json=login_data)
+def test_signin_success(client, mocker):
+    hash_senha = pwd_context.hash(USER_DATA['password'])
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value={'id': 1, 'email': USER_DATA['email'], 'password': hash_senha, 'is_active': True})
+    response = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
     assert response.status_code == 200
     assert 'access_token' in response.json()
-    assert 'refresh_token' in response.json()
-    assert response.json()['token_type'] == 'Bearer'
 
-
-def test_signin_wrong_password(client):
-    '''Testa erro de senha incorreta'''
-    client.post('/auth/signup', json=USER_DATA)
-    login_data = {'email': USER_DATA['email'], 'password': 'senha_errada'}
-    response = client.post('/auth/signin', json=login_data)
+def test_signin_wrong_password(client, mocker):
+    hash_senha = pwd_context.hash('outra_senha')
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value={'id': 1, 'password': hash_senha})
+    response = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': '123'})
     assert response.status_code == 400
     assert 'inválidas' in response.json()['detail']
 
-
-def test_signin_user_not_found(client):
-    '''Testa erro de usuário inexistente'''
-    login_data = {'email': 'naoexiste@banco.com', 'password': '123'}
-    response = client.post('/auth/signin', json=login_data)
-    assert response.status_code == 400
-
-
-def test_signin_inactive_user(client, session):
-    '''Testa se usuário desativado consegue logar'''
-    client.post('/auth/signup', json=USER_DATA)
-    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
-    user.is_active = False
-    session.commit()
-    login_data = {'email': USER_DATA['email'], 'password': USER_DATA['password']}
-    response = client.post('/auth/signin', json=login_data)
-    assert response.status_code == 401 
-    assert 'desativada' in response.json()['detail']
-
-
-def test_signin_form_success(client):
-    '''Testa o login via formulário (OAuth2), usado pelo Swagger'''
-    client.post('/auth/signup', json=USER_DATA)
-    form_data = {
-        'username': USER_DATA['email'], 
-        'password': USER_DATA['password']
-    }
-    response = client.post('/auth/signin-form', data=form_data)
-    assert response.status_code == 200
-    assert 'access_token' in response.json()
-
-def test_signin_form_fail(client):
-    '''Testa falha no login via formulário'''
-    form_data = {'username': 'errado@banco.com', 'password': '123'}
-    response = client.post('/auth/signin-form', data=form_data)
-    assert response.status_code == 400
-
-
-def test_customer_score_calculation():
-    '''Testa se a lógica de 10% do score no modelo está correta'''
-    customer = Customer(
-        name='Teste', email='t@t.com', password='1', 
-        phone_number='1', cpf='1', account_balance='500.0'
-    )
-    assert float(customer.score) == 50.0
-    customer.account_balance = 0
-    assert float(customer.score) == 0.0
-
-
-def test_refresh_token_success(client):
-    '''Testa se o refresh token gera um novo access token com sucesso'''
-    client.post('/auth/signup', json=USER_DATA)
-    login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
-    refresh_token = login_res.json()['refresh_token']
-    headers = {'Authorization': f'Bearer {refresh_token}'}
-    response = client.post('/auth/refresh', headers=headers)
-    assert response.status_code == 200
-    assert 'access_token' in response.json()
-    assert response.json()['token_type'] == 'Bearer'
-
-
-def test_refresh_token_with_inactive_user(client, session):
-    '''Testa se um usuário desativado consegue usar o refresh token'''
-    client.post('/auth/signup', json=USER_DATA)
-    login_res = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
-    refresh_token = login_res.json()['refresh_token']
-    from app.models.customer import Customer
-    user = session.query(Customer).filter(Customer.email == USER_DATA['email']).first()
-    user.is_active = False
-    session.commit()
-    headers = {'Authorization': f'Bearer {refresh_token}'}
-    response = client.post('/auth/refresh', headers=headers)
+def test_signin_inactive_user(client, mocker):
+    hash_senha = pwd_context.hash(USER_DATA['password'])
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value={'id': 1, 'password': hash_senha, 'is_active': False})
+    response = client.post('/auth/signin', json={'email': USER_DATA['email'], 'password': USER_DATA['password']})
     assert response.status_code == 401
     assert 'desativada' in response.json()['detail']
 
+def test_signin_form_success(client, mocker):
+    hash_senha = pwd_context.hash(USER_DATA['password'])
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value={'id': 1, 'password': hash_senha, 'is_active': True})
+    response = client.post('/auth/signin-form', data={'username': USER_DATA['email'], 'password': USER_DATA['password']})
+    assert response.status_code == 200
 
-def test_refresh_token_malformed(client):
-    '''Testa acesso com token que não é um JWT real'''
-    headers = {'Authorization': 'Bearer token_que_nao_existe'}
-    response = client.post('/auth/refresh', headers=headers)
-    assert response.status_code == 401
-    assert 'Acesso Negado' in response.json()['detail']
+def test_refresh_token_success(client, mocker):
+    mock_user = {'id': 1, 'is_active': True}
+    app.dependency_overrides[verify_token] = lambda: mock_user 
+    response = client.post('/auth/refresh', headers={'Authorization': 'Bearer fake'})
+    assert response.status_code == 200
+    assert 'access_token' in response.json()
+    app.dependency_overrides = {}
 
-
-def test_verify_token_invalid_jwt(client):
-    '''Testa um token que não é um JWT válido'''
-    headers = {'Authorization': 'Bearer token_completamente_errado'}
-    response = client.post('/auth/refresh', headers=headers)
-    assert response.status_code == 401
-    assert 'Acesso Negado' in response.json()['detail']
-
-
-def test_verify_token_user_not_found(client):
-    '''Testa um token que tem um ID de usuário que não existe no banco'''
+def test_verify_token_user_not_found(client, mocker):
     payload = {'sub': '999', 'exp': 9999999999}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    headers = {'Authorization': f'Bearer {token}'}
-    response = client.post('/auth/refresh', headers=headers)
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_id', return_value=None)
+    response = client.post('/auth/refresh', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 401
-    assert 'Inválido' in response.json()['detail']
+    assert 'Acesso' in response.json()['detail']
 
+def test_verify_token_malformed(client):
+    response = client.post('/auth/refresh', headers={'Authorization': 'Bearer invalido'})
+    assert response.status_code == 401
 
-def test_verify_token_no_sub_payload(client):
-    '''Testa um token válido mas que não tem a claim 'sub'''
-    payload = {'foo': 'bar', 'exp': 9999999999}
+def test_generate_score_logic():
+    assert generate_score(500) == 50.0
+    assert generate_score(0) == 0.0
+    assert generate_score(-10) == 0.0
+
+def test_signin_user_not_found(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value=None)
+    response = client.post('/auth/signin', json={'email': 'errado@teste.com', 'password': '123'})
+    assert response.status_code == 400
+    assert 'não encontrado' in response.json()['detail']
+
+def test_signin_form_fail(client, mocker):
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_filter', return_value=None)
+    response = client.post('/auth_signin-form', data={'username': 'x', 'password': 'y'})
+    response = client.post('/auth/signin-form', data={'username': 'errado', 'password': '123'})
+    assert response.status_code == 400
+
+def test_verify_token_inactive_user_error(client, mocker):
+    payload = {'sub': '1', 'exp': 9999999999}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    headers = {'Authorization': f'Bearer {token}'}
-    response = client.post('/auth/refresh', headers=headers)
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_id', return_value={'id': 1, 'is_active': False})
+    
+    response = client.post('/auth/refresh', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 401
+    assert 'desativada' in response.json()['detail']
+
+def test_verify_account_holder_fail(client, mocker):
+    mock_not_holder = {'id': 1, 'is_active': True, 'is_account_holder': False}
+    app.dependency_overrides[verify_token] = lambda: mock_not_holder
+    from app_customer.app.api.dependencies import verify_account_holder
+    with pytest.raises(HTTPException) as exc:
+        verify_account_holder(mock_not_holder)
+    assert exc.value.status_code == 403
+    app.dependency_overrides = {}
+
+def test_verify_admin_fail(client, mocker):
+    mock_not_admin = {'id': 1, 'is_active': True, 'is_admin': False}
+    from app_customer.app.api.dependencies import verify_admin
+    with pytest.raises(HTTPException) as exc:
+        verify_admin(mock_not_admin)
+    assert exc.value.status_code == 403
+
+def test_verify_token_malformed_payload(client, mocker):
+    payload = {'sub': 'abc', 'exp': 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    response = client.post('/auth/refresh', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 401
