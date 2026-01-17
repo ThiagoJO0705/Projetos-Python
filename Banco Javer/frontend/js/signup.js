@@ -2,21 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const signupForm = document.getElementById('signup-form');
     const btnSignup = document.getElementById('btn-finalizar');
-
-    if (!signupForm || !btnSignup) {
-        console.error("❌ ERRO: Formulário ou botão não encontrado no HTML");
-        return;
-    }
-
     const inputs = ['name', 'email', 'cpf', 'phone', 'password'];
     const showToast = (message, type = 'error') => {
         const container = document.getElementById('toast-container');
-        if (!container) {
-            console.warn("⚠️ Container de toast não encontrado, usando alert padrão.");
-            alert(message);
-            return;
-        }
-
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.innerHTML = `
@@ -67,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        console.log("🚀 Submit interceptado. Iniciando cadastro...");
 
         const payload = {
             name: document.getElementById('name').value.trim(),
@@ -105,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                console.log("✅ Servidor respondeu com SUCESSO (201)");
                 showToast("CONTA CRIADA! Redirecionando...", "success");
                 btnSignup.style.background = "#a6cfc0"; 
                 btnSignup.innerText = "CONTA CRIADA!";
