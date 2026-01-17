@@ -53,8 +53,13 @@ class CustomerService:
         '''
         Lista todos os clientes
         '''
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f'{BASE_URL}/', params=params)
+        cleaned_params = {k: v for k, v in params.items() if v is not None and v != ""}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BASE_URL}/", params=cleaned_params)
+            
             if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail='Erro ao recuperar lista de clientes da base de dados.')            
+                raise HTTPException(
+                    status_code=response.status_code, 
+                    detail="Erro ao recuperar lista de clientes."
+                )
             return response.json()

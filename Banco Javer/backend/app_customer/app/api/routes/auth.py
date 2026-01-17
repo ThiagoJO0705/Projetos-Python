@@ -5,7 +5,8 @@ from app_customer.schemas.schemas import CustomerCreate, CustomerResponse, Login
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
-from ..dependencies import verify_token
+from ..dependencies import verify_token, generate_score
+from decimal import Decimal
 
 auth = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -106,4 +107,10 @@ async def refresh_token(customer: dict = Depends(verify_token)):
             'refresh_token': refresh_token,
             'token_type': 'Bearer'}
 
-    
+@auth.get('/me', response_model=CustomerResponse)
+async def get_current_user(current_user: dict = Depends(verify_token)):
+    '''
+    Retorna os dados do usuário logado para o front
+    '''
+    current_user['score'] = generate_score(Decimal(str(current_user['account_balance'])))
+    return current_user
