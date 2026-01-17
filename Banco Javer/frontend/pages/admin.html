@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAVER | Admin Console</title>
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+</head>
+<body class="admin-body">
+    <div id="toast-container" class="toast-container"></div>
+
+    <header class="admin-nav">
+        <div class="nav-container">
+            <div class="brand">
+                <img src="../images/logo.png" alt="Logo" class="nav-logo">
+                <div class="brand-text">
+                    <span class="bank-name">BANCO <span>JAVER</span></span>
+                    <span class="portal-tag">PAINEL DE CONTROLE</span>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <span id="admin-display-name">Carregando...</span>
+                <button id="btn-logout" class="btn-logout">
+                    <span class="icon">⏻</span> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-content container">
+        <div class="page-header">
+            <h2>Gerenciamento de Clientes</h2>
+            <p>Controle de contas, edições cadastrais e permissões de acesso.</p>
+        </div>
+        <section class="filters-section">
+            <div class="filter-card">
+                <div class="filter-row">
+                    <div class="filter-item search">
+                        <label>Nome do Cliente</label>
+                        <input type="text" id="search-name" placeholder="Buscar por nome...">
+                    </div>
+                    <div class="filter-item">
+                        <label>Status</label>
+                        <select id="filter-status">
+                            <option value="">Todos</option>
+                            <option value="true">Ativos</option>
+                            <option value="false">Inativos</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Perfil de Acesso</label>
+                        <select id="filter-admin">
+                            <option value="">Todos</option>
+                            <option value="true">Administradores</option>
+                            <option value="false">Clientes Comuns</option>
+                        </select>
+                    </div>
+                    <button id="btn-filter" class="btn-primary-action">Filtrar</button>
+                </div>
+            </div>
+        </section>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>CPF</th>
+                        <th>Saldo</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th class="txt-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="customers-list">
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <div id="modal-edit" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Editar Perfil do Cliente</h3>
+                <button onclick="closeModal()" class="close-x">&times;</button>
+            </div>
+            <form id="edit-form" novalidate>
+                <input type="hidden" id="edit-id">
+                
+                <div class="input-group">
+                    <label for="edit-name">Nome Completo</label>
+                    <input type="text" id="edit-name">
+                    <span class="field-error" id="edit-name-error"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-email">E-mail</label>
+                    <input type="email" id="edit-email">
+                    <span class="field-error" id="edit-email-error"></span>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="edit-cpf">CPF</label>
+                        <input type="text" id="edit-cpf" maxlength="11">
+                        <span class="field-error" id="edit-cpf-error"></span>
+                    </div>
+                    <div class="input-group">
+                        <label for="edit-phone">Telefone</label>
+                        <input type="text" id="edit-phone" maxlength="11">
+                        <span class="field-error" id="edit-phone-error"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal()" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-save" id="btn-save-edit">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>
