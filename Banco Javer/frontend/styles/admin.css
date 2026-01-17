@@ -22,7 +22,7 @@
 }
 
 .brand { display: flex; align-items: center; gap: 15px; }
-.nav-logo { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--success-mint); }
+.nav-logo { width: 80px; height: 80px; border-radius: 50%; }
 .bank-name { font-weight: 800; font-size: 1.2rem; }
 .bank-name span { color: var(--secondary-orange); }
 .portal-tag { 
