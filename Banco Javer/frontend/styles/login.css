@@ -1,0 +1,182 @@
+.login-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(-45deg, #0a173d, #162a5e, #0a173d, #050b1a);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    position: relative;
+    overflow: hidden;
+    padding: 2vh;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.login-card {
+    background-color: rgba(249, 247, 220, 0.95); /* Creme */
+    padding: 5vh 3vw;
+    border-radius: var(--radius-lg);
+    width: 95%;
+    max-width: 420px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(166, 207, 192, 0.4);
+    z-index: 10;
+    overflow: hidden;
+    animation: cardAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cardAppear {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-header {
+    text-align: center;
+    width: 100%;
+}
+
+.logo-wrapper {
+    display: inline-block;
+    margin-bottom: 1vh;
+}
+
+.main-logo {
+    max-height: 18vh;
+    width: auto;
+    max-width: 140px;
+    filter: drop-shadow(0 5px 15px rgba(10, 23, 61, 0.2));
+    animation: logoFloat 4s ease-in-out infinite;
+    transition: var(--transition);
+    border-radius: 50%;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-1vh); }
+}
+
+.login-header h1 {
+    font-size: clamp(1.2rem, 4vh, 1.8rem);
+    font-weight: 800;
+    color: var(--primary-navy);
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    margin-top: -1rem;
+}
+
+.login-header h1 span {
+    color: var(--secondary-orange);
+}
+
+.login-header p {
+    color: var(--text-muted);
+    font-size: clamp(0.75rem, 2vh, 0.95rem);
+    margin-bottom: 1rem;
+}
+
+#login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2vh; 
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5vh;
+    font-size: 0.85rem;
+    color: var(--primary-navy);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 1.8vh 15px;
+    border: 2px solid #e8e7d5;
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--secondary-orange);
+    box-shadow: 0 0 0 4px rgba(243, 104, 30, 0.1);
+    outline: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 2vh;
+    background: linear-gradient(135deg, var(--secondary-orange) 0%, #ff7a33 100%);
+    color: var(--white);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: var(--radius-md);
+    margin-top: 1vh;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(243, 104, 30, 0.3);
+}
+
+.btn-login::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(30deg);
+    transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.btn-login:hover::after {
+    left: 120%;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 104, 30, 0.4);
+}
+
+.login-footer {
+    text-align: center;
+    font-size: clamp(0.7rem, 1.8vh, 0.9rem);
+    color: var(--text-muted);
+    width: 100%;
+    margin-top: auto;
+    padding-top: 2vh;
+}
+
+.login-footer a {
+    color: var(--secondary-orange);
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+.error-text {
+    color: var(--error-red);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-height: 2vh;
+}
+
+@media (max-height: 500px) {
+    .main-logo { max-height: 10vh; }
+    .login-header h1 { font-size: 1rem; }
+    #login-form { gap: 1vh; }
+}
