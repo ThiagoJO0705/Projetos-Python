@@ -152,3 +152,30 @@ def test_verify_token_malformed_payload(client, mocker):
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     response = client.post('/auth/refresh', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 401
+
+def test_verify_token_real_success_path(client, mocker):
+    app.dependency_overrides = {}
+    payload = {'sub': '1', 'exp': 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_id', return_value={'id': 1, 'name': 'Thiago', 'is_active': True, 'account_balance': 100.0})
+    headers = {'Authorization': f'Bearer {token}'}
+    response = client.post('/auth/refresh', headers=headers)
+    assert response.status_code == 200
+    assert 'access_token' in response.json()
+
+def test_verify_account_holder_real_success_path(client, mocker):
+    app.dependency_overrides = {} 
+    payload = {'sub': '1', 'exp': 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_id', return_value={'id': 1, 'is_active': True, 'is_account_holder': True, 'account_balance': 100.0})
+    response = client.get('/banking/balance', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 200
+
+def test_verify_admin_real_success_path(client, mocker):
+    app.dependency_overrides = {}
+    payload = {'sub': '99', 'exp': 9999999999}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_by_id', return_value={'id': 99, 'is_active': True, 'is_admin': True})
+    mocker.patch('app_customer.services.customer_service.CustomerService.get_all', return_value=[])
+    response = client.get('/admin/customers', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 200
