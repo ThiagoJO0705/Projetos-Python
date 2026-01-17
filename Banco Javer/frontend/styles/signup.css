@@ -1,0 +1,216 @@
+.signup-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(-45deg, #0a173d, #162a5e, #0a173d, #050b1a);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.signup-card {
+    background-color: rgba(249, 247, 220, 0.96);
+    padding: 3vh 30px;
+    border-radius: var(--radius-lg);
+    width: 95%;
+    max-width: 450px;
+    height: 80vh; 
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 207, 192, 0.4);
+    overflow: hidden; 
+}
+
+.signup-header {
+    text-align: center;
+    flex-shrink: 0;
+    margin-bottom: 2vh;
+}
+
+.main-logo {
+    max-height: 18vh;
+    width: auto;
+    border-radius: 50%;
+    margin-bottom: 5px;
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.signup-header h1 {
+    font-size: clamp(1.2rem, 3vh, 1.5rem);
+    color: var(--primary-navy);
+}
+
+.signup-header h1 span { color: var(--secondary-orange); }
+
+#signup-form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden; 
+}
+
+.form-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto; 
+    padding-right: 8px;
+    margin-bottom: 15px;
+}
+
+.form-scroll-area::-webkit-scrollbar { width: 4px; }
+.form-scroll-area::-webkit-scrollbar-thumb { 
+    background: var(--secondary-orange); 
+    border-radius: 10px;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.input-group { margin-bottom: 12px; }
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    color: var(--primary-navy);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e8e7d5;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--secondary-orange);
+    outline: none;
+    background: white;
+}
+
+.btn-signup {
+    width: 100%;
+    padding: 16px;
+    background: var(--secondary-orange);
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: var(--radius-md);
+    flex-shrink: 0; 
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(243, 104, 30, 0.2);
+}
+
+.signup-footer {
+    text-align: center;
+    padding-top: 15px;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.signup-footer a { color: var(--secondary-orange); font-weight: 700; }
+
+.field-error {
+    color: var(--error-red);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: block;
+    min-height: 14px;
+    margin-top: 2px;
+}
+
+.input-group input.error { border-color: var(--error-red); }
+
+.toast-container {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 9999; 
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toast {
+    min-width: 300px;
+    max-width: 450px;
+    padding: 16px 20px;
+    background: rgba(10, 23, 61, 0.95); 
+    color: #ffffff;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px); 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-left: 6px solid var(--secondary-orange);
+    
+    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.toast.success {
+    border-left-color: var(--success-mint);
+}
+
+.toast.error {
+    border-left-color: var(--secondary-orange);
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+.toast.hiding {
+    animation: toastFadeOut 0.5s forwards;
+}
+
+.toast span:last-child {
+    font-size: 1.2rem;
+    line-height: 1;
+    padding-left: 15px;
+    opacity: 0.6;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.toast span:last-child:hover {
+    opacity: 1;
+}
