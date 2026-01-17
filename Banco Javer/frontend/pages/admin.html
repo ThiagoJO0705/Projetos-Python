@@ -120,6 +120,22 @@
         </div>
     </div>
 
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-card confirm-card">
+            <div class="modal-header">
+                <h3>Confirmar Ação</h3>
+                <button onclick="closeConfirmModal()" class="close-x">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Você tem certeza que deseja <strong>desativar</strong> este cliente? Esta ação aplicará um Soft Delete na conta.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeConfirmModal()" class="btn-cancel">Cancelar</button>
+                <button type="button" id="btn-confirm-disable" class="btn-disable-confirm">Sim, Desativar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/admin.js"></script>
 </body>
 </html>
