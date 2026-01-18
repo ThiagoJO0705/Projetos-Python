@@ -314,3 +314,32 @@
     filter: brightness(0.9);
     transform: translateY(-2px);
 }
+
+.checkbox-group {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(10, 23, 61, 0.03);
+    border-radius: var(--radius-md);
+}
+
+.switch-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    color: var(--primary-navy);
+    cursor: pointer;
+}
+
+.input-info {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+    margin-left: 32px;
+}
+
+#edit-is-admin {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--secondary-orange);
+}

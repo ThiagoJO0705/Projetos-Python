@@ -123,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: c.name, 
             email: c.email, 
             cpf: c.cpf, 
-            phone_number: c.phone_number 
+            phone_number: c.phone_number ,
+            is_admin: c.is_admin
         };
 
         document.getElementById('edit-id').value = c.id;
@@ -131,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-email').value = c.email;
         document.getElementById('edit-cpf').value = c.cpf;
         document.getElementById('edit-phone').value = c.phone_number;
+        document.getElementById('edit-is-admin').checked = c.is_admin;
         
         modalEdit.style.display = 'flex';
     };
@@ -148,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('edit-name').value.trim(),
             email: document.getElementById('edit-email').value.trim(),
             cpf: document.getElementById('edit-cpf').value.replace(/\D/g, ''),
-            phone_number: document.getElementById('edit-phone').value.replace(/\D/g, '')
+            phone_number: document.getElementById('edit-phone').value.replace(/\D/g, ''),
+            is_admin: document.getElementById('edit-is-admin').checked
         };
 
         let hasErrors = false;
@@ -164,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentData.email !== originalData.email) payload.email = currentData.email;
         if (currentData.cpf !== originalData.cpf) payload.cpf = currentData.cpf;
         if (currentData.phone_number !== originalData.phone_number) payload.phone_number = currentData.phone_number;
+        if (currentData.is_admin !== originalData.is_admin) payload.is_admin = currentData.is_admin;
 
         if (Object.keys(payload).length === 0) {
             showToast("Nenhuma alteração detectada.");
