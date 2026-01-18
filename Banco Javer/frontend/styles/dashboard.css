@@ -337,3 +337,23 @@
     background-color: var(--white);
     color: var(--primary-navy);
 }
+
+.field-error {
+    color: var(--error-red);
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-top: 4px;
+    display: block;
+    min-height: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.field-error.active {
+    opacity: 1;
+}
+
+.input-group input.error {
+    border-color: var(--error-red) !important;
+    background-color: rgba(229, 62, 62, 0.05);
+}

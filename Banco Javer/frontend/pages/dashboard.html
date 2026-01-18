@@ -133,16 +133,19 @@
             </div>
             <div class="modal-body">
                 <div class="input-group">
-                    <label>Nome Completo</label>
+                    <label for="profile-name">Nome Completo</label>
                     <input type="text" id="profile-name">
+                    <span class="field-error" id="profile-name-error"></span>
                 </div>
                 <div class="input-group">
-                    <label>E-mail</label>
+                    <label for="profile-email">E-mail</label>
                     <input type="email" id="profile-email">
+                    <span class="field-error" id="profile-email-error"></span>
                 </div>
                 <div class="input-group">
-                    <label>Telefone</label>
-                    <input type="text" id="profile-phone">
+                    <label for="profile-phone">Telefone</label>
+                    <input type="text" id="profile-phone" maxlength="11">
+                    <span class="field-error" id="profile-phone-error"></span>
                 </div>
                 <button class="btn-confirm-action" id="btn-save-profile">Salvar Alterações</button>
             </div>
