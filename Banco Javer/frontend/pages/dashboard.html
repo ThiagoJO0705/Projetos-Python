@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAVER | Minha Conta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/dashboard.css">
+</head>
+<body class="dash-body">
+    <div id="toast-container" class="toast-container"></div>
+
+    <nav class="dash-nav">
+        <div class="nav-container">
+            <div class="brand">
+                <img src="../images/logo.png" alt="Logo" class="nav-logo">
+                <span class="bank-name">BANCO <span>JAVER</span></span>
+            </div>
+            <div class="user-menu">
+                <div class="user-info">
+                    <p>Olá, <strong id="display-user-name">Carregando...</strong></p>
+                    <span class="account-status"><i class="fa-solid fa-circle-check"></i> Conta Ativa</span>
+                </div>
+                <button id="btn-logout" class="btn-exit">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dash-content container">
+        <section class="account-overview">
+            <div class="card balance-card">
+                <div class="card-header">
+                    <span class="label">Saldo em conta</span>
+                    <button id="btn-toggle-balance" class="btn-eye">
+                        <i id="eye-icon" class="fa-regular fa-eye-slash"></i>
+                    </button>
+                </div>
+                <div class="balance-display">
+                    <h2 id="balance-value" class="blur-active">R$ 0,00</h2>
+                </div>
+                <p class="balance-update">Disponível agora</p>
+            </div>
+            <div class="card score-card">
+                <div class="card-header">
+                    <span class="label">Score de Crédito</span>
+                    <i class="fa-solid fa-shield-halved" style="color: var(--success-mint)"></i>
+                </div>
+                <div class="score-display">
+                    <h2 id="score-value">0.0</h2>
+                    <div class="score-progress-bg">
+                        <div id="score-bar" class="score-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="quick-actions">
+            <h3>Serviços Rápidos</h3>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="openModal('modal-pix')">
+                    <i class="fa-solid fa-money-bill-transfer btn-icon"></i>
+                    <span>Transferir Pix</span>
+                </button>
+                <button class="action-btn" onclick="openModal('modal-deposit')">
+                    <i class="fa-solid fa-piggy-bank btn-icon"></i>
+                    <span>Depositar</span>
+                </button>
+                <button class="action-btn" onclick="openModal('modal-payment')">
+                    <i class="fa-solid fa-money-check-dollar btn-icon"></i>
+                    <span>Pagamentos</span>
+                </button>
+                <button class="action-btn" onclick="openModal('modal-profile')">
+                    <i class="fa-solid fa-user-gear btn-icon"></i>
+                    <span>Meus Dados</span>
+                </button>
+                <button class="action-btn btn-danger" onclick="openModal('modal-close-account')">
+                    <i class="fa-solid fa-handshake-slash btn-icon"></i>
+                    <span>Encerrar Conta</span>
+                </button>
+            </div>
+        </section>
+        <section class="statement-section">
+            <div class="section-header">
+                <h3><i class="fa-solid fa-list-ul"></i> Extrato</h3>
+                <button onclick="loadStatement()" class="btn-refresh">Atualizar</button>
+            </div>
+            <div class="statement-card">
+                <div id="statement-list" class="statement-list"></div>
+            </div>
+        </section>
+    </main>
+    <div id="modal-pix" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Enviar novo Pix</h3>
+                <button class="close-x" onclick="closeModal('modal-pix')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Chave Pix (E-mail, CPF ou Telefone)</label>
+                    <input type="text" id="pix-key" placeholder="Digite a chave do recebedor">
+                </div>
+                <div class="input-group">
+                    <label>Valor do Pix</label>
+                    <input type="number" id="pix-amount" placeholder="R$ 0,00">
+                </div>
+                <button class="btn-confirm-action" id="btn-confirm-pix">Confirmar Transferência</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-deposit" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Realizar Depósito</h3>
+                <button class="close-x" onclick="closeModal('modal-deposit')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Valor para depositar</label>
+                    <input type="number" id="deposit-amount" placeholder="R$ 0,00">
+                </div>
+                <button class="btn-confirm-action" id="btn-confirm-deposit">Confirmar Depósito</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-profile" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Meus Dados Cadastrais</h3>
+                <button class="close-x" onclick="closeModal('modal-profile')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="profile-name">
+                </div>
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" id="profile-email">
+                </div>
+                <div class="input-group">
+                    <label>Telefone</label>
+                    <input type="text" id="profile-phone">
+                </div>
+                <button class="btn-confirm-action" id="btn-save-profile">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-close-account" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Encerrar minha conta</h3>
+                <button class="close-x" onclick="closeModal('modal-close-account')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja encerrar sua conta no Banco JAVER?</p>
+                <button class="btn-confirm-action btn-danger-solid" id="btn-confirm-close">Sim, encerrar conta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-payment" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Novo Pagamento</h3>
+                <button class="close-x" onclick="closeModal('modal-payment')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>O que você está pagando?</label>
+                    <input type="text" id="pay-desc" placeholder="Ex: Internet, Aluguel, Pix Cobrança">
+                </div>
+                <div class="input-group">
+                    <label>Valor do Pagamento</label>
+                    <input type="number" id="pay-amount" placeholder="0,00">
+                </div>
+                <div class="input-group">
+                    <label>Método de Pagamento</label>
+                    <div class="custom-select-container">
+                        <select id="pay-method">
+                            <option value="PIX">Pix (Instantâneo)</option>
+                            <option value="BANK SLIP">Boleto Bancário</option>
+                            <option value="TED">Transferência TED</option>
+                            <option value="TEF">Transferência JAVER (TEF)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+                <button class="btn-confirm-action" id="btn-confirm-payment">Confirmar Pagamento</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
