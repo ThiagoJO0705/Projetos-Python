@@ -2,6 +2,16 @@
 <div align="center">
   <img src="./frontend/images/logo-readme.png" width="500px">
 </div>
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Async-009688?logo=fastapi&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-Frontend-E34F26?logo=html5&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-success)
+
+</div>
+
 
 ## Descrição do Sistema
 O Banco JAVER é uma plataforma para gerenciamento de correntistas, controle transacional e análise de crédito. O projeto foi desenvolvido sob uma arquitetura distribuída de microsserviços, garantindo o desacoplamento entre a interface de usuário, a lógica de negócio e a camada de persistência de dados.
@@ -41,13 +51,28 @@ Interface desenvolvida com foco em usabilidade, performance e feedback visual ao
 *   **Pagamentos Multimodais:** Suporte a diferentes métodos de pagamento (Pix, TED, Boleto) com registro de descrição personalizada no extrato.
 
 ## Tecnologias Utilizadas
-*   **Linguagem:** Python 3.12+
-*   **Framework Backend:** FastAPI
-*   **ORM:** SQLAlchemy 2.0
-*   **Comunicação:** HTTPX (Async)
-*   **Segurança:** JWT (JSON Web Token) e Passlib (Bcrypt)
-*   **Interface:** JavaScript Vanilla, CSS Grid e Flexbox
-*   **Qualidade:** Pytest, Coverage, Pytest-Mock e RESPX
+
+### Backend
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688?logo=fastapi&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-CC0000?logo=sqlalchemy&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?logo=sqlite&logoColor=white)
+
+### Segurança & Comunicação
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=jsonwebtokens&logoColor=white)
+![Passlib](https://img.shields.io/badge/Passlib-Bcrypt-4B8BBE)
+![HTTPX](https://img.shields.io/badge/HTTPX-Async-000000)
+
+### Front-end
+![HTML5](https://img.shields.io/badge/HTML5-Markup-E34F26?logo=html5&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)
+![CSS3](https://img.shields.io/badge/CSS3-Grid%20%26%20Flexbox-1572B6?logo=css3&logoColor=white)
+
+### Testes & Qualidade
+![Pytest](https://img.shields.io/badge/Pytest-Testes-0A9EDC?logo=pytest&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-success)
+![RESPX](https://img.shields.io/badge/RESPX-Mocking-000000)
+
 
 ## Garantia de Qualidade (Testes)
 O projeto atingiu o índice de **100% de cobertura de código** (Code Coverage) em ambas as aplicações backend, validando fluxos de sucesso e exceção.
