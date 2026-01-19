@@ -1,4 +1,7 @@
 # Banco JAVER - Sistema de Gestão de Correntistas
+<div align="center">
+  <img src="./frontend/images/logo-readme.png" width="500px">
+</div>
 
 ## Descrição do Sistema
 O Banco JAVER é uma plataforma para gerenciamento de correntistas, controle transacional e análise de crédito. O projeto foi desenvolvido sob uma arquitetura distribuída de microsserviços, garantindo o desacoplamento entre a interface de usuário, a lógica de negócio e a camada de persistência de dados.
