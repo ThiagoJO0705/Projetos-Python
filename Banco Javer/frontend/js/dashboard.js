@@ -176,7 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const key = document.getElementById('pix-key').value;
         const amount = parseFloat(document.getElementById('pix-amount').value);
 
-        if (!key || isNaN(amount) || amount <= 0) return showToast("Verifique os dados.");
+        if (isNaN(amount) || !key) return showToast("Verifique os dados.");
+        if (amount <= 0) return showToast("Saldo deve ser positivo.")
         if (amount > currentBalance) return showToast("Saldo insuficiente.");
         try {
             const res = await fetch('http://127.0.0.1:8000/banking/pix', {
@@ -200,7 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = parseFloat(document.getElementById('pay-amount').value);
         const method = document.getElementById('pay-method').value;
 
-        if (!desc || isNaN(amount) || amount <= 0) return showToast("Dados inválidos.");
+        if (!desc) return showToast("A descrição não pode ser vazia.")
+        if (isNaN(amount)) return showToast("Dados inválidos.");
+        if (amount <= 0) return showToast("O Valor deve ser positivo.")
         if (amount > currentBalance) return showToast("Saldo insuficiente.");
 
         try {
