@@ -77,6 +77,9 @@ cd '.\Banco Javer\backend\'
 uvicorn app_customer.app.main:app --reload --port 8000
 ```
 
+### Frontend
+Abra o arquivo `index.html` com a extensão do VSCode chamada Live Server
+
 ### Execução de Testes
 ```bash
 cd '.\Banco Javer\backend\'
