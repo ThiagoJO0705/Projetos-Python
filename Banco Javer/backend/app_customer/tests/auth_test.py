@@ -179,3 +179,26 @@ def test_verify_admin_real_success_path(client, mocker):
     mocker.patch('app_customer.services.customer_service.CustomerService.get_all', return_value=[])
     response = client.get('/admin/customers', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
+
+def test_get_current_user_success(client, mocker):
+    mock_user = {
+        "id": 1,
+        "name": "Thiago Teste",
+        "email": "thiago@teste.com",
+        "account_balance": 1000.0,
+        "is_active": True,
+        "is_admin": False,
+        "is_account_holder": True,
+        "cpf": "12345678901",
+        "phone_number": "11999999999"
+    }
+
+    from app_customer.app.api.dependencies import verify_token
+    app.dependency_overrides[verify_token] = lambda: mock_user
+    response = client.get("/auth/me", headers={"Authorization": "Bearer token-qualquer"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == 1
+    assert data["name"] == "Thiago Teste"
+    assert float(data["score"]) == 100.0
+    app.dependency_overrides = {}
