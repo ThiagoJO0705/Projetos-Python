@@ -55,6 +55,7 @@ O projeto atingiu o índice de **100% de cobertura de código** (Code Coverage) 
 *   **Aplicação 2:** Testada utilizando banco de dados em memória (SQLite :memory:) para isolamento total.
 
 ## Instruções de Execução
+Antes de iniciar, crie um arquivo `.env` na pasta `backend` baseando-se no `.env.example`, preenchendo obrigatoriamente a chave de segurança. As demais variáveis, como o método de criptografia e o tempo de expiração do token, já possuem valores padrão definidos para o funcionamento imediato da aplicação.
 
 ### Instalação de Dependências
 ```bash
