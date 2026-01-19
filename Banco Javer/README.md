@@ -58,6 +58,7 @@ O projeto atingiu o índice de **100% de cobertura de código** (Code Coverage) 
 
 ### Instalação de Dependências
 ```bash
+cd '.\Banco Javer\
 pip install -r requirements.txt
 ```
 
@@ -66,14 +67,14 @@ Ambos os servidores devem ser iniciados simultaneamente em terminais distintos:
 
 #### Aplicação de Dados
 ```bash
-cd '.\Banco Javer\backend\app_data\'
-python -m uvicorn app.main:app --port 8001
+cd '.\Banco Javer\backend\'
+uvicorn app_data.app.main:app --reload --port 8001
 ```
 
 #### Aplicação Gateway
 ```bash
-cd '.\Banco Javer\backend\app_customer\'
-python -m uvicorn app.main:app --port 8000
+cd '.\Banco Javer\backend\'
+uvicorn app_customer.app.main:app --reload --port 8000
 ```
 
 ### Execução de Testes
