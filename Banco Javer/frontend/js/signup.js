@@ -20,10 +20,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const validationRules = {
-        name: (val) => val.trim().split(' ').length < 2 ? "Insira nome e sobrenome" : "",
-        email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ? "" : "E-mail inválido",
-        cpf: (val) => val.replace(/\D/g, '').length !== 11 ? "CPF deve ter 11 números" : "",
-        phone: (val) => val.replace(/\D/g, '').length < 10 ? "Telefone inválido" : "",
+        name: (val) => {
+            const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+            if (val.trim().split(' ').length < 2) return "Insira nome e sobrenome";
+            if (!regex.test(val)) return "O nome deve conter apenas letras";
+            return "";
+        },
+        email: (val) => {
+            const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return regex.test(val) ? "" : "E-mail inválido (formato nome@email.com)";
+        },
+        cpf: (val) => {
+            const nums = val.replace(/\D/g, '');
+            return nums.length !== 11 ? "CPF deve ter exatamente 11 números" : "";
+        },
+        phone: (val) => {
+            const nums = val.replace(/\D/g, '');
+            return (nums.length < 10 || nums.length > 11) ? "Telefone inválido (10 ou 11 dígitos)" : "";
+        },
         password: (val) => val.length < 4 ? "Mínimo 4 caracteres" : ""
     };
 
@@ -42,6 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
             errorSpan.style.opacity = "0";
         }
     };
+
+    ['cpf', 'phone'].forEach(id => {
+        document.getElementById(id).addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    });
 
     inputs.forEach(id => {
         const el = document.getElementById(id);
@@ -67,7 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let hasErrors = false;
         for (let key in payload) {
             const fieldId = key === 'phone_number' ? 'phone' : key;
-            const errorMsg = validationRules[fieldId](document.getElementById(fieldId).value);
+            const inputVal = document.getElementById(fieldId).value;
+            const errorMsg = validationRules[fieldId](inputVal);
             if (errorMsg) {
                 updateFieldUI(fieldId, errorMsg);
                 hasErrors = true;
@@ -75,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (hasErrors) {
-            showToast("Preencha os campos em vermelho.");
+            showToast("Verifique os campos destacados em vermelho.");
             return;
         }
 
