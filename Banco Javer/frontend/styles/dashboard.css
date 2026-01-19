@@ -357,3 +357,34 @@
     border-color: var(--error-red) !important;
     background-color: rgba(229, 62, 62, 0.05);
 }
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    max-height: 65vh; 
+    overflow-y: auto; 
+    padding-right: 8px; 
+    margin-top: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-orange) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(10, 23, 61, 0.05); 
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: var(--secondary-orange); 
+    border-radius: 10px;
+}
+
+.btn-confirm-action {
+    flex-shrink: 0;
+    margin-top: 20px;
+    margin-bottom: 5px;
+}

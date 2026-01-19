@@ -25,10 +25,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const validate = {
-        name: (v) => v.trim().split(' ').length < 2 ? "Insira nome e sobrenome" : "",
-        email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "E-mail inválido",
-        cpf: (v) => v.replace(/\D/g, '').length !== 11 ? "CPF deve ter 11 dígitos" : "",
-        phone: (v) => v.replace(/\D/g, '').length < 10 ? "Telefone inválido" : ""
+        name: (v) => {
+            const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/; 
+            if (v.trim().split(' ').length < 2) return "Insira nome e sobrenome";
+            if (!regex.test(v)) return "O nome não pode conter números ou símbolos";
+            return "";
+        },
+        email: (v) => {
+            const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return regex.test(v) ? "" : "E-mail inválido";
+        },
+        cpf: (v) => {
+            const nums = v.replace(/\D/g, '');
+            return nums.length !== 11 ? "CPF deve ter 11 números" : "";
+        },
+        phone: (v) => {
+            const nums = v.replace(/\D/g, '');
+            return (nums.length < 10 || nums.length > 11) ? "Telefone inválido" : "";
+        }
     };
 
     const updateFieldUI = (id, msg) => {
@@ -46,6 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
             errorSpan.classList.remove('active');
         }
     };
+
+    ['profile-cpf', 'profile-phone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    });
 
     ['profile-name', 'profile-email', 'profile-cpf', 'profile-phone'].forEach(id => {
         const el = document.getElementById(id);
@@ -78,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nameEl.innerText = data.name;
                 balanceEl.innerText = `R$ ${currentBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 scoreEl.innerText = data.score;
-                const percent = Math.min((data.score / 1000) * 100, 100);
+                const percent = Math.min((data.score / 10000) * 100, 100);
                 scoreBar.style.width = `${percent}%`;
 
                 document.getElementById('profile-name').value = data.name;
@@ -206,6 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const emailErr = validate.email(currentData.email);
         const cpfErr = validate.cpf(currentData.cpf);
         const phoneErr = validate.phone(currentData.phone_number);
+        
+        updateFieldUI('profile-name', nameErr);
+        updateFieldUI('profile-email', emailErr);
+        updateFieldUI('profile-cpf', cpfErr);
+        updateFieldUI('profile-phone', phoneErr);
 
         if (nameErr || emailErr || cpfErr || phoneErr) {
             showToast("Corrija os campos em vermelho.");
