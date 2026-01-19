@@ -23,7 +23,7 @@ Responsável exclusivamente pela persistência e integridade das informações n
 *   **Armazenamento:** Utilização de SQLite para persistência local.
 
 ### Interface de Usuário (Front-end)
-Interface desenvolvida em HTML5, CSS3 e JavaScript puro (Vanilla), integrada às APIs via protocolo HTTP/JSON. O sistema implementa:
+Interface desenvolvida com foco em usabilidade, performance e feedback visual ao usuário, utilizando JavaScript Vanilla para controle total do fluxo de eventos e requisições. O sistema implementa:
 *   **Design Responsivo:** Adaptável a diferentes resoluções e dispositivos.
 *   **Efeitos Visuais:** Uso de Skeleton Loading para carregamento de dados e Toasts para notificações de sistema.
 *   **Segurança Visual:** Máscara de privacidade para ocultação de valores sensíveis.
