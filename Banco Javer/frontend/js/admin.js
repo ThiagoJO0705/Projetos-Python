@@ -24,10 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const validate = {
-        name: (v) => v.trim().split(' ').length < 2 ? "Insira nome e sobrenome" : "",
-        email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "E-mail inválido",
-        cpf: (v) => v.replace(/\D/g, '').length !== 11 ? "CPF deve ter 11 dígitos" : "",
-        phone: (v) => v.replace(/\D/g, '').length < 10 ? "Telefone inválido" : ""
+        name: (v) => {
+            const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/; 
+            if (v.trim().split(' ').length < 2) return "Insira nome e sobrenome";
+            if (!regex.test(v)) return "O nome não pode conter números ou símbolos";
+            return "";
+        },
+        email: (v) => {
+            const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return regex.test(v) ? "" : "E-mail inválido";
+        },
+        cpf: (v) => {
+            const nums = v.replace(/\D/g, '');
+            return nums.length !== 11 ? "CPF deve ter 11 números" : "";
+        },
+        phone: (v) => {
+            const nums = v.replace(/\D/g, '');
+            return (nums.length < 10 || nums.length > 11) ? "Telefone inválido" : "";
+        }
     };
 
     const updateModalUI = (field, msg) => {
@@ -45,6 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
             errorSpan.classList.remove('active');
         }
     };
+
+    ['edit-cpf', 'edit-phone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    });
 
     ['name', 'email', 'cpf', 'phone'].forEach(field => {
         const el = document.getElementById(`edit-${field}`);
@@ -156,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let hasErrors = false;
         ['name', 'email', 'cpf', 'phone'].forEach(f => {
-            const val = f === 'phone' ? currentData.phone_number : currentData[f];
+            const val = (f === 'cpf' || f === 'phone') ? currentData[f === 'phone' ? 'phone_number' : 'cpf'] : currentData[f];
             const msg = validate[f](val);
             if (msg) { updateModalUI(f, msg); hasErrors = true; }
         });
