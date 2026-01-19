@@ -19,6 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
+    const showLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    };
+
+    const hideLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    };
+
     const validationRules = {
         name: (val) => {
             const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
@@ -102,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnSignup.disabled = true;
         btnSignup.innerText = "PROCESSANDO...";
-
+        showLoader();
         try {
             const response = await fetch('http://127.0.0.1:8000/auth/signup', {
                 method: 'POST',
@@ -130,6 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Erro de conexão. O servidor está ligado?");
             btnSignup.disabled = false;
             btnSignup.innerText = "FINALIZAR CADASTRO";
+        } finally {
+            hideLoader();
         }
     });
 });

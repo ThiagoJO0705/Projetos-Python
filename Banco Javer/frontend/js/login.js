@@ -20,6 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
+    const showLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    };
+
+    const hideLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    };
+
     const validateEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email) return "O e-mail é obrigatório.";
@@ -66,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLogin.disabled = true;
         const originalText = btnLogin.innerText;
         btnLogin.innerText = "AUTENTICANDO...";
-
+        showLoader();
         try {
             const response = await fetch('http://127.0.0.1:8000/auth/signin', {
                 method: 'POST',
@@ -116,6 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Não foi possível conectar ao servidor JAVER.");
             btnLogin.disabled = false;
             btnLogin.innerText = originalText;
+        } finally {
+            hideLoader();
         }
     });
 });

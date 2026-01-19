@@ -12,15 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <span>${message}</span>
-            <span style="margin-left:15px; cursor:pointer; font-weight:bold" onclick="this.parentElement.remove()">✕</span>
-        `;
+        toast.innerHTML = `<span>${message}</span><span style="margin-left:15px; cursor:pointer; font-weight:bold" onclick="this.parentElement.remove()">✕</span>`;
         container.appendChild(toast);
         setTimeout(() => {
             toast.classList.add('hiding');
             setTimeout(() => toast.remove(), 500);
         }, 4000);
+    };
+
+    const showLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    };
+
+    const hideLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
     };
 
     const validate = {
@@ -88,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadCustomers = async () => {
         showSkeleton();
+        showLoader();
 
         const name = document.getElementById('search-name').value;
         const status = document.getElementById('filter-status').value;
@@ -106,6 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => renderTable(customers), 600);
         } catch (err) {
             showToast("Erro ao conectar com o Banco JAVER.");
+        } finally {
+            hideLoader(); 
         }
     };
 
@@ -146,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: c.name, 
             email: c.email, 
             cpf: c.cpf, 
-            phone_number: c.phone_number ,
+            phone_number: c.phone_number,
             is_admin: c.is_admin
         };
 
@@ -193,11 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentData.is_admin !== originalData.is_admin) payload.is_admin = currentData.is_admin;
 
         if (Object.keys(payload).length === 0) {
-            showToast("Nenhuma alteração detectada.");
             closeModal();
             return;
         }
 
+        showLoader();
         btnSaveEdit.disabled = true;
         btnSaveEdit.innerText = "SALVANDO...";
 
@@ -214,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Dados atualizados com sucesso!", "success");
                 closeModal();
-                loadCustomers();
+                await loadCustomers();
             } else {
                 const errData = await res.json();
                 showToast(errData.detail || "Erro ao atualizar.");
@@ -223,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Erro de conexão.");
         } finally {
             btnSaveEdit.disabled = false;
-            btnSaveEdit.innerText = "Salvar Alterações";
+            hideLoader();
         }
     });
 
@@ -234,18 +244,18 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`BLOQUEADO: Saldo de R$ ${balance}. Zere a conta antes de desativar.`, "error");
             return;
         }
-
         customerIdToDisable = id;
         document.getElementById('modal-confirm').style.display = 'flex';
     };
 
     window.closeConfirmModal = () => {
-        document.getElementById('modal-confirm').style.display = 'none';
+        document.getElementById('modal-confirm').style.display = 'none';    
         customerIdToDisable = null;
     };
 
     document.getElementById('btn-confirm-disable').onclick = async () => {
         if (!customerIdToDisable) return;
+        showLoader();
 
         try {
             const res = await fetch(`http://127.0.0.1:8000/admin/customers/disable/${customerIdToDisable}`, {
@@ -256,23 +266,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Usuário desativado com sucesso!", "success");
                 closeConfirmModal();
-                loadCustomers(); 
+                await loadCustomers(); 
             } else {
                 showToast("Erro ao tentar desativar o usuário.");
             }
         } catch (err) {
             showToast("Erro de conexão com o servidor.");
+        } finally {
+            hideLoader();
         }
     };
 
     window.handleActivate = async (id) => {
-        const res = await fetch(`http://127.0.0.1:8000/admin/customer/activate/${id}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast("Conta reativada com sucesso!", "success");
-            loadCustomers();
+        showLoader();
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/admin/customer/activate/${id}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast("Conta reativada com sucesso!", "success");
+                await loadCustomers();
+            }
+        } catch (err) {
+            showToast("Erro ao reativar.");
+        } finally {
+            hideLoader();
         }
     };
 

@@ -24,6 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     };
 
+    const showLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    };
+
+    const hideLoader = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    };
+
     const validate = {
         name: (v) => {
             const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/; 
@@ -81,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const loadDashboard = async () => {
+        showLoader();
         try {
             const response = await fetch('http://127.0.0.1:8000/auth/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -115,6 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             showToast("Erro ao sincronizar com o Banco JAVER.");
+        } finally {
+            hideLoader();
         }
     };
 
@@ -156,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-confirm-deposit').onclick = async () => {
         const val = document.getElementById('deposit-amount').value;
         if (!val || val <= 0) return showToast("Valor inválido.");
+        showLoader();
         try {
             const res = await fetch(`http://127.0.0.1:8000/banking/deposit?deposit_value=${val}`, {
                 method: 'POST',
@@ -164,12 +178,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Depósito realizado!", "success");
                 closeModal('modal-deposit');
-                loadDashboard();
+                await loadDashboard();
             } else {
                 const err = await res.json();
                 showToast(err.detail || "Erro no depósito.");
             }
-        } catch (e) { showToast("Erro no servidor."); }
+        } catch (e) { showToast("Erro no servidor."); 
+        } finally {
+            hideLoader(); 
+        }
     };
 
     document.getElementById('btn-confirm-pix').onclick = async () => {
@@ -179,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(amount) || !key) return showToast("Verifique os dados.");
         if (amount <= 0) return showToast("Saldo deve ser positivo.")
         if (amount > currentBalance) return showToast("Saldo insuficiente.");
+        showLoader();
         try {
             const res = await fetch('http://127.0.0.1:8000/banking/pix', {
                 method: 'POST',
@@ -188,12 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Pix enviado!", "success");
                 closeModal('modal-pix');
-                loadDashboard();
+                await loadDashboard();
             } else {
                 const d = await res.json();
                 showToast(d.detail);
             }
-        } catch (e) { showToast("Erro de conexão."); }
+        } catch (e) { showToast("Erro de conexão."); 
+        } finally {
+            hideLoader(); 
+        }
     };
 
     document.getElementById('btn-confirm-payment').onclick = async () => {
@@ -205,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(amount)) return showToast("Dados inválidos.");
         if (amount <= 0) return showToast("O Valor deve ser positivo.")
         if (amount > currentBalance) return showToast("Saldo insuficiente.");
-
+        showLoader();
         try {
             const res = await fetch('http://127.0.0.1:8000/banking/payment', {
                 method: 'POST',
@@ -215,9 +236,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Pagamento realizado!", "success");
                 closeModal('modal-payment');
-                loadDashboard();
+                await loadDashboard();
             }
-        } catch (e) { showToast("Erro no processamento."); }
+        } catch (e) { showToast("Erro no processamento."); 
+        } finally {
+            hideLoader(); 
+        }
     };
 
     document.getElementById('btn-save-profile').onclick = async () => {
@@ -253,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal('modal-profile');
             return;
         }
-
+        showLoader();
         try {
             const res = await fetch(`http://127.0.0.1:8000/admin/customers/${userId}`, {
                 method: 'PATCH',
@@ -263,12 +287,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast("Perfil atualizado!", "success");
                 closeModal('modal-profile');
-                loadDashboard();
+                await loadDashboard();
             } else {
                 const d = await res.json();
                 showToast(d.detail || "Erro ao atualizar.");
             }
-        } catch (e) { showToast("Erro ao conectar."); }
+        } catch (e) { showToast("Erro ao conectar."); 
+        } finally {
+            hideLoader(); 
+        }
     };
 
     document.getElementById('btn-confirm-close').onclick = async () => {
@@ -277,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal('modal-close-account');
             return;
         }
-
+        showLoader();
         try {
             const res = await fetch(`http://127.0.0.1:8000/admin/customers/disable/${userId}`, {
                 method: 'DELETE',
@@ -287,7 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.clear();
                 window.location.href = 'index.html'; 
             }
-        } catch (e) { showToast("Erro no servidor."); }
+        } catch (e) { showToast("Erro no servidor."); 
+        } finally {
+            hideLoader(); 
+        }
     };
 
     const btnToggle = document.getElementById('btn-toggle-balance');
