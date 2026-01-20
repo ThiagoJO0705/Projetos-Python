@@ -5,7 +5,7 @@ class ProfileInvestor(str, Enum):
     MODERATE = 'MODERADO'  
     BOLD = 'ARROJADO' 
 
-class InvestmentTypes(str, Enum):
+class InvestmentType(str, Enum):
     STOCKS = 'AÇÕES'
     CRYPTO = 'CRIPTO'
     FUNDS = 'FUNDOS'
