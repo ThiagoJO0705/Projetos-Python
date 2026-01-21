@@ -1,9 +1,10 @@
 from enum import Enum
 
-class ProfileInvestor(str, Enum):
+class InvestorProfile(str, Enum):
     CONSERVATIVE = 'CONSERVADOR' 
     MODERATE = 'MODERADO'  
     BOLD = 'ARROJADO' 
+    UNDEFINED = 'Indefinido'
 
 class InvestmentType(str, Enum):
     STOCKS = 'AÇÕES'
