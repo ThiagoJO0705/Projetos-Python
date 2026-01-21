@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Numeric, Uuid, DateTime
 from app_data.app.dbconfig import Base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app_data.schemas.enums import ProfileInvestor
+from app_data.schemas.enums import InvestorProfile
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -15,7 +15,7 @@ class Customer(Base):
     phone_number = Column(String, nullable=False, unique=True)
     cpf = Column(String, nullable=False, unique=True)
     account_balance = Column(Numeric(precision=10, scale=2), default=0.0)
-    investor_profile = Column(Enum(ProfileInvestor), nullable=False)
+    investor_profile = Column(Enum(InvestorProfile), nullable=False)
     total_assets = Column(Numeric(precision=10, scale=2), default=0.0)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     is_active = Column(Boolean, default=True)
@@ -31,5 +31,5 @@ class Customer(Base):
         self.investor_profile = investor_profile
         self.account_balance = account_balance
         self.total_assets = total_assets
-        self.is_active = is_active
+        self.is_active = is_active 
         self.is_admin = is_admin
