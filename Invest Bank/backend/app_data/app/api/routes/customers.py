@@ -80,8 +80,6 @@ async def update_customer(customer_id: uuid.UUID, customer_in: CustomerUpdate, s
         raise HTTPException(status_code=404, detail='Usuário não encontrado!')
 
     update_dict = customer_in.model_dump(exclude_unset=True)
-
-    # Validação de unicidade para campos sensíveis
     for field in ['email', 'cpf', 'phone_number']:
         if field in update_dict:
             value = update_dict[field]
@@ -101,4 +99,4 @@ async def update_customer(customer_id: uuid.UUID, customer_in: CustomerUpdate, s
         return customer
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=400, detail=f'Erro ao atualizar: {str(e)}')
+        raise HTTPException(status_code=400, detail=f'Erro ao tentar atualizar no banco de dados.')
