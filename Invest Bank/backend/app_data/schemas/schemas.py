@@ -39,7 +39,6 @@ class CustomerUpdate(BaseModel):
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
     investor_profile: Optional[InvestorProfile] = None
-    account_balance: Optional[Decimal] = None
     total_assets: Optional[Decimal] = None
     is_active: Optional[bool] = None
 
@@ -64,3 +63,14 @@ class AssetBase(BaseModel):
 class AssetResponse(AssetBase):
     id: uuid.UUID
     last_updated: datetime
+
+    class Config:
+        from_attributes = True
+
+class AssetUpdate(BaseModel):
+    ticker: Optional[str] = None
+    name: Optional[str] = None
+    type: Optional[InvestmentType] = None
+
+    class Config:
+        from_attributes = True
