@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import Optional, List
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app_data.models.customer import Customer 
-from app_data.schemas.schemas import CustomerCreate, CustomerResponse
+from app_data.schemas.schemas import CustomerCreate, CustomerResponse, CustomerUpdate, CustomerAuthResponse
 from app_data.app.dbconfig import get_session 
-
 customers = APIRouter(prefix='/customers', tags=['customers'])
 
 @customers.post('/', response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
@@ -31,3 +33,72 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
     except Exception:
         session.rollback()
         raise HTTPException(status_code=400, detail=f'Ocorreu um erro ao tentar salvar no banco de dados.')
+
+@customers.get('/', response_model=List[CustomerResponse])
+async def get_all_customers(is_active: Optional[bool] = Query(None), name: Optional[str] = Query(None), is_admin: Optional[bool] = Query(None), session: Session = Depends(get_session)):
+    '''
+    Retorna todos os clientes com opção de filtros
+    '''
+    query = session.query(Customer)
+    if is_active is not None:
+        query = query.filter(Customer.is_active == is_active)
+    if name:
+        query = query.filter(Customer.name.contains(name))
+    if is_admin is not None:
+        query = query.filter(Customer.is_admin == is_admin)
+    return query.all()
+
+@customers.get('/filter', response_model=CustomerAuthResponse)
+async def filter_customer(email: Optional[str] = Query(None), cpf: Optional[str] = Query(None), phone_number: Optional[str] = Query(None), session: Session = Depends(get_session)):
+    '''
+    Busca um único cliente por e-mail, CPF ou Telefone.
+    '''
+    if not any([email, cpf, phone_number]):
+        raise HTTPException(status_code=400, detail='É necessário informar ao menos um critério de busca')
+    customer = session.query(Customer).filter(or_(Customer.email == email, Customer.cpf == cpf, Customer.phone_number == phone_number)).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Nenhum usuário encontrado.')
+    return customer
+
+@customers.get('/{customer_id}', response_model=CustomerResponse)
+async def get_customer_by_id(customer_id: uuid.UUID, session: Session = Depends(get_session)):
+    '''
+    Busca um cliente específico pelo UUID.
+    '''
+    customer = session.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Usuário não encontrado!')
+    return customer
+
+@customers.patch('/{customer_id}', response_model=CustomerResponse)
+async def update_customer(customer_id: uuid.UUID, customer_in: CustomerUpdate, session: Session = Depends(get_session)):
+    '''
+    Atualiza dados do cliente
+    '''
+    customer = session.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Usuário não encontrado!')
+
+    update_dict = customer_in.model_dump(exclude_unset=True)
+
+    # Validação de unicidade para campos sensíveis
+    for field in ['email', 'cpf', 'phone_number']:
+        if field in update_dict:
+            value = update_dict[field]
+            existing = session.query(Customer).filter(
+                getattr(Customer, field) == value, 
+                Customer.id != customer_id
+            ).first()
+            if existing:
+                raise HTTPException(status_code=400, detail=f'Este {field} já está em uso.')
+
+    for field, value in update_dict.items():
+        setattr(customer, field, value)
+
+    try:
+        session.commit()
+        session.refresh(customer)
+        return customer
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f'Erro ao atualizar: {str(e)}')
