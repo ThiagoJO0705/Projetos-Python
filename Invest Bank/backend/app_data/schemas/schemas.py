@@ -1,8 +1,10 @@
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 from decimal import Decimal
-from .enums import InvestorProfile
+from .enums import InvestorProfile, InvestmentType
 from typing import Optional
 import uuid
+
 
 class CustomerBase(BaseModel):
     name: str
@@ -49,3 +51,16 @@ class CustomerAuthResponse(CustomerResponse):
     
     class Config:
         from_attributes = True
+
+class AssetBase(BaseModel):
+    ticker: str
+    name: str
+    type: InvestmentType
+    current_price: Decimal
+
+    class Config:
+        from_attributes = True
+
+class AssetResponse(AssetBase):
+    id: uuid.UUID
+    last_updated: datetime

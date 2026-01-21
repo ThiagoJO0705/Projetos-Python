@@ -11,3 +11,4 @@ class InvestmentType(str, Enum):
     CRYPTO = 'CRIPTO'
     FUNDS = 'FUNDOS'
     FIXED_INCOME = 'RENDA_FIXA'
+
