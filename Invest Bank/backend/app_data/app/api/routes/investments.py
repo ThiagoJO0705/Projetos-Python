@@ -5,6 +5,7 @@ from app_data.models.customer import Customer
 from app_data.models.asset import Asset
 from app_data.schemas.schemas import InvestmentBase, InvestmentResponse
 from sqlalchemy.orm import Session
+import uuid
 
 investments = APIRouter(prefix='/investments', tags=['investments'])
 
@@ -45,10 +46,15 @@ async def get_investments(is_active: bool = True, session: Session = Depends(get
     query = query.filter(Investment.is_active == is_active)
     return query.all()
 
-@investments.get('/customer/{customer_id}')
-async def get_customer_investments():
+@investments.get('/customer/{customer_id}', response_model=List[InvestmentResponse])
+async def get_customer_investments(customer_id: uuid.UUID, session: Session = Depends(get_session)):
     '''Pega todos os investimentos de um usuário'''
-    pass
+    customer = session.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail='Cliente não encontrado para processar a transação.')
+    if not customer.investments:
+        raise HTTPException(status_code=404, detail='Este cliente ainda não possui investimentos.')
+    return customer.investments
 
 @investments.get('/investments/{id}')
 async def get_investment():
