@@ -35,10 +35,15 @@ async def post_investments(investment_base: InvestmentBase, session: Session = D
         session.rollback()
         raise HTTPException(status_code=400, detail=f'Erro ao salvar investimento no banco de dados')
 
-@investments.get('/')
-async def get_investments():
+from sqlalchemy.orm import joinedload # Importe isso
+from typing import List
+
+@investments.get('/', response_model=List[InvestmentResponse])
+async def get_investments(is_active: bool = True, session: Session = Depends(get_session)):
     '''Pega todos os investimentos já feitos'''
-    pass
+    query = session.query(Investment).options(joinedload(Investment.asset), joinedload(Investment.customer))
+    query = query.filter(Investment.is_active == is_active)
+    return query.all()
 
 @investments.get('/customer/{customer_id}')
 async def get_customer_investments():
