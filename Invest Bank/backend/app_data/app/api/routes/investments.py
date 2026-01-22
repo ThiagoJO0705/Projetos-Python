@@ -3,7 +3,7 @@ from app_data.app.dbconfig import get_session
 from app_data.models.investments import Investment
 from app_data.models.customer import Customer
 from app_data.models.asset import Asset
-from app_data.schemas.schemas import InvestmentBase, InvestmentResponse
+from app_data.schemas.schemas import InvestmentBase, InvestmentResponse, InvestmentUpdate
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 import uuid
@@ -63,15 +63,36 @@ async def get_investment(investment_id: uuid.UUID, session: Session = Depends(ge
         raise HTTPException(status_code=404, detail='Investment não encontrado.')
     return investment
 
-@investments.patch('/investment/{investment_id}')
-async def update_investment():
+@investments.patch('/investment/{investment_id}', response_model=InvestmentResponse)
+async def update_investment(investment_id: uuid.UUID, investment_in: InvestmentUpdate, session: Session = Depends(get_session)):
     '''Atualiza dados de um investimento'''
-    pass
+    investment = session.query(Investment).filter(Investment.id == investment_id).first()
+    if not investment:
+        raise HTTPException(status_code=404, detail='Investimento não encontrado.')
+    update_data = investment_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(investment, key, value)
+    try:
+        session.commit()
+        session.refresh(investment)
+        return investment
+    except Exception:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f'Erro ao atualizar investimento no banco de dados')
 
-@investments.delete('/investment/{investment_id}')
-async def delete_investment():
+@investments.delete('/investment/{investment_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_investment(investment_id: uuid.UUID, session: Session = Depends(get_session)):
     '''Deleta o ativo do banco de dados'''
-    pass
+    investment = session.query(Investment).filter(Investment.id == investment_id).first()
+    if not investment:
+        raise HTTPException(status_code=404, detail='Investimento não encontrado.')
+    try:
+        session.delete(investment)
+        session.commit()
+        return None
+    except Exception:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f'Erro ao deletar investimento no banco de dados')
 
 
 

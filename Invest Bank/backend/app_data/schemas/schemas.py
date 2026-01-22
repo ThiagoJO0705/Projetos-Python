@@ -93,3 +93,11 @@ class InvestmentResponse(InvestmentBase):
 
     class Config:
         from_attributes = True
+
+class InvestmentUpdate(BaseModel):
+    quantity: Optional[Decimal] = None
+    purchase_price: Optional[Decimal] = None
+    is_active: Optional[bool] = None
+
+    class Config:
+        from_attributes = True
