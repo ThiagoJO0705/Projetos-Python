@@ -1,7 +1,7 @@
 import httpx
 import uuid
-from fastapi import HTTPException, status
-from typing import List, Optional
+from fastapi import HTTPException
+from typing import Optional
 
 DATA_SERVICE_URL = 'http://localhost:8001/customers'
 
