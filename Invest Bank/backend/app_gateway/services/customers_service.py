@@ -36,3 +36,22 @@ class CustomerDataService:
                 raise HTTPException(status_code=500, detail='Erro interno ao criar cliente no Data Service')
             return response.json()
 
+    @staticmethod
+    async def update_customer(customer_id: uuid.UUID, update_data: dict):
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(f'{DATA_SERVICE_URL}/{customer_id}', json=update_data)
+            if response.status_code == 404:
+                raise HTTPException(status_code=404, detail='Cliente não encontrado para atualização')
+            elif response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail='Erro ao atualizar cliente')
+            return response.json()
+
+    @staticmethod
+    async def get_customer_by_filter(email: Optional[str] = None, cpf: Optional[str] = None):
+        async with httpx.AsyncClient() as client:
+            params = {'email': email, 'cpf': cpf}
+            params = {k: v for k, v in params.items() if v is not None}
+            response = await client.get(f'{DATA_SERVICE_URL}/filter', params=params)
+            if response.status_code == 404:
+                return None 
+            return response.json()
