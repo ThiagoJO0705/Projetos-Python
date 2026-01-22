@@ -27,3 +27,23 @@ class InvestmentDataService:
             elif response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail='Erro ao buscar carteira do cliente')
             return response.json()
+
+    @staticmethod
+    async def get_investment_by_id(investment_id: uuid.UUID):
+        '''Busca detalhes de um investimento específico'''
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'{INVESTMENT_SERVICE_URL}/investment/{investment_id}')
+            if response.status_code == 404:
+                raise HTTPException(status_code=404, detail='Investimento não encontrado')
+            return response.json()
+
+    @staticmethod
+    async def create_investment(investment_data: dict):
+        '''Registra um novo investimento no banco de dados'''
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f'{INVESTMENT_SERVICE_URL}/', json=investment_data)
+            if response.status_code == 400:
+                raise HTTPException(status_code=400, detail=response.json().get('detail', 'Dados inválidos'))
+            elif response.status_code != 201:
+                raise HTTPException(status_code=500, detail='Erro interno ao registrar investimento')
+            return response.json()
