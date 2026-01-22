@@ -12,7 +12,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
 app = FastAPI(title='API de Monitoramento de Ativos Financeiros', version='0.0.1', 
-              description='API de monitoramento de ativos financeir, oferecendo cotações em tempo real e dados históricos para ações, FIIs e criptomoedas.')
+              description='API de monitoramento de ativos financeiro, oferecendo cotações em tempo real e dados históricos para ações, FIIs e criptomoedas.')
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='auth/signin-form')
