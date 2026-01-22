@@ -74,3 +74,20 @@ class AssetUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+class InvestmentBase(BaseModel):
+    customer_id: uuid.UUID
+    asset_id: uuid.UUID
+    quantity: Decimal
+    purchase_price: Decimal
+    is_active: bool = True
+
+    class Config:
+        from_attributes = True
+
+class InvestmentResponse(InvestmentBase):
+    id: uuid.UUID
+    application_date: datetime # MOVIDO PARA CÁ: O banco gera, a API devolve.
+
+    class Config:
+        from_attributes = True

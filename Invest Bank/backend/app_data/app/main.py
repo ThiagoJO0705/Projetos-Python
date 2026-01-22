@@ -5,6 +5,8 @@ app = FastAPI(title='Invest Bank - Database API', version='0.0.1',
 
 from app_data.app.api.routes.customers import customers
 from app_data.app.api.routes.assets import assets
+from app_data.app.api.routes.investments import investments
 
 app.include_router(customers)
 app.include_router(assets)
+app.include_router(investments)
