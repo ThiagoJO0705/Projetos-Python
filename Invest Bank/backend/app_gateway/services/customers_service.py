@@ -16,3 +16,23 @@ class CustomerDataService:
                 raise HTTPException(status_code=response.status_code, detail='Erro ao buscar clientes no Data Service')
             return response.json()
 
+    @staticmethod
+    async def get_customer_by_id(customer_id: uuid.UUID):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'{DATA_SERVICE_URL}/{customer_id}')
+            if response.status_code == 404:
+                raise HTTPException(status_code=404, detail='Cliente não encontrado no sistema de dados')
+            elif response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail='Erro ao buscar cliente')
+            return response.json()
+
+    @staticmethod
+    async def create_customer(customer_data: dict):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f'{DATA_SERVICE_URL}/', json=customer_data)
+            if response.status_code == 400:
+                raise HTTPException(status_code=400, detail=response.json().get('detail', 'Erro de validação'))
+            elif response.status_code != 201:
+                raise HTTPException(status_code=500, detail='Erro interno ao criar cliente no Data Service')
+            return response.json()
+
