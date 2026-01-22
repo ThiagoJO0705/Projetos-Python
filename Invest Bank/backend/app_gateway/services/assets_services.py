@@ -25,3 +25,23 @@ class AssetDataService:
                 raise HTTPException(status_code=response.status_code, detail='Erro ao buscar ativo por ticker')
             return response.json()
 
+    @staticmethod
+    async def create_asset(asset_data: dict):
+        '''Cadastra um novo ativo no banco de dados.'''
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f'{ASSET_SERVICE_URL}/', json=asset_data)
+            if response.status_code == 400:
+                raise HTTPException(status_code=400, detail='Ativo já cadastrado ou dados inválidos')
+            elif response.status_code != 201:
+                raise HTTPException(status_code=500, detail='Erro ao cadastrar ativo no Data Service')
+            return response.json()
+
+    @staticmethod
+    async def update_asset_price(asset_id: uuid.UUID, current_price: float):
+        '''Atualiza o preço atual de um ativo no banco de dados.'''
+        async with httpx.AsyncClient() as client:
+            payload = {'current_price': current_price}
+            response = await client.patch(f'{ASSET_SERVICE_URL}/{asset_id}', json=payload)
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail='Erro ao atualizar preço do ativo')
+            return response.json()
