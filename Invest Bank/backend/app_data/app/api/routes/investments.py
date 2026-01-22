@@ -4,7 +4,8 @@ from app_data.models.investments import Investment
 from app_data.models.customer import Customer
 from app_data.models.asset import Asset
 from app_data.schemas.schemas import InvestmentBase, InvestmentResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from typing import List
 import uuid
 
 investments = APIRouter(prefix='/investments', tags=['investments'])
@@ -36,8 +37,6 @@ async def post_investments(investment_base: InvestmentBase, session: Session = D
         session.rollback()
         raise HTTPException(status_code=400, detail=f'Erro ao salvar investimento no banco de dados')
 
-from sqlalchemy.orm import joinedload # Importe isso
-from typing import List
 
 @investments.get('/', response_model=List[InvestmentResponse])
 async def get_investments(is_active: bool = True, session: Session = Depends(get_session)):
@@ -56,17 +55,20 @@ async def get_customer_investments(customer_id: uuid.UUID, session: Session = De
         raise HTTPException(status_code=404, detail='Este cliente ainda não possui investimentos.')
     return customer.investments
 
-@investments.get('/investments/{id}')
-async def get_investment():
+@investments.get('/investment/{investment_id}', response_model=InvestmentResponse)
+async def get_investment(investment_id: uuid.UUID, session: Session = Depends(get_session)):
     '''Pega os detalhes de um investimento espefcifico'''
-    pass
+    investment = session.query(Investment).options(joinedload(Investment.asset) ).filter(Investment.id == investment_id).first()
+    if not investment:
+        raise HTTPException(status_code=404, detail='Investment não encontrado.')
+    return investment
 
-@investments.patch('/investments/{id}')
+@investments.patch('/investment/{investment_id}')
 async def update_investment():
     '''Atualiza dados de um investimento'''
     pass
 
-@investments.delete('/investments/{id}')
+@investments.delete('/investment/{investment_id}')
 async def delete_investment():
     '''Deleta o ativo do banco de dados'''
     pass

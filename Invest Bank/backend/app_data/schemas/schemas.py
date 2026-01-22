@@ -87,7 +87,9 @@ class InvestmentBase(BaseModel):
 
 class InvestmentResponse(InvestmentBase):
     id: uuid.UUID
-    application_date: datetime # MOVIDO PARA CÁ: O banco gera, a API devolve.
+    application_date: datetime
+    asset: Optional[AssetResponse] = None
+    customer: Optional[CustomerResponse] = None
 
     class Config:
         from_attributes = True
