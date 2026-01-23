@@ -53,3 +53,18 @@ class YahooService:
             return df
         except Exception:
             raise HTTPException(status_code=400, detail=f'Erro ao buscar histórico do ativo no YahooFinance')
+
+    @staticmethod
+    def get_market_variation(ticker: str) -> float:
+        '''Calcula a variação percentual do ativo nas últimas 24h.'''
+        try:
+            asset = yf.Ticker(ticker)
+            history = asset.history(period='2d')
+            if len(history) < 2:
+                return 0.0
+            price_close = history['Close'].iloc[-1]
+            price_prev = history['Close'].iloc[-2]
+            variation = ((price_close - price_prev) / price_prev) * 100
+            return round(variation, 2)
+        except Exception:
+            return 0.0
