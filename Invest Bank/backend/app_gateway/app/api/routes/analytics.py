@@ -1,86 +1,91 @@
 import uuid
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Header
 from typing import Dict, Any
 from app_gateway.services.customers_services import CustomerDataService
 from app_gateway.services.investments_services import InvestmentDataService
-from app_gateway.services.assets_services import AssetDataService
+from app_gateway.services.javer_services import JaverService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.analysis_services import AnalysisService
 
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
-@analytics.get('/wallet/{customer_id}')
-async def get_full_portfolio_analysis(customer_id: uuid.UUID):
-    '''Retorna uma análise profunda da carteira do investidor.'''
-    customer = await CustomerDataService.get_customer_by_id(customer_id)
-    investments = await InvestmentDataService.get_customer_investments(customer_id)
+async def get_pyinvest_user(authorization: str):
+    '''Valida o token no Javer e busca o usuário no PYInvest.'''
+    if not authorization or not authorization.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail='Token de autenticação ausente ou inválido.')
+    token = authorization.split(' ')[1]
+    javer_user = await JaverService.get_user_data_from_javer(token)
+    pyinvest_user = await CustomerDataService.get_customer_by_filter(cpf=javer_user['cpf'])
+    if not pyinvest_user:
+        raise HTTPException(status_code=404, detail='Usuário autenticado, mas conta de investimentos não encontrada. Por favor, ative sua conta de investidor.')
+    return {'javer': javer_user, 'pyinvest': pyinvest_user}
+
+@analytics.get('/wallet/me')
+async def get_my_portfolio_analysis(authorization: str = Header(...)):
+    ''' Retorna uma análise profunda da carteira do investidor logado.'''
+    user_context = await get_pyinvest_user(authorization)
+    customer = user_context['pyinvest']
+    investments = await InvestmentDataService.get_customer_investments(customer['id'])
     if not investments:
-        raise HTTPException(status_code=404, detail='Nenhum investimento encontrado para este cliente para realizar a análise.')
+        return {
+            'customer_info': {'name': user_context['javer']['name'], 'profile': customer['investor_profile']},
+            'message': 'Você ainda não possui investimentos cadastrados.'
+        }
     portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
-    composition_chart = AnalysisService.get_portfolio_composition(investments)
-    performance_chart = AnalysisService.get_assets_performance(investments)
-    highlights = AnalysisService.get_highlights(investments)
     return {
         'customer_info': {
-            'name': customer['name'],
+            'name': user_context['javer']['name'],
             'profile': customer['investor_profile']
         },
         'portfolio_summary': portfolio_summary,
         'charts': {
-            'allocation_by_type': composition_chart,
-            'profit_loss_by_ticker': performance_chart
+            'allocation_by_type': AnalysisService.get_portfolio_composition(investments),
+            'profit_loss_by_ticker': AnalysisService.get_assets_performance(investments)
         },
-        'highlights': highlights
+        'highlights': AnalysisService.get_highlights(investments)
     }
 
-@analytics.get('/calculations/projection/{customer_id}')
-async def get_wealth_projection(customer_id: uuid.UUID):
-    '''Calcula a projeção de patrimônio para 1 ano baseado no perfil do investidor.'''
-    customer = await CustomerDataService.get_customer_by_id(customer_id)
+@analytics.get('/calculations/projection/me')
+async def get_my_wealth_projection(authorization: str = Header(...)):
+    '''Calcula a projeção de patrimônio para 1 ano baseado no perfil e ativos do usuário logado.'''
+    user_context = await get_pyinvest_user(authorization)
+    customer = user_context['pyinvest']
     current_assets = float(customer.get('total_assets', 0.0))
     projection = AnalysisService.calculate_future_projection(total_assets=current_assets, profile=customer['investor_profile'], years=1)
     return projection
 
-@analytics.get('/calculations/assets/{customer_id}')
-async def get_total_net_worth(customer_id: uuid.UUID):
-    '''Calcula o patrimônio total atualizado.'''
-    customer = await CustomerDataService.get_customer_by_id(customer_id)
-    investments = await InvestmentDataService.get_customer_investments(customer_id)
-    portfolio_data = AnalysisService.get_portfolio_analysis(
-        investments=investments, 
-        profile=customer['investor_profile']
-    )
-    account_balance = float(customer.get('account_balance', 0.0))
-    investments_value = portfolio_data['current_portfolio_value']
+@analytics.get('/calculations/net-worth/me')
+async def get_my_total_net_worth(authorization: str = Header(...)):
+    '''Calcula o patrimônio total liquido'''
+    user_context = await get_pyinvest_user(authorization)
+    javer_balance = user_context['javer']['balance']
+    customer = user_context['pyinvest']
+    investments = await InvestmentDataService.get_customer_investments(customer['id'])
+    portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
+    current_investments_value = portfolio_data['current_portfolio_value']    
     return {
-        'customer_id': customer_id,
-        'account_balance': account_balance,
-        'investments_current_value': investments_value,
-        'total_net_worth': round(account_balance + investments_value, 2)
+        'javer_account_balance': javer_balance,
+        'pyinvest_portfolio_value': current_investments_value,
+        'total_net_worth': round(javer_balance + current_investments_value, 2),
+        'currency': 'BRL'
     }
 
-@analytics.get('/analises/mercado/{ticker}')
-async def get_market_comparison(ticker: str):
-    '''Compara o desempenho de um ativo específico com o Ibovespa e calcula volatilidade.'''
+@analytics.get('/market/comparison/{ticker}')
+async def get_market_analysis(ticker: str):
+    '''Compara o desempenho de um ativo específico com o benchmark do mercado (Ibovespa).'''
     asset_details = YahooService.get_asset_details(ticker)
     if not asset_details:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail='Ticker não encontrado no mercado financeiro.'
-        )
+        raise HTTPException(status_code=404, detail='Ticker não encontrado ou inválido no Yahoo Finance.')
     history_df = YahooService.get_historical_data(ticker)
     benchmark_df = YahooService.get_historical_data('^BVSP')
-    volatility = AnalysisService.calculate_volatility(history_df)
-    daily_variation = YahooService.get_market_variation(ticker)
-    comparison = AnalysisService.compare_with_benchmark(
-        portfolio_yield_pct=daily_variation, 
-        benchmark_df=benchmark_df
-    )
     return {
         'asset_info': asset_details,
         'metrics': {
-            'daily_variation_pct': f'{daily_variation}%',
-            'annualized_volatility': f'{volatility}%'
+            'daily_variation_pct': f'{YahooService.get_market_variation(ticker)}%',
+            'annualized_volatility': f'{AnalysisService.calculate_volatility(history_df)}%'
         },
-        'market_benchmark_comparison': comparison
+        'market_benchmark_comparison': AnalysisService.compare_with_benchmark(
+            portfolio_yield_pct=YahooService.get_market_variation(ticker), 
+            benchmark_df=benchmark_df
+        )
     }

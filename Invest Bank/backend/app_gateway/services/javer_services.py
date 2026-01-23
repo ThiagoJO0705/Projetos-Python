@@ -1,5 +1,5 @@
 import httpx
-from fastapi import HTTPException, Header
+from fastapi import HTTPException
 
 JAVER_API_URL = 'http://localhost:8000'
 
