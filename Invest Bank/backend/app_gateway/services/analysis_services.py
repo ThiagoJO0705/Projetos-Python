@@ -100,3 +100,34 @@ class AnalysisService:
         composition = df.groupby('investment_type')['current_value'].sum().reset_index()
         return composition.to_dict(orient='records')
     
+    @staticmethod
+    def get_assets_performance(investments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        '''Dados para o gráfico de Barras: lucro ou prejuízo individual por ticker.'''
+        df = pd.DataFrame(investments)
+        df['ticker'] = df['asset'].apply(AnalysisService._extract_ticker)
+        df['total_paid'] = df['quantity'].astype(float) * df['purchase_price'].astype(float)
+        df['current_val'] = df['quantity'].astype(float) * df['asset'].apply(AnalysisService._extract_price)
+        df['profit_loss'] = df['current_val'] - df['total_paid']
+        performance = df.groupby('ticker')['profit_loss'].sum().reset_index()
+        return performance.to_dict(orient='records')
+    
+    @staticmethod
+    def get_asset_history_with_events(ticker: str, history_df: pd.DataFrame, user_investments: List[Dict[str, Any]]) -> Dict[str, Any]:
+        '''Dados para o gráfico de Linha: Preços com marcações de compra.'''
+        chart_data = {
+            'dates': history_df.index.strftime('%Y-%m-%d').tolist(),
+            'prices': history_df['Close'].tolist()
+        }
+        purchase_events = []
+        for inv in user_investments:
+            purchase_events.append({
+                'date': inv['application_date'][:10],
+                'purchase_price': float(inv['purchase_price']),
+                'label': f'Comprou {inv['quantity']} unidades'
+            })
+        return {
+            'ticker': ticker,
+            'price_history': chart_data,
+            'purchase_events': purchase_events
+        }
+    
