@@ -76,3 +76,27 @@ class AnalysisService:
             'portfolio_items': df[['ticker', 'investment_type', 'total_purchase_value', 'current_value', 'profit_loss']].to_dict(orient='records')
         }
 
+    @staticmethod
+    def calculate_future_projection(total_assets: float, profile: InvestorProfile, years: int = 1) -> Dict[str, Any]:
+        '''Realiza a projeção de crescimento do patrimônio para o futuro.'''
+        rate = AnalysisService.PROJECTION_RATES.get(profile, 0.0)
+        future_value = total_assets * (1 + rate) ** years
+        
+        return {
+            'initial_assets': round(total_assets, 2),
+            'profile': profile,
+            'annual_rate': f'{rate * 100}%',
+            'time_horizon_years': years,
+            'projected_value': round(future_value, 2),
+            'estimated_profit': round(future_value - total_assets, 2)
+        }
+    
+    @staticmethod
+    def get_portfolio_composition(investments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        '''Dados para o gráfico de Pizza: percentual de alocação por tipo.'''
+        df = pd.DataFrame(investments)
+        df['investment_type'] = df['asset'].apply(AnalysisService._extract_type)
+        df['current_value'] = df['quantity'].astype(float) * df['asset'].apply(AnalysisService._extract_price)
+        composition = df.groupby('investment_type')['current_value'].sum().reset_index()
+        return composition.to_dict(orient='records')
+    
