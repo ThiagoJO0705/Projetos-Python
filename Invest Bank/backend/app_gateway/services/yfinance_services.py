@@ -32,3 +32,24 @@ class YahooService:
             }
         except Exception:
             return None
+
+    @staticmethod
+    def get_current_price(ticker: str) -> float:
+        '''Busca o preço atual deum um ativo'''
+        try:
+            asset = yf.Ticker(ticker)
+            return asset.fast_info['last_price']
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def get_historical_data(ticker: str, period: str = '1y') -> pd.DataFrame:
+        '''Retorna um DataFrame do Pandas com o histórico de preços.'''
+        try:
+            asset = yf.Ticker(ticker)
+            df = asset.history(period=period)
+            if df.empty:
+                raise ValueError('Nenhum dado histórico encontrado.')
+            return df
+        except Exception:
+            raise HTTPException(status_code=400, detail=f'Erro ao buscar histórico do ativo no YahooFinance')
