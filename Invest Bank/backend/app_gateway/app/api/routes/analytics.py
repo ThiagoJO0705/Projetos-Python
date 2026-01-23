@@ -1,6 +1,4 @@
-import uuid
-from fastapi import APIRouter, HTTPException, status, Header
-from typing import Dict, Any
+from fastapi import APIRouter, HTTPException, Header
 from app_gateway.services.customers_services import CustomerDataService
 from app_gateway.services.investments_services import InvestmentDataService
 from app_gateway.services.javer_services import JaverService
