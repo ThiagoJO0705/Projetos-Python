@@ -131,3 +131,40 @@ class AnalysisService:
             'purchase_events': purchase_events
         }
     
+    @staticmethod
+    def get_highlights(investments: List[Dict[str, Any]]) -> Dict[str, Any]:
+        '''Identifica o melhor e o pior ativo da carteira.'''
+        df = pd.DataFrame(investments)
+        df['ticker'] = df['asset'].apply(AnalysisService._extract_ticker)
+        df['current_price'] = df['asset'].apply(AnalysisService._extract_price)
+        df['profit'] = (df['current_price'] - df['purchase_price'].astype(float)) * df['quantity'].astype(float)
+        best_row = df.loc[df['profit'].idxmax()]
+        worst_row = df.loc[df['profit'].idxmin()]
+        return {
+            'best_performer': {'ticker': best_row['ticker'], 'profit': round(best_row['profit'], 2)},
+            'worst_performer': {'ticker': worst_row['ticker'], 'profit': round(worst_row['profit'], 2)}
+        }
+    
+    @staticmethod
+    def calculate_volatility(history_df: pd.DataFrame) -> float:
+        '''Calcula a volatilidade anualizada do ativo.'''
+        returns = history_df['Close'].pct_change()
+        volatility = returns.std() * np.sqrt(252)
+        return round(float(volatility * 100), 2) 
+    
+    @staticmethod
+    def compare_with_benchmark(portfolio_yield_pct: float, benchmark_df: pd.DataFrame) -> Dict[str, Any]:
+        '''Compara o rendimento da carteira com o Ibovespa.'''
+        if benchmark_df.empty:
+            return {'error': 'Dados do Benchmarking indisponíveis'}
+        start_price = benchmark_df['Close'].iloc[0]
+        end_price = benchmark_df['Close'].iloc[-1]
+        market_yield = ((end_price - start_price) / start_price) * 100
+        alpha = portfolio_yield_pct - market_yield
+        return {
+            'benchmark_name': 'Ibovespa (^BVSP)',
+            'portfolio_yield': f'{round(portfolio_yield_pct, 2)}%',
+            'market_yield': f'{round(market_yield, 2)}%',
+            'performance_status': 'ACIMA DA MÉDIA' if alpha > 0 else 'ABAIXO DA MÉDIA',
+            'difference_pct': f'{round(abs(alpha), 2)}%'
+        }
