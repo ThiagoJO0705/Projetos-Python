@@ -1,12 +1,14 @@
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Header
 from app_gateway.services.javer_services import JaverService
 from app_gateway.services.customers_services import CustomerDataService
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app_data.schemas.enums import InvestorProfile
 
-async def get_or_create_pyinvest_user(authorization: str):
+security = HTTPBearer()
+
+async def get_or_create_pyinvest_user(auth: HTTPAuthorizationCredentials = Depends(security)):
     '''Auto Cadastro do usuário Javer no banco de dados do PyInvest'''
-    if not authorization or not authorization.startswith('Bearer '):
-        raise HTTPException(status_code=401, detail='Token de autenticação ausente ou inválido.')
-    token = authorization.split(' ')[1]
+    token = auth.credentials
     javer_user = await JaverService.get_user_data_from_javer(token)
     pyinvest_user = await CustomerDataService.get_customer_by_filter(cpf=javer_user['cpf'])
     if not pyinvest_user:
@@ -16,7 +18,7 @@ async def get_or_create_pyinvest_user(authorization: str):
             'cpf': javer_user['cpf'],
             'password': 'EXTERNAL_AUTH_JAVER',
             'phone_number': javer_user.get('phone_number') or javer_user['cpf'],
-            'investor_profile': 'UNDEFINED',
+            'investor_profile': InvestorProfile.UNDEFINED,
             'total_assets': 0.0,
             'is_active': True
         }
