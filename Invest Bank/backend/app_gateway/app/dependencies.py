@@ -12,12 +12,25 @@ async def get_or_create_pyinvest_user(authorization: str):
     if not pyinvest_user:
         new_user_payload = {
             'name': javer_user['name'],
-            'email': javer_user.get('email', f'{javer_user['cpf']}@javer.com.br'),
+            'email': javer_user['email'],
             'cpf': javer_user['cpf'],
             'password': 'EXTERNAL_AUTH_JAVER',
             'phone_number': javer_user.get('phone_number') or javer_user['cpf'],
             'investor_profile': 'UNDEFINED',
-            'total_assets': 0.0
+            'total_assets': 0.0,
+            'is_active': True
         }
         pyinvest_user = await CustomerDataService.create_customer(new_user_payload)
-    return {'javer': javer_user, 'pyinvest': pyinvest_user}
+    else:
+        update_payload = {}
+        if pyinvest_user['name'] != javer_user['name']:
+            update_payload['name'] = javer_user['name']
+        if pyinvest_user['email'] != javer_user['email']:
+            update_payload['email'] = javer_user['email']
+        if update_payload:
+            pyinvest_user = await CustomerDataService.update_customer(pyinvest_user['id'], update_payload)
+    return {
+        'javer': javer_user, 
+        'pyinvest': pyinvest_user,
+        'is_admin': javer_user['is_admin']
+    }
