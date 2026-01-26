@@ -20,6 +20,7 @@ class JaverService:
                     'name': user_data['name'],
                     'email': user_data['email'],
                     'phone_number': user_data['phone_number'],
+                    'is_admin': user_data.get('is_admin', False),
                     'id': user_data['id']
                 }
             except httpx.ConnectError:

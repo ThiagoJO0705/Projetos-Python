@@ -55,3 +55,12 @@ class CustomerDataService:
             if response.status_code == 404:
                 return None 
             return response.json()
+        
+    @staticmethod
+    async def soft_delete_investor(customer_id: uuid.UUID):
+        async with httpx.AsyncClient() as client:
+            payload = {"is_active": False}
+            response = await client.patch(f"{DATA_SERVICE_URL}/{customer_id}", json=payload)
+            if response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Erro ao desativar conta de investidor.")
+            return True
