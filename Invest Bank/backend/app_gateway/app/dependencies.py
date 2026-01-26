@@ -15,7 +15,7 @@ async def get_or_create_pyinvest_user(authorization: str):
             'email': javer_user.get('email', f'{javer_user['cpf']}@javer.com.br'),
             'cpf': javer_user['cpf'],
             'password': 'EXTERNAL_AUTH_JAVER',
-            'phone_number': javer_user.get('phone_number', '00000000000'),
+            'phone_number': javer_user.get('phone_number') or javer_user['cpf'],
             'investor_profile': 'UNDEFINED',
             'total_assets': 0.0
         }

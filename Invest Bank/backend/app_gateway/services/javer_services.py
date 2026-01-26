@@ -18,6 +18,8 @@ class JaverService:
                     'cpf': user_data['cpf'],
                     'balance': float(user_data['account_balance']),
                     'name': user_data['name'],
+                    'email': user_data['email'],
+                    'phone_number': user_data['phone_number'],
                     'id': user_data['id']
                 }
             except httpx.ConnectError:
