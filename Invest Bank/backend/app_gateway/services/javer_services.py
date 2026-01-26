@@ -50,3 +50,17 @@ class JaverService:
                 return response.json() 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Erro de comunicação com Javer: {str(e)}")
+            
+    @staticmethod
+    async def credit_account(token: str, amount: float):
+        '''Realiza o depósito do valor da venda do ativo no Banco Javer.'''
+        headers = {'Authorization': f'Bearer {token}'}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{JAVER_API_URL}/banking/deposit",
+                params={"deposit_value": amount},
+                headers=headers
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=400, detail="Erro ao creditar valor no Banco Javer.")
+            return response.json()
