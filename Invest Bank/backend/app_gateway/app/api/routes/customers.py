@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, status
 from app_gateway.app.dependencies import get_or_create_pyinvest_user
 from app_gateway.schemas.schemas import CustomerUpdate
 from app_gateway.services.customers_services import CustomerDataService
@@ -25,7 +25,17 @@ async def update_customer(update_data: CustomerUpdate, authorization: str = Head
         "user": updated_user
     }
 
-@customers.delete('/me')
-async def deactivate_customer():
-    pass
+@customers.delete('/me', status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_my_investor_account(authorization: str = Header(...)):
+    '''Desativa a conta do investidor no sistema PYInvest.'''
+    user_context = await get_or_create_pyinvest_user(authorization)
+    if not user_context['pyinvest']['is_active']:
+        raise HTTPException(status_code=400, detail="Sua conta de investidor já está desativada.")
+    await CustomerDataService.soft_delete_investor(user_context['pyinvest']['id'])
+    return None
 
+@customers.get('/all')
+async def list_all_investors(authorization: str = Header(...)):
+    '''Lista todos os investidores cadastrados. '''
+    await get_or_create_pyinvest_user(authorization)
+    return await CustomerDataService.get_all_customers()
