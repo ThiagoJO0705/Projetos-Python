@@ -1,38 +1,27 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Depends
 from app_gateway.services.customers_services import CustomerDataService
 from app_gateway.services.investments_services import InvestmentDataService
-from app_gateway.services.javer_services import JaverService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.analysis_services import AnalysisService
+from app_gateway.app.dependencies import validate_active_investor
 
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
-async def get_pyinvest_user(authorization: str):
-    '''Valida o token no Javer e busca o usuário no PYInvest.'''
-    if not authorization or not authorization.startswith('Bearer '):
-        raise HTTPException(status_code=401, detail='Token de autenticação ausente ou inválido.')
-    token = authorization.split(' ')[1]
-    javer_user = await JaverService.get_user_data_from_javer(token)
-    pyinvest_user = await CustomerDataService.get_customer_by_filter(cpf=javer_user['cpf'])
-    if not pyinvest_user:
-        raise HTTPException(status_code=404, detail='Usuário autenticado, mas conta de investimentos não encontrada. Por favor, ative sua conta de investidor.')
-    return {'javer': javer_user, 'pyinvest': pyinvest_user}
-
 @analytics.get('/wallet/me')
-async def get_my_portfolio_analysis(authorization: str = Header(...)):
+async def get_my_portfolio_analysis(user_context: dict = Depends(validate_active_investor)):
     ''' Retorna uma análise profunda da carteira do investidor logado.'''
-    user_context = await get_pyinvest_user(authorization)
     customer = user_context['pyinvest']
+    javer_data = user_context['javer']
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     if not investments:
         return {
-            'customer_info': {'name': user_context['javer']['name'], 'profile': customer['investor_profile']},
+            'customer_info': {'name': javer_data['name'], 'profile': customer['investor_profile']},
             'message': 'Você ainda não possui investimentos cadastrados.'
         }
     portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
     return {
         'customer_info': {
-            'name': user_context['javer']['name'],
+            'name': javer_data['name'],
             'profile': customer['investor_profile']
         },
         'portfolio_summary': portfolio_summary,
@@ -44,20 +33,18 @@ async def get_my_portfolio_analysis(authorization: str = Header(...)):
     }
 
 @analytics.get('/calculations/projection/me')
-async def get_my_wealth_projection(authorization: str = Header(...)):
+async def get_my_wealth_projection(user_context: dict = Depends(validate_active_investor)):
     '''Calcula a projeção de patrimônio para 1 ano baseado no perfil e ativos do usuário logado.'''
-    user_context = await get_pyinvest_user(authorization)
     customer = user_context['pyinvest']
     current_assets = float(customer.get('total_assets', 0.0))
     projection = AnalysisService.calculate_future_projection(total_assets=current_assets, profile=customer['investor_profile'], years=1)
     return projection
 
 @analytics.get('/calculations/net-worth/me')
-async def get_my_total_net_worth(authorization: str = Header(...)):
+async def get_my_total_net_worth(user_context: dict = Depends(validate_active_investor)):
     '''Calcula o patrimônio total liquido'''
-    user_context = await get_pyinvest_user(authorization)
-    javer_balance = user_context['javer']['balance']
     customer = user_context['pyinvest']
+    javer_balance = user_context['javer']['balance']
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
     current_investments_value = portfolio_data['current_portfolio_value']    
