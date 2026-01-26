@@ -27,3 +27,26 @@ class JaverService:
                 raise HTTPException(status_code=503, detail='O serviço do Banco Javer está temporariamente indisponível. Não foi possível validar seu saldo.')
             except Exception:
                 raise HTTPException(status_code=500, detail=f'Erro ao integrar com o Banco Javer')
+            
+    @staticmethod
+    async def debit_account(token: str, amount: float, ticker: str):
+        '''Método para chamar a api do banco javer e realizar um debito na conta do usuario'''
+        headers = {'Authorization': f'Bearer {token}'}
+        payment_payload = {
+            "method": "PIX",
+            "amount": amount,
+            "description": f"Compra do ativo: {ticker} via PYInvest"
+        }
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    f"{JAVER_API_URL}/banking/payment", 
+                    json=payment_payload, 
+                    headers=headers
+                )
+                if response.status_code != 200:
+                    error_detail = response.json().get('detail', 'Erro no débito')
+                    raise HTTPException(status_code=400, detail=f"Javer Bank: {error_detail}")
+                return response.json() 
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Erro de comunicação com Javer: {str(e)}")
