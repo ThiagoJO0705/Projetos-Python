@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Depends
 from app_gateway.services.javer_services import JaverService
 from app_gateway.services.customers_services import CustomerDataService
 
@@ -34,3 +34,9 @@ async def get_or_create_pyinvest_user(authorization: str):
         'pyinvest': pyinvest_user,
         'is_admin': javer_user['is_admin']
     }
+
+async def validate_active_investor(user_context: dict = Depends(get_or_create_pyinvest_user)):
+    '''Valida se a conta do investidor está ativa.'''
+    if not user_context['pyinvest']['is_active']:
+        raise HTTPException(status_code=403, detail='Acesso negado. Sua conta de investidor no PYInvest está desativada.')
+    return user_context
