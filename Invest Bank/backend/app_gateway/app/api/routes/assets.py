@@ -36,4 +36,8 @@ async def serch_investment_by_name(name: str):
 
 @assets.get('/trending')
 async def get_trends():
-    pass
+    '''Retorna os ativos cadastrados banco de dados.'''
+    db_assets = await AssetDataService.get_all_assets()
+    if not db_assets:
+        return []
+    return db_assets
