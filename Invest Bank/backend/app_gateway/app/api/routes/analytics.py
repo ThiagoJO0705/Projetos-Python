@@ -4,6 +4,7 @@ from app_gateway.services.investments_services import InvestmentDataService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.analysis_services import AnalysisService
 from app_gateway.app.dependencies import validate_active_investor
+from app_data.schemas.enums import InvestorProfile
 
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
@@ -15,7 +16,7 @@ async def get_my_portfolio_analysis(user_context: dict = Depends(validate_active
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     if not investments:
         return {
-            'customer_info': {'name': javer_data['name'], 'profile': customer['investor_profile']},
+            'customer_info': {'name': javer_data['name'], 'profile': customer.get('investor_profile', InvestorProfile.UNDEFINED)},
             'message': 'Você ainda não possui investimentos cadastrados.'
         }
     portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
