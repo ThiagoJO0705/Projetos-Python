@@ -19,7 +19,6 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
         password=customer_create_schema.password, 
         phone_number=customer_create_schema.phone_number,
         cpf=customer_create_schema.cpf,
-        account_balance=customer_create_schema.account_balance,
         investor_profile=customer_create_schema.investor_profile,
         total_assets=customer_create_schema.total_assets,
         is_active=customer_create_schema.is_active,
