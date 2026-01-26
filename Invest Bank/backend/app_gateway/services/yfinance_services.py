@@ -6,17 +6,15 @@ from app_data.schemas.enums import InvestmentType
 
 class YahooService:
     TYPE_MAPPING = {
-        'EQUITY': InvestmentType.ACOES,
-        'CRYPTOCURRENCY': InvestmentType.CRIPTO,
-        'ETF': InvestmentType.FUNDOS,
-        'MUTUALFUND': InvestmentType.FUNDOS
+        'EQUITY': InvestmentType.STOCKS,
+        'CRYPTOCURRENCY': InvestmentType.CRYPTO,
+        'ETF': InvestmentType.FUNDS,
+        'MUTUALFUND': InvestmentType.FUNDS
     }
 
     @staticmethod
     def get_asset_details(ticker: str) -> Optional[Dict]:
-        '''
-        Busca detalhes completos de um ativo para cadastro.
-        '''
+        '''Busca detalhes completos de um ativo para cadastro.'''
         try:
             asset = yf.Ticker(ticker)
             info = asset.info
