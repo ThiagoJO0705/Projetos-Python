@@ -28,7 +28,6 @@ class CustomerCreate(CustomerBase):
 
 class CustomerResponse(CustomerBase):
     id: uuid.UUID
-    account_balance: Decimal
     total_assets: Decimal
 
     class Config:

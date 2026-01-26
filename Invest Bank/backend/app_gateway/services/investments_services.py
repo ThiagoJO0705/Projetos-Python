@@ -3,7 +3,7 @@ import uuid
 from fastapi import HTTPException
 
 
-INVESTMENT_SERVICE_URL = 'http://localhost:8001/investments'
+INVESTMENT_SERVICE_URL = 'http://localhost:8004/investments'
 
 class InvestmentDataService:
     @staticmethod

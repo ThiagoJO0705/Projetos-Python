@@ -3,7 +3,7 @@ import uuid
 from fastapi import HTTPException
 from typing import Optional
 
-DATA_SERVICE_URL = 'http://localhost:8001/customers'
+DATA_SERVICE_URL = 'http://localhost:8004/customers'
 
 class CustomerDataService:
     @staticmethod

@@ -2,7 +2,7 @@ import httpx
 import uuid
 from fastapi import HTTPException
 
-ASSET_SERVICE_URL = 'http://localhost:8001/assets'
+ASSET_SERVICE_URL = 'http://localhost:8004/assets'
 
 class AssetDataService:
     @staticmethod
