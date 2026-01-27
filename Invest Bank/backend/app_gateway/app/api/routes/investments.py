@@ -71,17 +71,40 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
 @investments.post('/register', response_model=InvestmentResponse)
 async def register_investment(registration_data: InvestmentCreate, user: dict = Depends(validate_active_investor)):
     '''Registra um investimento antigo sem afetar o saldo do Banco Javer.'''
-    if not registration_data.purchase_price:
-        raise HTTPException(status_code=400, detail='O preço de compra é obrigatório para registros manuais.')
-    asset_market_info = YahooService.get_asset_details(registration_data.ticker)
-    db_asset = await AssetDataService.get_asset_by_ticker(registration_data.ticker)
+    ticker = registration_data.ticker.upper()
+    purchase_price = float(registration_data.purchase_price) if registration_data.purchase_price else 0.0
+    purchase_date = registration_data.purchase_date
+    if purchase_price <= 0:
+        raise HTTPException(status_code=400, detail='O preço deve ser maior que zero.')
+    if not purchase_date:
+        raise HTTPException(status_code=400, detail='A data da compra é obrigatória para registros.')
+    fixed_prefixes = ['CDB', 'LCI', 'LCA', 'TESOURO', 'FIXED']
+    if any(ticker.startswith(p) for p in fixed_prefixes):
+        asset_market_info = {
+            'ticker': ticker, 'name': f'Renda Fixa - {ticker}',
+            'type': InvestmentType.FIXED_INCOME, 'current_price': 1.00
+        }
+    else:
+        day_bounds = YahooService.get_price_on_date(ticker, purchase_date)
+        asset_market_info = YahooService.get_asset_details(ticker)
+        if not day_bounds:
+            raise HTTPException(status_code=400, detail=f'Não há dados de mercado para {ticker} em {purchase_date}. Verifique se foi um final de semana ou feriado.')
+        if not (day_bounds['day_low'] * 0.99 <= purchase_price <= day_bounds['day_high'] * 1.01):
+            raise HTTPException(status_code=400,
+                detail=(
+                    f'Preço R${purchase_price} inválido para a data {purchase_date}. '
+                    f'Nesse dia, o ativo {ticker} variou entre R${day_bounds['day_low']:.2f} e R${day_bounds['day_high']:.2f}.'
+                )
+            )
+    db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
     return await InvestmentDataService.create_investment({
         'customer_id': str(user['pyinvest']['id']),
         'asset_id': str(db_asset['id']),
         'quantity': float(registration_data.quantity),
-        'purchase_price': float(registration_data.purchase_price),
+        'purchase_price': purchase_price,
+        'application_date': purchase_date,
         'is_active': True
     })
 
