@@ -12,14 +12,12 @@ class Asset(Base):
     ticker = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False)
     type = Column(Enum(InvestmentType), nullable=False)
-    current_price = Column(Numeric(precision=10, scale=2), default=0.0)
     currency = Column(String, default='BRL')
     last_updated = Column(DateTime, nullable=False, server_default=func.now())
     investments = relationship("Investment", back_populates="asset")
 
-    def __init__(self, ticker, name, type, current_price=0.0, currency='BRL'):
+    def __init__(self, ticker, name, type, currency='BRL'):
         self.ticker = ticker
         self.name = name
         self.type = type
-        self.current_price = current_price
         self.currency = currency
