@@ -18,10 +18,9 @@ class Customer(Base):
     total_assets = Column(Numeric(precision=10, scale=2), default=0.0)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     is_active = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
     investments = relationship("Investment", back_populates="customer", cascade="all, delete-orphan")
 
-    def __init__(self, name, email, password, phone_number, cpf, investor_profile, total_assets=0.0, is_active=True, is_admin=False):
+    def __init__(self, name, email, password, phone_number, cpf, investor_profile, total_assets=0.0, is_active=True):
         self.name = name
         self.email = email
         self.password = password
@@ -30,4 +29,3 @@ class Customer(Base):
         self.investor_profile = investor_profile
         self.total_assets = total_assets
         self.is_active = is_active 
-        self.is_admin = is_admin

@@ -62,6 +62,7 @@ class AssetBase(BaseModel):
 class AssetResponse(AssetBase):
     id: uuid.UUID
     last_updated: datetime
+    currency: str
 
     class Config:
         from_attributes = True
