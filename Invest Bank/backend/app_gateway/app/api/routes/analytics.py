@@ -13,13 +13,14 @@ async def get_my_portfolio_analysis(user: dict = Depends(validate_active_investo
     ''' Retorna uma análise profunda da carteira do investidor logado.'''
     customer = user['pyinvest']
     javer_data = user['javer']
+    usd_quote = YahooService.get_usd_brl_rate()
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     if not investments:
         return {
             'customer_info': {'name': javer_data['name'], 'profile': customer.get('investor_profile', InvestorProfile.UNDEFINED)},
             'message': 'Você ainda não possui investimentos cadastrados.'
         }
-    portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
+    portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'], usd_rate=usd_quote)
     return {
         'customer_info': {
             'name': javer_data['name'],
@@ -46,8 +47,9 @@ async def get_my_total_net_worth(user: dict = Depends(validate_active_investor))
     '''Calcula o patrimônio total liquido'''
     customer = user['pyinvest']
     javer_balance = user['javer']['balance']
+    usd_quote = YahooService.get_usd_brl_rate()
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
-    portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
+    portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'], usd_rate=usd_quote)
     current_investments_value = portfolio_data['current_portfolio_value']    
     return {
         'javer_account_balance': javer_balance,

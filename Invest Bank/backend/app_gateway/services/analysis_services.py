@@ -31,9 +31,16 @@ class AnalysisService:
         if asset_dict and 'type' in asset_dict:
             return asset_dict['type']
         return 'OTHER'
+    
+    @staticmethod
+    def _extract_currency(asset_dict: Dict) -> str:
+        '''Extrai a moeda do objeto asset.'''
+        if asset_dict and 'currency' in asset_dict:
+            return asset_dict['currency']
+        return 'BRL'
 
     @staticmethod
-    def get_portfolio_analysis(investments: List[Dict[str, Any]], profile: InvestorProfile) -> Dict[str, Any]:
+    def get_portfolio_analysis(investments: List[Dict[str, Any]], profile: InvestorProfile, usd_rate: float = 1.0) -> Dict[str, Any]:
         '''Gera uma análise da carteira do cliente.'''
         if not investments:
             return {
@@ -51,13 +58,17 @@ class AnalysisService:
         df['quantity'] = df['quantity'].astype(float)
         df['purchase_price'] = df['purchase_price'].astype(float)
         df['total_purchase_value'] = df['quantity'] * df['purchase_price']
+        df['currency'] = df['asset'].apply(AnalysisService._extract_currency)
         profile_rate = AnalysisService.PROJECTION_RATES.get(profile, 0.0)
 
         def calculate_current_value(row):
             '''Calcula valor atual do ativo para projeção'''
             if row['investment_type'] == InvestmentType.FIXED_INCOME:
                 return row['total_purchase_value'] * (1 + profile_rate)
-            return row['quantity'] * row['current_market_price']
+            market_value = row['quantity'] * row['current_market_price']
+            if row['currency'] == 'USD':
+                return market_value * usd_rate
+            return market_value
 
         df['current_value'] = df.apply(calculate_current_value, axis=1)
         df['profit_loss'] = df['current_value'] - df['total_purchase_value']

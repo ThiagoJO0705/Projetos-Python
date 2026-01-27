@@ -15,6 +15,16 @@ class YahooService:
     }
 
     @staticmethod
+    def get_usd_brl_rate() -> float:
+        '''Busca a cotação atual do Dólar para Real (USDBRL=X).'''
+        try:
+            usd_ticker = yf.Ticker('USDBRL=X')
+            rate = usd_ticker.fast_info['last_price']
+            return float(rate)
+        except Exception:
+            return 5.0
+
+    @staticmethod
     def get_asset_details(ticker: str) -> Optional[Dict]:
         '''Busca detalhes completos de um ativo para cadastro.'''
         ticker_upper = ticker.upper()
@@ -23,7 +33,7 @@ class YahooService:
             fast = asset.fast_info
             price = fast.get('last_price')
             if price is None or np.isnan(price):
-                hist = asset.history(period="1d")
+                hist = asset.history(period='1d')
                 if hist.empty:
                     return None
                 price = hist['Close'].iloc[-1]
@@ -34,14 +44,12 @@ class YahooService:
             except Exception:
                 name = ticker_upper
                 yahoo_type = 'EQUITY'
-
             mapped_type = YahooService.TYPE_MAPPING.get(yahoo_type, InvestmentType.STOCKS)
-
             return {
                 'ticker': ticker_upper,
                 'name': name,
                 'type': mapped_type,
-                'current_price': round(float(price), 2)
+                'current_price': info.get('currency', 'BRL')
             }
         except Exception:
             return None
@@ -87,15 +95,15 @@ class YahooService:
     def get_price_on_date(ticker: str, purchase_date: str) -> Optional[Dict[str, float]]:
         '''Busca a mínima e a máxima de um ativo em uma data específica.'''
         try:
-            start_dt = datetime.strptime(purchase_date, "%Y-%m-%d")
+            start_dt = datetime.strptime(purchase_date, '%Y-%m-%d')
             end_dt = start_dt + timedelta(days=1)
             asset = yf.Ticker(ticker.upper())
             history = asset.history(start=start_dt.strftime('%Y-%m-%d'), end=end_dt.strftime('%Y-%m-%d'))
             if history.empty:
                 return None
             return {
-                "day_low": float(history['Low'].iloc[0]),
-                "day_high": float(history['High'].iloc[0])
+                'day_low': float(history['Low'].iloc[0]),
+                'day_high': float(history['High'].iloc[0])
             }
         except Exception:
             return None
