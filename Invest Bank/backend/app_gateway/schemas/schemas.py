@@ -26,6 +26,7 @@ class InvestmentCreate(BaseModel):
     ticker: str = Field(..., example="PETR4.SA")
     quantity: Decimal = Field(..., gt=0)
     purchase_price: Optional[Decimal] = None 
+    purchase_date: Optional[str] = Field(None, example="2023-05-15")
 
     class Config:
         from_attributes = True

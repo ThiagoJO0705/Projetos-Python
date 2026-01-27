@@ -4,6 +4,7 @@ import pandas as pd
 from fastapi import HTTPException
 from typing import Optional, Dict
 from app_data.schemas.enums import InvestmentType
+from datetime import datetime, timedelta
 
 class YahooService:
     TYPE_MAPPING = {
@@ -81,3 +82,20 @@ class YahooService:
             return round(variation, 2)
         except Exception:
             return 0.0
+        
+    @staticmethod
+    def get_price_on_date(ticker: str, purchase_date: str) -> Optional[Dict[str, float]]:
+        '''Busca a mínima e a máxima de um ativo em uma data específica.'''
+        try:
+            start_dt = datetime.strptime(purchase_date, "%Y-%m-%d")
+            end_dt = start_dt + timedelta(days=1)
+            asset = yf.Ticker(ticker.upper())
+            history = asset.history(start=start_dt.strftime('%Y-%m-%d'), end=end_dt.strftime('%Y-%m-%d'))
+            if history.empty:
+                return None
+            return {
+                "day_low": float(history['Low'].iloc[0]),
+                "day_high": float(history['High'].iloc[0])
+            }
+        except Exception:
+            return None
