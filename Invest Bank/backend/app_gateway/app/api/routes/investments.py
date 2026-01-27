@@ -30,29 +30,29 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
     if is_fixed_income:
         unit_price = 1.00
         asset_market_info = {
-            "ticker": ticker,
-            "name": f"Investimento Renda Fixa - {ticker}",
-            "type": InvestmentType.FIXED_INCOME,
-            "current_price": unit_price
+            'ticker': ticker,
+            'name': f'Investimento Renda Fixa - {ticker}',
+            'type': InvestmentType.FIXED_INCOME,
+            'current_price': unit_price
         }
     else:
         asset_market_info = YahooService.get_asset_details(ticker)
         if not asset_market_info:
-            raise HTTPException(status_code=404, detail=f"Ativo '{ticker}' não encontrado no mercado financeiro.")
+            raise HTTPException(status_code=404, detail=f'Ativo {ticker} não encontrado no mercado financeiro.')
         unit_price = float(asset_market_info['current_price'])
     total_cost = unit_price * quantity
     user_balance = float(user['javer']['balance'])
     if user_balance < total_cost:
-        raise HTTPException(status_code=400, detail=f"Saldo insuficiente no Banco Javer. Custo: R${total_cost:.2f}, Saldo: R${user_balance:.2f}")
+        raise HTTPException(status_code=400, detail=f'Saldo insuficiente no Banco Javer. Custo: R${total_cost:.2f}, Saldo: R${user_balance:.2f}')
     db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
     investment_payload = {
-        "customer_id": str(user['pyinvest']['id']),
-        "asset_id": str(db_asset['id']),
-        "quantity": quantity,
-        "purchase_price": unit_price,
-        "is_active": True
+        'customer_id': str(user['pyinvest']['id']),
+        'asset_id': str(db_asset['id']),
+        'quantity': quantity,
+        'purchase_price': unit_price,
+        'is_active': True
     }
     new_investment = await InvestmentDataService.create_investment(investment_payload)
     investment_id = new_investment['id']
@@ -60,12 +60,12 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         await JaverService.debit_account(token=token, amount=total_cost, ticker=ticker)
     except Exception as e:
         await InvestmentDataService.delete_investment(investment_id)
-        raise HTTPException(status_code=500, detail=f"A compra foi cancelada pois houve um erro no débito bancário: {str(e)}")
+        raise HTTPException(status_code=500, detail=f'A compra foi cancelada pois houve um erro no débito bancário: {str(e)}')
     return {
-        "message": "Compra realizada com sucesso!",
-        "type": "RENDA_FIXA" if is_fixed_income else "MERCADO",
-        "total_debited": round(total_cost, 2),
-        "investment_details": new_investment
+        'message': 'Compra realizada com sucesso!',
+        'type': 'RENDA_FIXA' if is_fixed_income else 'MERCADO',
+        'total_debited': round(total_cost, 2),
+        'investment_details': new_investment
     }
 
 @investments.post('/register', response_model=InvestmentResponse)
@@ -91,17 +91,17 @@ async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpd
     '''Altera dados ou realiza vendar de um investimento'''
     current_inv = await InvestmentDataService.get_investment_by_id(investment_id)
     if current_inv['customer_id'] != str(user['pyinvest']['id']):
-        raise HTTPException(status_code=403, detail="Este investimento não pertence a você.")
+        raise HTTPException(status_code=403, detail='Este investimento não pertence a você.')
     current_qty = float(current_inv['quantity'])
     new_qty = float(update_data.quantity) if update_data.quantity is not None else current_qty
     if update_data.is_active is False and new_qty > 0:
-        raise HTTPException(status_code=400, detail="Não é possível desativar um investimento que ainda possui cotas. Venda-as primeiro.")
+        raise HTTPException(status_code=400, detail='Não é possível desativar um investimento que ainda possui cotas. Venda-as primeiro.')
     if new_qty < current_qty:
         sold_qty = current_qty - new_qty
         ticker = current_inv['asset']['ticker']
         current_price = YahooService.get_current_price(ticker)
         if current_price <= 0:
-            raise HTTPException(status_code=400, detail="Não foi possível obter o preço de mercado para realizar a venda.")
+            raise HTTPException(status_code=400, detail='Não foi possível obter o preço de mercado para realizar a venda.')
         sale_proceeds = sold_qty * current_price
         await JaverService.credit_account(auth.credentials, sale_proceeds)
     update_payload = update_data.model_dump(exclude_unset=True, mode='json')
@@ -114,5 +114,5 @@ async def get_investment_detail(investment_id: uuid.UUID, user: dict = Depends(v
     '''Retorna os detalhes de um investimento específico.'''
     investment = await InvestmentDataService.get_investment_by_id(investment_id)
     if investment['customer_id'] != str(user['pyinvest']['id']):
-        raise HTTPException(status_code=403, detail="Acesso negado.")
+        raise HTTPException(status_code=403, detail='Acesso negado.')
     return investment
