@@ -34,3 +34,26 @@ def run_before_and_after_tests():
     app.dependency_overrides = {}
     yield
     app.dependency_overrides = {}
+
+def test_get_customer_me_success():
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_active_user
+    response = client.get("/customer/me")
+    assert response.status_code == 200
+    assert response.json()["name"] == "Thiago"
+
+@patch("app_gateway.services.customers_services.CustomerDataService.update_customer", new_callable=AsyncMock)
+def test_update_customer_success(mock_update):
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_active_user
+    mock_update.return_value = {"id": USER_ID, "name": "Thiago", "investor_profile": "ARROJADO"}
+    
+    payload = {"investor_profile": "ARROJADO"}
+    response = client.patch("/customer/me", json=payload)
+    
+    assert response.status_code == 200
+    assert response.json()["user"]["investor_profile"] == "ARROJADO"
+
+def test_update_customer_empty_payload():
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_active_user
+    response = client.patch("/customer/me", json={})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Nenhum dado fornecido para atualização."
