@@ -57,3 +57,17 @@ def test_update_customer_empty_payload():
     response = client.patch("/customer/me", json={})
     assert response.status_code == 400
     assert response.json()["detail"] == "Nenhum dado fornecido para atualização."
+
+@patch("app_gateway.services.customers_services.CustomerDataService.soft_delete_investor", new_callable=AsyncMock)
+def test_deactivate_account_success(mock_soft):
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_active_user
+    mock_soft.return_value = True
+    response = client.delete("/customer/me")
+    assert response.status_code == 204
+
+def test_deactivate_already_inactive():
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_inactive_user
+    response = client.delete("/customer/me")
+    assert response.status_code == 400
+    assert "já está desativada" in response.json()["detail"]
+
