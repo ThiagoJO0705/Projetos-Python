@@ -49,7 +49,8 @@ class YahooService:
                 'ticker': ticker_upper,
                 'name': name,
                 'type': mapped_type,
-                'current_price': info.get('currency', 'BRL')
+                'current_price': round(float(price), 2),
+                'currency': info.get('currency', 'BRL')
             }
         except Exception:
             return None

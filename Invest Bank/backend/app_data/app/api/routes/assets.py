@@ -21,7 +21,8 @@ async def create_asset(asset: AssetBase, session: Session = Depends(get_session)
         ticker=asset.ticker.upper(),
         name=asset.name,
         type=asset.type,
-        current_price=asset.current_price
+        current_price=asset.current_price,
+        currency=asset.currency
     )
     try:
         session.add(new_asset)

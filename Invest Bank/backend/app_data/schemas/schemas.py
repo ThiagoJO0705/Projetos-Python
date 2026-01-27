@@ -55,6 +55,7 @@ class AssetBase(BaseModel):
     name: str
     type: InvestmentType
     current_price: Decimal
+    currency: str = "BRL"
 
     class Config:
         from_attributes = True
@@ -62,7 +63,7 @@ class AssetBase(BaseModel):
 class AssetResponse(AssetBase):
     id: uuid.UUID
     last_updated: datetime
-    currency: str
+    currency: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -71,6 +72,7 @@ class AssetUpdate(BaseModel):
     ticker: Optional[str] = None
     name: Optional[str] = None
     type: Optional[InvestmentType] = None
+    currency: Optional[str] = None
 
     class Config:
         from_attributes = True

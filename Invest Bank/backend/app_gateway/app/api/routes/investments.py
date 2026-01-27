@@ -37,10 +37,15 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         }
     else:
         asset_market_info = YahooService.get_asset_details(ticker)
+        print(asset_market_info)
         if not asset_market_info:
             raise HTTPException(status_code=404, detail=f'Ativo {ticker} não encontrado no mercado financeiro.')
         unit_price = float(asset_market_info['current_price'])
+        currency = asset_market_info['currency'] 
     total_cost = unit_price * quantity
+    if currency == 'USD':
+        usd_rate = YahooService.get_usd_brl_rate()
+        total_cost = total_cost * usd_rate
     user_balance = float(user['javer']['balance'])
     if user_balance < total_cost:
         raise HTTPException(status_code=400, detail=f'Saldo insuficiente no Banco Javer. Custo: R${total_cost:.2f}, Saldo: R${user_balance:.2f}')
@@ -54,6 +59,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         'purchase_price': unit_price,
         'is_active': True
     }
+    print(f"DEBUG PAYLOAD: {investment_payload}")
     new_investment = await InvestmentDataService.create_investment(investment_payload)
     investment_id = new_investment['id']
     try:
