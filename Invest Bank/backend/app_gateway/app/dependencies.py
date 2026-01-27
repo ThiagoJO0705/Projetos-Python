@@ -37,8 +37,8 @@ async def get_or_create_pyinvest_user(auth: HTTPAuthorizationCredentials = Depen
         'is_admin': javer_user['is_admin']
     }
 
-async def validate_active_investor(user_context: dict = Depends(get_or_create_pyinvest_user)):
+async def validate_active_investor(user: dict = Depends(get_or_create_pyinvest_user)):
     '''Valida se a conta do investidor está ativa.'''
-    if not user_context['pyinvest']['is_active']:
+    if not user['pyinvest']['is_active']:
         raise HTTPException(status_code=403, detail='Acesso negado. Sua conta de investidor no PYInvest está desativada.')
-    return user_context
+    return user

@@ -9,10 +9,10 @@ from app_data.schemas.enums import InvestorProfile
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
 @analytics.get('/wallet/me')
-async def get_my_portfolio_analysis(user_context: dict = Depends(validate_active_investor)):
+async def get_my_portfolio_analysis(user: dict = Depends(validate_active_investor)):
     ''' Retorna uma análise profunda da carteira do investidor logado.'''
-    customer = user_context['pyinvest']
-    javer_data = user_context['javer']
+    customer = user['pyinvest']
+    javer_data = user['javer']
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     if not investments:
         return {
@@ -34,18 +34,18 @@ async def get_my_portfolio_analysis(user_context: dict = Depends(validate_active
     }
 
 @analytics.get('/calculations/projection/me')
-async def get_my_wealth_projection(user_context: dict = Depends(validate_active_investor)):
+async def get_my_wealth_projection(user: dict = Depends(validate_active_investor)):
     '''Calcula a projeção de patrimônio para 1 ano baseado no perfil e ativos do usuário logado.'''
-    customer = user_context['pyinvest']
+    customer = user['pyinvest']
     current_assets = float(customer.get('total_assets', 0.0))
     projection = AnalysisService.calculate_future_projection(total_assets=current_assets, profile=customer['investor_profile'], years=1)
     return projection
 
 @analytics.get('/calculations/net-worth/me')
-async def get_my_total_net_worth(user_context: dict = Depends(validate_active_investor)):
+async def get_my_total_net_worth(user: dict = Depends(validate_active_investor)):
     '''Calcula o patrimônio total liquido'''
-    customer = user_context['pyinvest']
-    javer_balance = user_context['javer']['balance']
+    customer = user['pyinvest']
+    javer_balance = user['javer']['balance']
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
     portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'])
     current_investments_value = portfolio_data['current_portfolio_value']    
