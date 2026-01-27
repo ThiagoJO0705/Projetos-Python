@@ -71,3 +71,17 @@ def test_deactivate_already_inactive():
     assert response.status_code == 400
     assert "já está desativada" in response.json()["detail"]
 
+@patch("app_gateway.services.customers_services.CustomerDataService.get_all_customers", new_callable=AsyncMock)
+def test_list_all_admin_success(mock_get_all):
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_admin_user
+    mock_get_all.return_value = [{"id": USER_ID, "name": "Thiago"}]
+    
+    response = client.get("/customer/all")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+def test_list_all_forbidden():
+    app.dependency_overrides[get_or_create_pyinvest_user] = mock_active_user
+    response = client.get("/customer/all")
+    assert response.status_code == 403
+    assert "Apenas administradores" in response.json()["detail"]
