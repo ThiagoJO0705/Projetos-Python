@@ -18,6 +18,7 @@ class AssetResponse(BaseModel):
     type: InvestmentType
     current_price: Decimal
     last_updated: datetime
+    currency: str
 
     class Config:
         from_attributes = True
@@ -46,6 +47,8 @@ class InvestmentResponse(BaseModel):
     purchase_price: Decimal
     application_date: datetime
     is_active: bool
+    current_value_usd: Decimal
+    current_value_brl: Decimal
     asset: Optional[AssetResponse] = None
 
     class Config:

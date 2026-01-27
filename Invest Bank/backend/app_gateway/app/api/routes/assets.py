@@ -11,6 +11,9 @@ async def serch_investment_by_ticker(ticker: str):
     asset_details = YahooService.get_asset_details(ticker)
     if not asset_details:
         raise HTTPException(status_code=404, detail=f'O ticker {ticker} não foi encontrado no sistema do Yahoo Finance.')
+    if asset_details['currency'] == 'USD':
+        usd_rate = YahooService.get_usd_brl_rate()
+        asset_details['price_in_brl'] = round(asset_details['current_price'] * usd_rate, 2)
     variation = YahooService.get_market_variation(ticker)
     asset_details['variation_24h'] = f"{variation}%"
     return asset_details

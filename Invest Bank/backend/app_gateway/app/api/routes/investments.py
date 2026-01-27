@@ -16,8 +16,17 @@ investments = APIRouter(prefix='/investments', tags=['investments'])
 @investments.get('/me', response_model=List[InvestmentResponse])
 async def get_my_investments(user: dict = Depends(validate_active_investor)):
     '''Lista todos os investimentos ativos na carteira do usuário logado.'''
-    customer_id = user['pyinvest']['id']
-    return await InvestmentDataService.get_customer_investments(customer_id)
+    investments = await InvestmentDataService.get_customer_investments(user['pyinvest']['id'])
+    usd_rate = YahooService.get_usd_brl_rate()
+
+    for inv in investments:
+        if inv['asset']['currency'] == 'USD':
+            inv['current_value_usd'] = round(float(inv['quantity']) * float(inv['asset']['current_price']), 2)
+            inv['current_value_brl'] = round(float(inv['quantity']) * float(inv['asset']['current_price']) * usd_rate, 2)
+        else:
+            inv['current_value_brl'] = round(float(inv['quantity']) * float(inv['asset']['current_price']), 2)
+            inv['current_value_usd'] = round(float(inv['quantity']) * float(inv['asset']['current_price']) / usd_rate, 2)
+    return investments
 
 @investments.post('/buy')
 async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(validate_active_investor), auth: HTTPAuthorizationCredentials = Depends(security)):
@@ -115,9 +124,8 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
     })
 
 @investments.patch('/{investment_id}', response_model=InvestmentResponse)
-async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpdate, user: dict = Depends(validate_active_investor), auth: HTTPAuthorizationCredentials = Depends(security)
-):
-    '''Altera dados ou realiza vendar de um investimento'''
+async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpdate, user: dict = Depends(validate_active_investor), auth: HTTPAuthorizationCredentials = Depends(security)):
+    '''Altera dados ou realiza venda de um investimento'''
     current_inv = await InvestmentDataService.get_investment_by_id(investment_id)
     if current_inv['customer_id'] != str(user['pyinvest']['id']):
         raise HTTPException(status_code=403, detail='Este investimento não pertence a você.')
@@ -128,11 +136,17 @@ async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpd
     if new_qty < current_qty:
         sold_qty = current_qty - new_qty
         ticker = current_inv['asset']['ticker']
+        currency = current_inv['asset']['currency']
         current_price = YahooService.get_current_price(ticker)
+        sale_value_original = sold_qty * current_price
+        if currency == 'USD':
+            usd_rate = YahooService.get_usd_brl_rate()
+            sale_value_brl = sale_value_original * usd_rate
+        else:
+            sale_value_brl = sale_value_original
         if current_price <= 0:
             raise HTTPException(status_code=400, detail='Não foi possível obter o preço de mercado para realizar a venda.')
-        sale_proceeds = sold_qty * current_price
-        await JaverService.credit_account(auth.credentials, sale_proceeds)
+        await JaverService.credit_account(auth.credentials, sale_value_brl)
     update_payload = update_data.model_dump(exclude_unset=True, mode='json')
     if new_qty == 0:
         update_payload['is_active'] = False
