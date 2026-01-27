@@ -55,7 +55,7 @@ class AnalysisService:
 
         def calculate_current_value(row):
             '''Calcula valor atual do ativo para projeção'''
-            if row['investment_type'] == InvestmentType.RENDA_FIXA:
+            if row['investment_type'] == InvestmentType.FIXED_INCOME:
                 return row['total_purchase_value'] * (1 + profile_rate)
             return row['quantity'] * row['current_market_price']
 
