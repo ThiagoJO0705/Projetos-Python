@@ -91,7 +91,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
 
 @investments.post('/register', response_model=InvestmentResponse)
 async def register_investment(registration_data: InvestmentCreate, user: dict = Depends(validate_active_investor)):
-    '''Registra um investimento antigo sem afetar o saldo do Banco Javer.'''
+    '''Registra um investimento antigo validando o preço histórico no Yahoo Finance.'''
     ticker = registration_data.ticker.upper()
     purchase_price = float(registration_data.purchase_price) if registration_data.purchase_price else 0.0
     purchase_date = registration_data.purchase_date
@@ -105,11 +105,12 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
             'ticker': ticker, 'name': f'Renda Fixa - {ticker}',
             'type': InvestmentType.FIXED_INCOME, 'currency': 'BRL'
         }
+        live_price = 1.0
     else:
         day_bounds = YahooService.get_price_on_date(ticker, purchase_date)
         asset_market_info = YahooService.get_asset_details(ticker)
-        if not day_bounds:
-            raise HTTPException(status_code=400, detail=f'Não há dados de mercado para {ticker} em {purchase_date}. Verifique se foi um final de semana ou feriado.')
+        if not day_bounds or not asset_market_info:
+            raise HTTPException(status_code=400, detail=f'Sem dados de mercado para {ticker} em {purchase_date}.')        
         if not (day_bounds['day_low'] * 0.99 <= purchase_price <= day_bounds['day_high'] * 1.01):
             raise HTTPException(status_code=400,
                 detail=(
@@ -121,7 +122,7 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
     db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
-    return await InvestmentDataService.create_investment({
+    new_investment = await InvestmentDataService.create_investment({
         'customer_id': str(user['pyinvest']['id']),
         'asset_id': str(db_asset['id']),
         'quantity': float(registration_data.quantity),
@@ -129,6 +130,17 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
         'application_date': purchase_date,
         'is_active': True
     })
+    usd_rate = YahooService.get_usd_brl_rate()
+    quantity = float(new_investment['quantity'])
+    currency = asset_market_info['currency']
+    new_investment['asset']['current_price'] = live_price
+    if currency == 'USD':
+        new_investment['current_value_usd'] = round(quantity * live_price, 2)
+        new_investment['current_value_brl'] = round(quantity * live_price * usd_rate, 2)
+    else:
+        new_investment['current_value_brl'] = round(quantity * live_price, 2)
+        new_investment['current_value_usd'] = round((quantity * live_price) / usd_rate, 2)
+    return new_investment
 
 @investments.patch('/{investment_id}', response_model=InvestmentResponse)
 async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpdate, user: dict = Depends(validate_active_investor), auth: HTTPAuthorizationCredentials = Depends(security)):
