@@ -33,3 +33,28 @@ def test_search_by_ticker_not_found(mock_details):
     response = client.get("/assets/search/ticker/INVALIDO")
     assert response.status_code == 404
     assert "não foi encontrado" in response.json()["detail"]
+
+@patch("yfinance.Search")
+def test_search_by_name_success(mock_yf_search):
+    mock_instance = MagicMock()
+    mock_instance.quotes = [{'symbol': 'AAPL', 'shortname': 'Apple Inc.', 'quoteType': 'EQUITY'}]
+    mock_yf_search.return_value = mock_instance
+    response = client.get("/assets/search/name/Apple")
+    assert response.status_code == 200
+    assert response.json()[0]["ticker"] == "AAPL"
+
+@patch("yfinance.Search")
+def test_search_by_name_not_found(mock_yf_search):
+    mock_instance = MagicMock()
+    mock_instance.quotes = []
+    mock_yf_search.return_value = mock_instance
+    response = client.get("/assets/search/name/Inexistente")
+    assert response.status_code == 404
+    assert "Nenhum ativo encontrado" in response.json()["detail"]
+
+@patch("yfinance.Search")
+def test_search_by_name_exception(mock_yf_search):
+    mock_yf_search.side_effect = Exception("Falha no Yahoo")
+    response = client.get("/assets/search/name/Apple")    
+    assert response.status_code == 500
+    assert "Erro ao realizar busca" in response.json()["detail"]
