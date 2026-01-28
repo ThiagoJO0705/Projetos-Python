@@ -38,7 +38,7 @@ async def get_my_investments(user: dict = Depends(validate_active_investor)):
 
 @investments.post('/buy')
 async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(validate_active_investor), auth: HTTPAuthorizationCredentials = Depends(security)):
-    '''Efetua a compra de um ativo descontando o saldo do Banco Javer:'''
+    '''Efetua a compra de um ativo descontando o saldo do Banco Javer'''
     ticker = purchase_data.ticker.upper()
     quantity = float(purchase_data.quantity)
     token = auth.credentials
@@ -60,9 +60,11 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         unit_price = float(asset_market_info['current_price'])
         currency = asset_market_info['currency'] 
     total_cost = unit_price * quantity
+    purchase_price_brl = unit_price 
     if currency == 'USD':
         usd_rate = YahooService.get_usd_brl_rate()
         total_cost = total_cost * usd_rate
+        purchase_price_brl = unit_price * usd_rate 
     user_balance = float(user['javer']['balance'])
     if user_balance < total_cost:
         raise HTTPException(status_code=400, detail=f'Saldo insuficiente no Javer. Custo total: R${total_cost:.2f}, Seu Saldo: R${user_balance:.2f}')
@@ -73,7 +75,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         'customer_id': str(user['pyinvest']['id']),
         'asset_id': str(db_asset['id']),
         'quantity': quantity,
-        'purchase_price': unit_price,
+        'purchase_price': purchase_price_brl, # SALVA EM BRL AQUI
         'is_active': True
     }
     new_investment = await InvestmentDataService.create_investment(investment_payload)
@@ -85,6 +87,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         raise HTTPException(status_code=500, detail=f'A compra foi cancelada por erro no débito bancário: {str(e)}')
     return {
         'message': 'Compra realizada com sucesso!',
+        'type': 'RENDA_FIXA' if is_fixed_income else 'MERCADO',
         'total_debited_brl': round(total_cost, 2),
         'investment_details': new_investment
     }
