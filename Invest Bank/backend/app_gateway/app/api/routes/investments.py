@@ -18,14 +18,22 @@ async def get_my_investments(user: dict = Depends(validate_active_investor)):
     '''Lista todos os investimentos ativos na carteira do usuário logado.'''
     investments = await InvestmentDataService.get_customer_investments(user['pyinvest']['id'])
     usd_rate = YahooService.get_usd_brl_rate()
-
     for inv in investments:
-        if inv['asset']['currency'] == 'USD':
-            inv['current_value_usd'] = round(float(inv['quantity']) * float(inv['asset']['current_price']), 2)
-            inv['current_value_brl'] = round(float(inv['quantity']) * float(inv['asset']['current_price']) * usd_rate, 2)
+        ticker = inv['asset']['ticker']
+        asset_type = inv['asset']['type']
+        currency = inv['asset']['currency']
+        quantity = float(inv['quantity'])
+        if asset_type == InvestmentType.FIXED_INCOME:
+            live_price = 1.0
         else:
-            inv['current_value_brl'] = round(float(inv['quantity']) * float(inv['asset']['current_price']), 2)
-            inv['current_value_usd'] = round(float(inv['quantity']) * float(inv['asset']['current_price']) / usd_rate, 2)
+            live_price = YahooService.get_current_price(ticker)
+        inv['asset']['current_price'] = live_price
+        if currency == 'USD':
+            inv['current_value_usd'] = round(quantity * live_price, 2)
+            inv['current_value_brl'] = round(quantity * live_price * usd_rate, 2)
+        else:
+            inv['current_value_brl'] = round(quantity * live_price, 2)
+            inv['current_value_usd'] = round((quantity * live_price) / usd_rate, 2)
     return investments
 
 @investments.post('/buy')
@@ -34,6 +42,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
     ticker = purchase_data.ticker.upper()
     quantity = float(purchase_data.quantity)
     token = auth.credentials
+    currency = 'BRL'
     fixed_income_prefixes = ['CDB', 'LCI', 'LCA', 'TESOURO', 'FIXED']
     is_fixed_income = any(ticker.startswith(p) for p in fixed_income_prefixes)
     if is_fixed_income:
@@ -42,11 +51,10 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
             'ticker': ticker,
             'name': f'Investimento Renda Fixa - {ticker}',
             'type': InvestmentType.FIXED_INCOME,
-            'current_price': unit_price
+            'currency': 'BRL'
         }
     else:
         asset_market_info = YahooService.get_asset_details(ticker)
-        print(asset_market_info)
         if not asset_market_info:
             raise HTTPException(status_code=404, detail=f'Ativo {ticker} não encontrado no mercado financeiro.')
         unit_price = float(asset_market_info['current_price'])
@@ -57,7 +65,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         total_cost = total_cost * usd_rate
     user_balance = float(user['javer']['balance'])
     if user_balance < total_cost:
-        raise HTTPException(status_code=400, detail=f'Saldo insuficiente no Banco Javer. Custo: R${total_cost:.2f}, Saldo: R${user_balance:.2f}')
+        raise HTTPException(status_code=400, detail=f'Saldo insuficiente no Javer. Custo total: R${total_cost:.2f}, Seu Saldo: R${user_balance:.2f}')
     db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
@@ -68,18 +76,16 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         'purchase_price': unit_price,
         'is_active': True
     }
-    print(f"DEBUG PAYLOAD: {investment_payload}")
     new_investment = await InvestmentDataService.create_investment(investment_payload)
     investment_id = new_investment['id']
     try:
         await JaverService.debit_account(token=token, amount=total_cost, ticker=ticker)
     except Exception as e:
         await InvestmentDataService.delete_investment(investment_id)
-        raise HTTPException(status_code=500, detail=f'A compra foi cancelada pois houve um erro no débito bancário: {str(e)}')
+        raise HTTPException(status_code=500, detail=f'A compra foi cancelada por erro no débito bancário: {str(e)}')
     return {
         'message': 'Compra realizada com sucesso!',
-        'type': 'RENDA_FIXA' if is_fixed_income else 'MERCADO',
-        'total_debited': round(total_cost, 2),
+        'total_debited_brl': round(total_cost, 2),
         'investment_details': new_investment
     }
 
@@ -97,7 +103,7 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
     if any(ticker.startswith(p) for p in fixed_prefixes):
         asset_market_info = {
             'ticker': ticker, 'name': f'Renda Fixa - {ticker}',
-            'type': InvestmentType.FIXED_INCOME, 'current_price': 1.00
+            'type': InvestmentType.FIXED_INCOME, 'currency': 'BRL'
         }
     else:
         day_bounds = YahooService.get_price_on_date(ticker, purchase_date)
@@ -111,6 +117,7 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
                     f'Nesse dia, o ativo {ticker} variou entre R${day_bounds['day_low']:.2f} e R${day_bounds['day_high']:.2f}.'
                 )
             )
+        live_price = YahooService.get_current_price(ticker)
     db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
@@ -128,24 +135,24 @@ async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpd
     '''Altera dados ou realiza venda de um investimento'''
     current_inv = await InvestmentDataService.get_investment_by_id(investment_id)
     if current_inv['customer_id'] != str(user['pyinvest']['id']):
-        raise HTTPException(status_code=403, detail='Este investimento não pertence a você.')
+        raise HTTPException(status_code=403, detail='Acesso negado.')
     current_qty = float(current_inv['quantity'])
     new_qty = float(update_data.quantity) if update_data.quantity is not None else current_qty
     if update_data.is_active is False and new_qty > 0:
-        raise HTTPException(status_code=400, detail='Não é possível desativar um investimento que ainda possui cotas. Venda-as primeiro.')
+        raise HTTPException(status_code=400, detail='Venda as cotas antes de desativar.')
     if new_qty < current_qty:
         sold_qty = current_qty - new_qty
         ticker = current_inv['asset']['ticker']
         currency = current_inv['asset']['currency']
-        current_price = YahooService.get_current_price(ticker)
-        sale_value_original = sold_qty * current_price
+        live_market_price = YahooService.get_current_price(ticker)
+        if live_market_price <= 0:
+            raise HTTPException(status_code=400, detail='Mercado indisponível para venda no momento.')
+        sale_value_original = sold_qty * live_market_price
         if currency == 'USD':
             usd_rate = YahooService.get_usd_brl_rate()
             sale_value_brl = sale_value_original * usd_rate
         else:
             sale_value_brl = sale_value_original
-        if current_price <= 0:
-            raise HTTPException(status_code=400, detail='Não foi possível obter o preço de mercado para realizar a venda.')
         await JaverService.credit_account(auth.credentials, sale_value_brl)
     update_payload = update_data.model_dump(exclude_unset=True, mode='json')
     if new_qty == 0:
@@ -158,4 +165,6 @@ async def get_investment_detail(investment_id: uuid.UUID, user: dict = Depends(v
     investment = await InvestmentDataService.get_investment_by_id(investment_id)
     if investment['customer_id'] != str(user['pyinvest']['id']):
         raise HTTPException(status_code=403, detail='Acesso negado.')
+    ticker = investment['asset']['ticker']
+    investment['asset']['current_price'] = YahooService.get_current_price(ticker)
     return investment
