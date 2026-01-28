@@ -17,3 +17,19 @@ MOCK_DB_ASSETS = [
     {'ticker': 'BTC-USD', 'name': 'Bitcoin', 'type': 'CRIPTO'}
 ]
 
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details")
+@patch("app_gateway.services.yfinance_services.YahooService.get_market_variation")
+def test_search_by_ticker_success(mock_variation, mock_details):
+    mock_details.return_value = MOCK_ASSET_DETAILS.copy()
+    mock_variation.return_value = 1.5
+    response = client.get("/assets/search/ticker/AAPL")
+    assert response.status_code == 200
+    assert response.json()["ticker"] == "AAPL"
+    assert response.json()["variation_24h"] == "1.5%"
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details")
+def test_search_by_ticker_not_found(mock_details):
+    mock_details.return_value = None
+    response = client.get("/assets/search/ticker/INVALIDO")
+    assert response.status_code == 404
+    assert "não foi encontrado" in response.json()["detail"]
