@@ -54,7 +54,6 @@ class AssetBase(BaseModel):
     ticker: str
     name: str
     type: InvestmentType
-    current_price: Decimal
     currency: str = "BRL"
 
     class Config:

@@ -16,7 +16,7 @@ class AssetResponse(BaseModel):
     ticker: str
     name: str
     type: InvestmentType
-    current_price: Decimal
+    current_price: Optional[Decimal] = None 
     last_updated: datetime
     currency: str
 
@@ -47,8 +47,8 @@ class InvestmentResponse(BaseModel):
     purchase_price: Decimal
     application_date: datetime
     is_active: bool
-    current_value_usd: Decimal
-    current_value_brl: Decimal
+    current_value_brl: Optional[Decimal] = None
+    current_value_usd: Optional[Decimal] = None
     asset: Optional[AssetResponse] = None
 
     class Config:
