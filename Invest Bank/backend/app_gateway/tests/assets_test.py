@@ -58,3 +58,17 @@ def test_search_by_name_exception(mock_yf_search):
     response = client.get("/assets/search/name/Apple")    
     assert response.status_code == 500
     assert "Erro ao realizar busca" in response.json()["detail"]
+
+@patch("app_gateway.services.assets_services.AssetDataService.get_all_assets", new_callable=AsyncMock)
+def test_get_trends_success(mock_get_all):
+    mock_get_all.return_value = MOCK_DB_ASSETS
+    response = client.get("/assets/trending")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+@patch("app_gateway.services.assets_services.AssetDataService.get_all_assets", new_callable=AsyncMock)
+def test_get_trends_empty(mock_get_all):
+    mock_get_all.return_value = []
+    response = client.get("/assets/trending")
+    assert response.status_code == 200
+    assert response.json() == []
