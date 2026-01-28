@@ -50,8 +50,19 @@ async def get_my_portfolio_analysis(user: dict = Depends(validate_active_investo
 async def get_my_wealth_projection(user: dict = Depends(validate_active_investor)):
     '''Calcula a projeção de patrimônio para 1 ano baseado no perfil e ativos do usuário logado.'''
     customer = user['pyinvest']
-    current_assets = float(customer.get('total_assets', 0.0))
-    projection = AnalysisService.calculate_future_projection(total_assets=current_assets, profile=customer['investor_profile'], years=1)
+    investments = await InvestmentDataService.get_customer_investments(customer['id'])
+    fixed_income_total = sum(
+        float(inv['quantity']) * float(inv['purchase_price']) 
+        for inv in investments 
+        if inv['asset']['type'] == InvestmentType.FIXED_INCOME and inv['is_active']
+    )
+    if fixed_income_total == 0:
+        return {
+            "message": "Você não possui investimentos em Renda Fixa para gerar uma projeção.",
+            "projected_value": 0.0
+        }
+    projection = AnalysisService.calculate_future_projection(total_assets=fixed_income_total, profile=customer['investor_profile'], years=1)
+    projection["calculation_base"] = "Apenas ativos de Renda Fixa"
     return projection
 
 @analytics.get('/calculations/net-worth/me')
