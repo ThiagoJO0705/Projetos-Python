@@ -50,7 +50,6 @@ class AnalysisService:
                 'global_yield_pct': 0.0,
                 'portfolio_items': []
             }
-
         df = pd.DataFrame(investments)
         df['ticker'] = df['asset'].apply(AnalysisService._extract_ticker)
         df['current_market_price'] = df['asset'].apply(AnalysisService._extract_price)
@@ -72,19 +71,20 @@ class AnalysisService:
 
         df['current_value'] = df.apply(calculate_current_value, axis=1)
         df['profit_loss'] = df['current_value'] - df['total_purchase_value']
+        df['roi_pct'] = np.where(df['total_purchase_value'] > 0, (df['profit_loss'] / df['total_purchase_value']) * 100, 0.0)
         total_invested = np.sum(df['total_purchase_value'])
         current_portfolio_value = np.sum(df['current_value'])
         total_profit_loss = current_portfolio_value - total_invested
         global_yield_pct = (total_profit_loss / total_invested * 100) if total_invested > 0 else 0.0
-
         return {
             'analyzed_profile': profile,
             'total_invested': round(float(total_invested), 2),
             'current_portfolio_value': round(float(current_portfolio_value), 2),
             'total_profit_loss': round(float(total_profit_loss), 2),
             'global_yield_pct': round(float(global_yield_pct), 2),
-            'portfolio_items': df[['ticker', 'investment_type', 'total_purchase_value', 'current_value', 'profit_loss']].to_dict(orient='records')
+            'portfolio_items': df[['ticker', 'investment_type', 'total_purchase_value', 'current_value', 'profit_loss', 'roi_pct']].to_dict(orient='records')
         }
+    
     @staticmethod
     def get_portfolio_composition(investments: List[Dict[str, Any]], usd_rate: float = 1.0) -> List[Dict[str, Any]]:
         '''Prepara dados para o gráfico de Pizza convertendo valores para BRL.'''
