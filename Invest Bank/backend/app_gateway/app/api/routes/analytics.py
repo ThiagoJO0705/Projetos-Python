@@ -1,10 +1,11 @@
+import uuid
 from fastapi import APIRouter, HTTPException, Depends
 from app_gateway.services.customers_services import CustomerDataService
 from app_gateway.services.investments_services import InvestmentDataService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.analysis_services import AnalysisService
 from app_gateway.app.dependencies import validate_active_investor
-from app_data.schemas.enums import InvestorProfile
+from app_data.schemas.enums import InvestorProfile, InvestmentType
 
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
@@ -20,7 +21,18 @@ async def get_my_portfolio_analysis(user: dict = Depends(validate_active_investo
             'customer_info': {'name': javer_data['name'], 'profile': customer.get('investor_profile', InvestorProfile.UNDEFINED)},
             'message': 'Você ainda não possui investimentos cadastrados.'
         }
-    portfolio_summary = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'], usd_rate=usd_quote)
+    for inv in investments:
+        asset_type = inv['asset']['type']
+        ticker = inv['asset']['ticker']
+        if asset_type != InvestmentType.FIXED_INCOME:
+            inv['asset']['current_price'] = YahooService.get_current_price(ticker)
+        else:
+            inv['asset']['current_price'] = 1.0
+    portfolio_summary = AnalysisService.get_portfolio_analysis(
+        investments=investments, 
+        profile=customer['investor_profile'], 
+        usd_rate=usd_quote
+    )
     return {
         'customer_info': {
             'name': javer_data['name'],
@@ -28,10 +40,10 @@ async def get_my_portfolio_analysis(user: dict = Depends(validate_active_investo
         },
         'portfolio_summary': portfolio_summary,
         'charts': {
-            'allocation_by_type': AnalysisService.get_portfolio_composition(investments),
-            'profit_loss_by_ticker': AnalysisService.get_assets_performance(investments)
+            'allocation_by_type': AnalysisService.get_portfolio_composition(investments, usd_rate=usd_quote),
+            'profit_loss_by_ticker': AnalysisService.get_assets_performance(investments, usd_rate=usd_quote)
         },
-        'highlights': AnalysisService.get_highlights(investments)
+        'highlights': AnalysisService.get_highlights(investments, usd_rate=usd_quote)
     }
 
 @analytics.get('/calculations/projection/me')
@@ -49,13 +61,19 @@ async def get_my_total_net_worth(user: dict = Depends(validate_active_investor))
     javer_balance = user['javer']['balance']
     usd_quote = YahooService.get_usd_brl_rate()
     investments = await InvestmentDataService.get_customer_investments(customer['id'])
+    for inv in investments:
+        if inv['asset']['type'] != InvestmentType.FIXED_INCOME:
+            inv['asset']['current_price'] = YahooService.get_current_price(inv['asset']['ticker'])
+        else:
+            inv['asset']['current_price'] = 1.0
     portfolio_data = AnalysisService.get_portfolio_analysis(investments=investments, profile=customer['investor_profile'], usd_rate=usd_quote)
     current_investments_value = portfolio_data['current_portfolio_value']    
     return {
         'javer_account_balance': javer_balance,
         'pyinvest_portfolio_value': current_investments_value,
         'total_net_worth': round(javer_balance + current_investments_value, 2),
-        'currency': 'BRL'
+        'currency': 'BRL',
+        'usd_rate': usd_quote
     }
 
 @analytics.get('/market/comparison/{ticker}')
