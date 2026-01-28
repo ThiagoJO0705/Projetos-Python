@@ -7,6 +7,7 @@ from app_gateway.services.investments_services import InvestmentDataService
 from app_gateway.services.javer_services import JaverService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.assets_services import AssetDataService
+from app_gateway.services.customers_services import CustomerDataService
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
 from app_data.schemas.enums import InvestmentType
 
@@ -80,6 +81,9 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
     }
     new_investment = await InvestmentDataService.create_investment(investment_payload)
     investment_id = new_investment['id']
+    current_total = float(user['pyinvest'].get('total_assets', 0.0))
+    new_total = current_total + total_cost 
+    await CustomerDataService.update_customer(user['pyinvest']['id'], {'total_assets': new_total})
     try:
         await JaverService.debit_account(token=token, amount=total_cost, ticker=ticker)
     except Exception as e:
@@ -137,6 +141,9 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
     })
     usd_now = YahooService.get_usd_brl_rate()
     quantity = float(new_investment['quantity'])
+    current_total = float(user['pyinvest'].get('total_assets', 0.0))
+    new_total = current_total + price_to_save_brl * quantity
+    await CustomerDataService.update_customer(user['pyinvest']['id'], {'total_assets': new_total})
     new_investment['asset']['current_price'] = live_price_original
     if asset_market_info['currency'] == 'USD':
         new_investment['current_value_brl'] = round(quantity * live_price_original * usd_now, 2)
