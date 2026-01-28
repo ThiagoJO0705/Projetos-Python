@@ -34,6 +34,8 @@ async def serch_investment_by_name(name: str):
         if not results:
             raise HTTPException(status_code=404, detail="Nenhum ativo encontrado com este nome.")
         return results
+    except HTTPException:
+        raise 
     except Exception:
         raise HTTPException(status_code=500, detail="Erro ao realizar busca por nome no Yahoo Finance.")
 
