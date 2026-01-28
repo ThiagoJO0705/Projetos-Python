@@ -93,32 +93,34 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
 async def register_investment(registration_data: InvestmentCreate, user: dict = Depends(validate_active_investor)):
     '''Registra um investimento antigo validando o preço histórico no Yahoo Finance.'''
     ticker = registration_data.ticker.upper()
-    purchase_price = float(registration_data.purchase_price) if registration_data.purchase_price else 0.0
+    user_input_price = float(registration_data.purchase_price) if registration_data.purchase_price else 0.0
     purchase_date = registration_data.purchase_date
-    if purchase_price <= 0:
+    if user_input_price <= 0:
         raise HTTPException(status_code=400, detail='O preço deve ser maior que zero.')
     if not purchase_date:
-        raise HTTPException(status_code=400, detail='A data da compra é obrigatória para registros.')
+        raise HTTPException(status_code=400, detail='A data da compra é obrigatória.')
     fixed_prefixes = ['CDB', 'LCI', 'LCA', 'TESOURO', 'FIXED']
     if any(ticker.startswith(p) for p in fixed_prefixes):
         asset_market_info = {
             'ticker': ticker, 'name': f'Renda Fixa - {ticker}',
             'type': InvestmentType.FIXED_INCOME, 'currency': 'BRL'
         }
-        live_price = 1.0
+        price_to_save_brl = user_input_price
+        live_price_original = 1.0
     else:
         day_bounds = YahooService.get_price_on_date(ticker, purchase_date)
         asset_market_info = YahooService.get_asset_details(ticker)
         if not day_bounds or not asset_market_info:
-            raise HTTPException(status_code=400, detail=f'Sem dados de mercado para {ticker} em {purchase_date}.')        
-        if not (day_bounds['day_low'] * 0.99 <= purchase_price <= day_bounds['day_high'] * 1.01):
-            raise HTTPException(status_code=400,
-                detail=(
-                    f'Preço R${purchase_price} inválido para a data {purchase_date}. '
-                    f'Nesse dia, o ativo {ticker} variou entre R${day_bounds['day_low']:.2f} e R${day_bounds['day_high']:.2f}.'
-                )
-            )
-        live_price = YahooService.get_current_price(ticker)
+            raise HTTPException(status_code=400, detail=f'Sem dados para {ticker} em {purchase_date}.')
+        if not (day_bounds['day_low'] * 0.99 <= user_input_price <= day_bounds['day_high'] * 1.01):
+            raise HTTPException(status_code=400, detail=f'Preço de ${user_input_price} inválido para {purchase_date}.')
+        currency = asset_market_info['currency']
+        if currency == 'USD':
+            historical_usd_rate = YahooService.get_usd_brl_rate_on_date(purchase_date)
+            price_to_save_brl = user_input_price * historical_usd_rate
+        else:
+            price_to_save_brl = user_input_price
+        live_price_original = YahooService.get_current_price(ticker)
     db_asset = await AssetDataService.get_asset_by_ticker(ticker)
     if not db_asset:
         db_asset = await AssetDataService.create_asset(asset_market_info)
@@ -126,20 +128,17 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
         'customer_id': str(user['pyinvest']['id']),
         'asset_id': str(db_asset['id']),
         'quantity': float(registration_data.quantity),
-        'purchase_price': purchase_price,
+        'purchase_price': price_to_save_brl,
         'application_date': purchase_date,
         'is_active': True
     })
-    usd_rate = YahooService.get_usd_brl_rate()
+    usd_now = YahooService.get_usd_brl_rate()
     quantity = float(new_investment['quantity'])
-    currency = asset_market_info['currency']
-    new_investment['asset']['current_price'] = live_price
-    if currency == 'USD':
-        new_investment['current_value_usd'] = round(quantity * live_price, 2)
-        new_investment['current_value_brl'] = round(quantity * live_price * usd_rate, 2)
+    new_investment['asset']['current_price'] = live_price_original
+    if asset_market_info['currency'] == 'USD':
+        new_investment['current_value_brl'] = round(quantity * live_price_original * usd_now, 2)
     else:
-        new_investment['current_value_brl'] = round(quantity * live_price, 2)
-        new_investment['current_value_usd'] = round((quantity * live_price) / usd_rate, 2)
+        new_investment['current_value_brl'] = round(quantity * live_price_original, 2)
     return new_investment
 
 @investments.patch('/{investment_id}', response_model=InvestmentResponse)

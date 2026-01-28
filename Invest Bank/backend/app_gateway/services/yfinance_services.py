@@ -108,3 +108,17 @@ class YahooService:
             }
         except Exception:
             return None
+
+    @staticmethod
+    def get_usd_brl_rate_on_date(purchase_date: str) -> float:
+        '''Busca a cotação do dólar (USDBRL=X) em uma data específica do passado.'''
+        try:
+            start_dt = datetime.strptime(purchase_date, "%Y-%m-%d")
+            end_dt = start_dt + timedelta(days=1)
+            usd_ticker = yf.Ticker("USDBRL=X")
+            history = usd_ticker.history(start=start_dt.strftime('%Y-%m-%d'), end=end_dt.strftime('%Y-%m-%d'))
+            if history.empty:
+                return YahooService.get_usd_brl_rate() 
+            return float(history['Close'].iloc[0])
+        except Exception:
+            return 5.0
