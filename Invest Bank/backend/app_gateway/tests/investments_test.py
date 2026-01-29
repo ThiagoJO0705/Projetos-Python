@@ -57,3 +57,17 @@ def setup_dependency_overrides():
     app.dependency_overrides[security] = lambda: HTTPAuthorizationCredentials(scheme="Bearer", credentials="fake")
     yield
     app.dependency_overrides = {}
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_usd_brl_rate", return_value=5.0)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=150.0)
+def test_get_my_investments_success(mock_price, mock_usd, mock_get_inv):
+    mock_get_inv.return_value = [
+        get_full_investment_mock("AAPL", "USD", "AÇÕES"),
+        get_full_investment_mock("CDB-1", "BRL", "RENDA_FIXA"),
+        get_full_investment_mock("PETR4.SA", "BRL", "AÇÕES")
+    ]
+    response = client.get("/investments/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+    assert "current_value_brl" in response.json()[0]
