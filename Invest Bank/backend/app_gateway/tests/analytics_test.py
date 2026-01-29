@@ -45,3 +45,19 @@ def setup_dependency_overrides():
     app.dependency_overrides[validate_active_investor] = lambda: MOCK_USER_CONTEXT
     yield
     app.dependency_overrides = {}
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_usd_brl_rate", return_value=5.0)
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=150.0)
+def test_get_my_portfolio_analysis_fixed_income_coverage(mock_price, mock_get_inv, mock_usd):
+    mock_get_inv.return_value = [MOCK_STOCK, MOCK_FIXED]
+    response = client.get("/analytics/wallet/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert response.json()["customer_info"]["profile"] == "MODERADO"
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+def test_get_my_portfolio_analysis_empty_state(mock_get_inv):
+    mock_get_inv.return_value = []
+    response = client.get("/analytics/wallet/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert "message" in response.json()
