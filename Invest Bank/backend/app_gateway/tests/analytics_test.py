@@ -61,3 +61,17 @@ def test_get_my_portfolio_analysis_empty_state(mock_get_inv):
     response = client.get("/analytics/wallet/me", headers=HEADERS)
     assert response.status_code == 200
     assert "message" in response.json()
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+def test_get_my_wealth_projection_success(mock_get_inv):
+    mock_get_inv.return_value = [MOCK_FIXED]
+    response = client.get("/analytics/calculations/projection/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert "projected_value" in response.json()
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+def test_get_my_wealth_projection_no_fixed_income(mock_get_inv):
+    mock_get_inv.return_value = [MOCK_STOCK]
+    response = client.get("/analytics/calculations/projection/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert "message" in response.json()
