@@ -207,3 +207,18 @@ def test_patch_sell_brl(mock_update, mock_credit, mock_price, mock_get):
     response = client.patch(f"/investments/{INVESTMENT_UUID}", json={"quantity": 5}, headers=HEADERS)
     assert response.status_code == 200
     mock_credit.assert_called_once()
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=150.0)
+def test_get_detail_success(mock_price, mock_get):
+    mock_get.return_value = get_full_investment_mock()
+    response = client.get(f"/investments/{INVESTMENT_UUID}", headers=HEADERS)
+    assert response.status_code == 200
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+def test_get_detail_forbidden(mock_get):
+    inv = get_full_investment_mock()
+    inv["customer_id"] = "OUTRO"
+    mock_get.return_value = inv
+    response = client.get(f"/investments/{INVESTMENT_UUID}", headers=HEADERS)
+    assert response.status_code == 403
