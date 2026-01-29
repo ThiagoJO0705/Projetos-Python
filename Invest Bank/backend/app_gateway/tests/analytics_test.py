@@ -75,3 +75,27 @@ def test_get_my_wealth_projection_no_fixed_income(mock_get_inv):
     response = client.get("/analytics/calculations/projection/me", headers=HEADERS)
     assert response.status_code == 200
     assert "message" in response.json()
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_usd_brl_rate", return_value=5.0)
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_customer_investments", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=150.0)
+def test_get_my_total_net_worth_fixed_income_coverage(mock_price, mock_get_inv, mock_usd):
+    mock_get_inv.return_value = [MOCK_STOCK, MOCK_FIXED]
+    response = client.get("/analytics/calculations/net-worth/me", headers=HEADERS)
+    assert response.status_code == 200
+    assert response.json()["currency"] == "BRL"
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details")
+@patch("app_gateway.services.yfinance_services.YahooService.get_historical_data")
+@patch("app_gateway.services.yfinance_services.YahooService.get_market_variation", return_value=2.5)
+def test_get_market_analysis_success(mock_var, mock_hist, mock_details):
+    mock_details.return_value = {'ticker': 'AAPL', 'name': 'Apple'}
+    mock_hist.return_value = MagicMock()
+    response = client.get("/analytics/market/comparison/AAPL")
+    assert response.status_code == 200
+    assert response.json()["asset_info"]["ticker"] == "AAPL"
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details", return_value=None)
+def test_get_market_analysis_not_found(mock_details):
+    response = client.get("/analytics/market/comparison/INVALIDO")
+    assert response.status_code == 404
