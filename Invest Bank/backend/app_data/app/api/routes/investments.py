@@ -93,8 +93,3 @@ async def delete_investment(investment_id: uuid.UUID, session: Session = Depends
     except Exception:
         session.rollback()
         raise HTTPException(status_code=400, detail=f'Erro ao deletar investimento no banco de dados')
-
-
-
-
-
