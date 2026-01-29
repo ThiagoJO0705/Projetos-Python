@@ -170,3 +170,40 @@ def test_register_market_brl_uses_user_price(mock_uc, mock_ci, mock_ga, mock_ad,
     response = client.post("/investments/register", json=payload, headers=HEADERS)
     assert response.status_code == 200
     assert mock_ci.call_args[0][0]["purchase_price"] == 15.0
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+def test_patch_protections(mock_get):
+    mock_get.return_value = {'customer_id': 'OUTRO'}
+    assert client.patch(f"/investments/{INVESTMENT_UUID}", json={}, headers=HEADERS).status_code == 403
+    mock_get.return_value = get_full_investment_mock()
+    assert client.patch(f"/investments/{INVESTMENT_UUID}", json={"is_active": False}, headers=HEADERS).status_code == 400
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=0)
+def test_patch_market_unavailable(mock_price, mock_get):
+    mock_get.return_value = get_full_investment_mock("AAPL", "BRL")
+    response = client.patch(f"/investments/{INVESTMENT_UUID}", json={"quantity": 5}, headers=HEADERS)
+    assert response.status_code == 400
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=100.0)
+@patch("app_gateway.services.javer_services.JaverService.credit_account", new_callable=AsyncMock)
+@patch("app_gateway.services.investments_services.InvestmentDataService.update_investment", new_callable=AsyncMock)
+def test_patch_sell_success(mock_update, mock_credit, mock_price, mock_get):
+    mock_get.return_value = get_full_investment_mock("AAPL", "USD")
+    mock_update.return_value = get_full_investment_mock()
+    with patch("app_gateway.services.yfinance_services.YahooService.get_usd_brl_rate", return_value=5.0):
+        response = client.patch(f"/investments/{INVESTMENT_UUID}", json={"quantity": 0}, headers=HEADERS)
+        assert response.status_code == 200
+        mock_credit.assert_called_once()
+
+@patch("app_gateway.services.investments_services.InvestmentDataService.get_investment_by_id", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_current_price", return_value=100)
+@patch("app_gateway.services.javer_services.JaverService.credit_account", new_callable=AsyncMock)
+@patch("app_gateway.services.investments_services.InvestmentDataService.update_investment", new_callable=AsyncMock)
+def test_patch_sell_brl(mock_update, mock_credit, mock_price, mock_get):
+    mock_get.return_value = get_full_investment_mock("PETR4.SA", "BRL")
+    mock_update.return_value = get_full_investment_mock("PETR4.SA", "BRL")
+    response = client.patch(f"/investments/{INVESTMENT_UUID}", json={"quantity": 5}, headers=HEADERS)
+    assert response.status_code == 200
+    mock_credit.assert_called_once()
