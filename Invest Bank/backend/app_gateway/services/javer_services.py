@@ -23,6 +23,8 @@ class JaverService:
                     'is_admin': user_data.get('is_admin', False),
                     'id': user_data['id']
                 }
+            except HTTPException:
+                raise
             except httpx.ConnectError:
                 raise HTTPException(status_code=503, detail='O serviço do Banco Javer está temporariamente indisponível. Não foi possível validar seu saldo.')
             except Exception:
@@ -48,6 +50,8 @@ class JaverService:
                     error_detail = response.json().get('detail', 'Erro no débito')
                     raise HTTPException(status_code=400, detail=f"Javer Bank: {error_detail}")
                 return response.json() 
+            except HTTPException:
+                raise
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Erro de comunicação com Javer: {str(e)}")
             
