@@ -71,3 +71,47 @@ def test_get_my_investments_success(mock_price, mock_usd, mock_get_inv):
     assert response.status_code == 200
     assert len(response.json()) == 3
     assert "current_value_brl" in response.json()[0]
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details")
+@patch("app_gateway.services.assets_services.AssetDataService.get_asset_by_ticker", new_callable=AsyncMock)
+@patch("app_gateway.services.investments_services.InvestmentDataService.create_investment", new_callable=AsyncMock)
+@patch("app_gateway.services.javer_services.JaverService.debit_account", new_callable=AsyncMock)
+@patch("app_gateway.services.customers_services.CustomerDataService.update_customer", new_callable=AsyncMock)
+@patch("app_gateway.services.yfinance_services.YahooService.get_usd_brl_rate", return_value=5.0)
+def test_buy_stock_usd_success(mock_usd, mock_up, mock_debit, mock_create, mock_get_asset, mock_yahoo):
+    mock_yahoo.return_value = {'current_price': 100.0, 'currency': 'USD', 'ticker': 'AAPL'}
+    mock_get_asset.return_value = {'id': ASSET_UUID}
+    mock_create.return_value = get_full_investment_mock()
+    response = client.post("/investments/buy", json={"ticker": "AAPL", "quantity": 1}, headers=HEADERS)
+    assert response.status_code == 200
+    mock_debit.assert_called_once()
+    mock_up.assert_called_once()
+
+@patch("app_gateway.services.assets_services.AssetDataService.get_asset_by_ticker", new_callable=AsyncMock, return_value=None)
+@patch("app_gateway.services.assets_services.AssetDataService.create_asset", new_callable=AsyncMock, return_value={'id': ASSET_UUID})
+@patch("app_gateway.services.investments_services.InvestmentDataService.create_investment", new_callable=AsyncMock)
+@patch("app_gateway.services.javer_services.JaverService.debit_account", new_callable=AsyncMock)
+@patch("app_gateway.services.customers_services.CustomerDataService.update_customer", new_callable=AsyncMock)
+def test_buy_fixed_income_success(mock_up, mock_debit, mock_create, mock_create_asset, mock_get_asset):
+    mock_create.return_value = {'id': INVESTMENT_UUID}
+    response = client.post("/investments/buy", json={"ticker": "CDB123", "quantity": 10}, headers=HEADERS)
+    assert response.status_code == 200
+    mock_create_asset.assert_called_once()
+
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details")
+def test_buy_errors(mock_yahoo):
+    mock_yahoo.return_value = None
+    assert client.post("/investments/buy", json={"ticker": "ERRO", "quantity": 1}, headers=HEADERS).status_code == 404
+    mock_yahoo.return_value = {'current_price': 10000.0, 'currency': 'BRL'}
+    assert client.post("/investments/buy", json={"ticker": "CARO", "quantity": 1}, headers=HEADERS).status_code == 400
+
+@patch("app_gateway.services.javer_services.JaverService.debit_account", side_effect=Exception("Erro"))
+@patch("app_gateway.services.investments_services.InvestmentDataService.create_investment", new_callable=AsyncMock, return_value={'id': 'id'})
+@patch("app_gateway.services.investments_services.InvestmentDataService.delete_investment", new_callable=AsyncMock)
+@patch("app_gateway.services.customers_services.CustomerDataService.update_customer", new_callable=AsyncMock)
+@patch("app_gateway.services.assets_services.AssetDataService.get_asset_by_ticker", new_callable=AsyncMock, return_value={'id': 'id'})
+@patch("app_gateway.services.yfinance_services.YahooService.get_asset_details", return_value={'current_price': 1, 'currency': 'BRL'})
+def test_buy_rollback(mock_yahoo, mock_ga, mock_up, mock_delete, mock_create, mock_debit):
+    response = client.post("/investments/buy", json={"ticker": "TEST", "quantity": 1}, headers=HEADERS)
+    assert response.status_code == 500
+    mock_delete.assert_called_once()
