@@ -21,8 +21,7 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
         cpf=customer_create_schema.cpf,
         investor_profile=customer_create_schema.investor_profile,
         total_assets=customer_create_schema.total_assets,
-        is_active=customer_create_schema.is_active,
-        is_admin=customer_create_schema.is_admin
+        is_active=customer_create_schema.is_active
     )
     try:
         session.add(new_customer)
@@ -34,7 +33,7 @@ async def create_customer(customer_create_schema: CustomerCreate, session: Sessi
         raise HTTPException(status_code=400, detail=f'Ocorreu um erro ao tentar salvar no banco de dados.')
 
 @customers.get('/', response_model=List[CustomerResponse])
-async def get_all_customers(is_active: Optional[bool] = Query(None), name: Optional[str] = Query(None), is_admin: Optional[bool] = Query(None), session: Session = Depends(get_session)):
+async def get_all_customers(is_active: Optional[bool] = Query(None), name: Optional[str] = Query(None), session: Session = Depends(get_session)):
     '''
     Retorna todos os clientes com opção de filtros
     '''
@@ -43,8 +42,6 @@ async def get_all_customers(is_active: Optional[bool] = Query(None), name: Optio
         query = query.filter(Customer.is_active == is_active)
     if name:
         query = query.filter(Customer.name.contains(name))
-    if is_admin is not None:
-        query = query.filter(Customer.is_admin == is_admin)
     return query.all()
 
 @customers.get('/filter', response_model=CustomerAuthResponse)
