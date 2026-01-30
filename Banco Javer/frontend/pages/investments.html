@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAVER | Investimentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/investments.css">
+</head>
+<body class="dash-body">
+    <div id="toast-container" class="toast-container"></div>
+    <div id="loading-overlay" class="loading-overlay"><div class="loader"></div></div>
+
+    <nav class="dash-nav">
+        <div class="nav-container">
+            <div class="brand">
+                <img src="../images/logo.png" alt="Logo" class="nav-logo">
+                <span class="bank-name">JAVER <span>INVEST</span></span>
+            </div>
+            <button onclick="window.location.href='dashboard.html'" class="btn-exit">Voltar ao Banco</button>
+        </div>
+    </nav>
+
+    <main class="dash-content container">
+        <!-- 1. RESUMO (Analytics Net-Worth) -->
+        <section class="account-overview">
+            <div class="card balance-card">
+                <span class="label">Patrimônio Líquido Total</span>
+                <h2 id="total-net-worth">R$ 0,00</h2>
+                <p id="usd-rate-info" class="balance-update">Buscando dólar...</p>
+            </div>
+            <div class="card score-card">
+                <span class="label">Perfil do Investidor</span>
+                <h2 id="investor-profile">Buscando...</h2>
+                <p class="score-info">Análise baseada em sua carteira.</p>
+            </div>
+        </section>
+
+        <!-- 2. EXPLORADOR DE MERCADO (Assets Search Name/Ticker) -->
+        <section class="market-explorer card">
+            <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Explorar Mercado</h3>
+            <div class="search-box">
+                <input type="text" id="market-search" placeholder="Busque por nome (Ex: Apple) ou Ticker (Ex: PETR4)">
+                <button onclick="searchMarket()" class="btn-primary-action">Pesquisar Ativo</button>
+            </div>
+            <div id="search-results" class="search-results-grid"></div>
+        </section>
+
+        <!-- 3. GRÁFICOS (Analytics Wallet/Projection) -->
+        <section class="charts-grid">
+            <div class="card chart-box">
+                <h3>Alocação por Ativo</h3>
+                <div class="canvas-container"><canvas id="chart-allocation"></canvas></div>
+            </div>
+            <div class="card chart-box">
+                <h3>Performance (%)</h3>
+                <div class="canvas-container"><canvas id="chart-performance"></canvas></div>
+            </div>
+            <div class="card chart-box full-width">
+                <h3>Projeção de Renda Fixa (12 Meses)</h3>
+                <div class="canvas-container line-chart"><canvas id="chart-projection"></canvas></div>
+            </div>
+        </section>
+
+        <!-- 4. MINHA CARTEIRA (Investments Me/Detail/Sell) -->
+        <section class="statement-section">
+            <div class="section-header">
+                <h3><i class="fa-solid fa-wallet"></i> Minha Carteira Ativa</h3>
+                <button class="btn-primary-action" onclick="openModal('modal-register')">Registrar Ativo Antigo</button>
+            </div>
+            <div class="statement-card">
+                <div id="investment-list" class="investment-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL COMPRA RÁPIDA -->
+    <div id="modal-buy" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Confirmar Compra</h3>
+                <button class="close-x" onclick="closeModal('modal-buy')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="buy-asset-name">---</p>
+                <div class="input-group">
+                    <label>Quantidade de Cotas</label>
+                    <input type="number" id="buy-qty" placeholder="0">
+                </div>
+                <button class="btn-confirm-action" id="btn-confirm-buy">Finalizar Compra</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRAR ATIVO ANTIGO -->
+    <div id="modal-register" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Registrar Ativo Antigo</h3>
+                <button class="close-x" onclick="closeModal('modal-register')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group"><label>Ticker</label><input type="text" id="reg-ticker"></div>
+                <div class="input-group"><label>Quantidade</label><input type="number" id="reg-qty"></div>
+                <div class="input-group"><label>Preço Pago (na época)</label><input type="number" id="reg-price"></div>
+                <div class="input-group"><label>Data da Compra</label><input type="date" id="reg-date"></div>
+                <button class="btn-confirm-action" id="btn-confirm-reg">Salvar no Histórico</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/investments.js"></script>
+</body>
+</html>

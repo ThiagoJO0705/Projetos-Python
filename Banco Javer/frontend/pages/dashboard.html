@@ -43,6 +43,19 @@
                 </div>
                 <p class="balance-update">Disponível agora</p>
             </div>
+
+            <!-- Card de Resumo de Investimentos (Topo) -->
+            <div class="card invest-card" onclick="window.location.href='investments.html'" style="cursor: pointer; border-left: 6px solid var(--secondary-orange);">
+                <div class="card-header">
+                    <span class="label">Patrimônio Investido</span>
+                    <i class="fa-solid fa-chart-line" style="color: var(--secondary-orange)"></i>
+                </div>
+                <div class="invest-display">
+                    <h2 id="invest-total">R$ 0,00</h2>
+                </div>
+                <p class="balance-update">Rendendo conforme seu perfil</p>
+            </div>
+
             <div class="card score-card">
                 <div class="card-header">
                     <span class="label">Score de Crédito</span>
@@ -56,6 +69,7 @@
                 </div>
             </div>
         </section>
+
         <section class="quick-actions">
             <h3>Serviços Rápidos</h3>
             <div class="actions-grid">
@@ -71,6 +85,13 @@
                     <i class="fa-solid fa-money-check-dollar btn-icon"></i>
                     <span>Pagamentos</span>
                 </button>
+
+                <!-- INVESTIMENTOS ENTRE PAGAMENTOS E MEUS DADOS -->
+                <button class="action-btn" onclick="window.location.href='investments.html'">
+                    <i class="fa-solid fa-arrow-up-right-dots btn-icon"></i>
+                    <span>Investimentos</span>
+                </button>
+
                 <button class="action-btn" onclick="openModal('modal-profile')">
                     <i class="fa-solid fa-user-gear btn-icon"></i>
                     <span>Meus Dados</span>
@@ -81,6 +102,7 @@
                 </button>
             </div>
         </section>
+
         <section class="statement-section">
             <div class="section-header">
                 <h3><i class="fa-solid fa-list-ul"></i> Extrato</h3>
@@ -91,6 +113,8 @@
             </div>
         </section>
     </main>
+
+    <!-- MODAIS -->
     <div id="modal-pix" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -110,6 +134,7 @@
             </div>
         </div>
     </div>
+
     <div id="modal-deposit" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -122,49 +147,6 @@
                     <input type="number" id="deposit-amount" placeholder="R$ 0,00">
                 </div>
                 <button class="btn-confirm-action" id="btn-confirm-deposit">Confirmar Depósito</button>
-            </div>
-        </div>
-    </div>
-    <div id="modal-profile" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Meus Dados Cadastrais</h3>
-                <button class="close-x" onclick="closeModal('modal-profile')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <label for="profile-name">Nome Completo</label>
-                    <input type="text" id="profile-name">
-                    <span class="field-error" id="profile-name-error"></span>
-                </div>
-                <div class="input-group">
-                    <label for="profile-email">E-mail</label>
-                    <input type="email" id="profile-email">
-                    <span class="field-error" id="profile-email-error"></span>
-                </div>
-                <div class="input-group">
-                    <label for="profile-cpf">CPF</label>
-                    <input type="text" id="profile-cpf" maxlength="11">
-                    <span class="field-error" id="profile-cpf-error"></span>
-                </div>
-                <div class="input-group">
-                    <label for="profile-phone">Telefone</label>
-                    <input type="text" id="profile-phone" maxlength="11">
-                    <span class="field-error" id="profile-phone-error"></span>
-                </div>
-                <button class="btn-confirm-action" id="btn-save-profile">Salvar Alterações</button>
-            </div>
-        </div>
-    </div>
-    <div id="modal-close-account" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Encerrar minha conta</h3>
-                <button class="close-x" onclick="closeModal('modal-close-account')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja encerrar sua conta no Banco JAVER?</p>
-                <button class="btn-confirm-action btn-danger-solid" id="btn-confirm-close">Sim, encerrar conta</button>
             </div>
         </div>
     </div>
@@ -201,9 +183,55 @@
         </div>
     </div>
 
+    <div id="modal-profile" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Meus Dados Cadastrais</h3>
+                <button class="close-x" onclick="closeModal('modal-profile')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="profile-name">Nome Completo</label>
+                    <input type="text" id="profile-name">
+                    <span class="field-error" id="profile-name-error"></span>
+                </div>
+                <div class="input-group">
+                    <label for="profile-email">E-mail</label>
+                    <input type="email" id="profile-email">
+                    <span class="field-error" id="profile-email-error"></span>
+                </div>
+                <div class="input-group">
+                    <label for="profile-cpf">CPF</label>
+                    <input type="text" id="profile-cpf" maxlength="11">
+                    <span class="field-error" id="profile-cpf-error"></span>
+                </div>
+                <div class="input-group">
+                    <label for="profile-phone">Telefone</label>
+                    <input type="text" id="profile-phone" maxlength="11">
+                    <span class="field-error" id="profile-phone-error"></span>
+                </div>
+                <button class="btn-confirm-action" id="btn-save-profile">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-close-account" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Encerrar minha conta</h3>
+                <button class="close-x" onclick="closeModal('modal-close-account')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja encerrar sua conta no Banco JAVER?</p>
+                <button class="btn-confirm-action btn-danger-solid" id="btn-confirm-close">Sim, encerrar conta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+    </div>
+
     <script src="../js/dashboard.js"></script>
 </body>
-<div id="loading-overlay" class="loading-overlay">
-    <div class="loader"></div>
-</div>
 </html>
