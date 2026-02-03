@@ -30,31 +30,48 @@ class YahooService:
         ticker_upper = ticker.upper()
         asset = yf.Ticker(ticker_upper)
         try:
-            fast = asset.fast_info
-            price = fast.get('last_price')
-            if price is None or np.isnan(price):
+            price = None
+            try:
+                fast = asset.fast_info
+                price = fast.get('last_price') or fast.get('lastPrice')
+            except:
+                pass
+            if price is None or np.isnan(price) or price == 0:
                 hist = asset.history(period='1d')
-                if hist.empty:
-                    return None
-                price = hist['Close'].iloc[-1]
+                if not hist.empty:
+                    price = hist['Close'].iloc[-1]
+                else:
+                    return None 
+            name = ticker_upper
+            yahoo_type = None
+            currency = 'BRL'
             try:
                 info = asset.info
-                name = info.get('longName') or info.get('shortName') or ticker_upper
-                yahoo_type = info.get('quoteType', 'EQUITY')
+                if info and isinstance(info, dict):
+                    name = info.get('longName') or info.get('shortName') or ticker_upper
+                    yahoo_type = info.get('quoteType', 'EQUITY')
+                    currency = info.get('currency', 'BRL')
             except Exception:
-                name = ticker_upper
-                yahoo_type = 'EQUITY'
-            mapped_type = YahooService.TYPE_MAPPING.get(yahoo_type, InvestmentType.STOCKS)
+                pass
+            if ticker_upper.endswith('11.SA'):
+                mapped_type = InvestmentType.FUNDS
+            elif yahoo_type in ['ETF', 'MUTUALFUND']:
+                mapped_type = InvestmentType.FUNDS
+            elif yahoo_type == 'CRYPTOCURRENCY' or ticker_upper.endswith('-USD'):
+                mapped_type = InvestmentType.CRYPTO
+            else:
+                mapped_type = YahooService.TYPE_MAPPING.get(yahoo_type, InvestmentType.STOCKS)
             return {
                 'ticker': ticker_upper,
                 'name': name,
                 'type': mapped_type,
                 'current_price': round(float(price), 2),
-                'currency': info.get('currency', 'BRL')
+                'currency': currency
             }
-        except Exception:
+        except Exception as e:
+            print(f"Erro ao buscar {ticker_upper}: {e}")
             return None
-
+        
     @staticmethod
     def get_current_price(ticker: str) -> float:
         '''Busca o preço atual deum um ativo'''

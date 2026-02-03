@@ -14,7 +14,7 @@ class Asset(Base):
     type = Column(Enum(InvestmentType), nullable=False)
     currency = Column(String, default='BRL')
     last_updated = Column(DateTime, nullable=False, server_default=func.now())
-    investments = relationship("Investment", back_populates="asset")
+    investments = relationship("Investment", back_populates="asset", cascade="all, delete-orphan")
 
     def __init__(self, ticker, name, type, currency='BRL'):
         self.ticker = ticker
