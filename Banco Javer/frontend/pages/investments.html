@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +11,12 @@
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/investments.css">
 </head>
+
 <body class="dash-body">
     <div id="toast-container" class="toast-container"></div>
-    <div id="loading-overlay" class="loading-overlay"><div class="loader"></div></div>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+    </div>
 
     <nav class="dash-nav">
         <div class="nav-container">
@@ -25,93 +29,144 @@
     </nav>
 
     <main class="dash-content container">
-        <!-- 1. RESUMO (Analytics Net-Worth) -->
-        <section class="account-overview">
-            <div class="card balance-card">
-                <span class="label">Patrimônio Líquido Total</span>
+        <!-- SEÇÃO A: HEADER FINANCEIRO (KPIs) -->
+        <section class="kpi-grid">
+            <div class="card kpi-card primary">
+                <div class="card-header"><span class="label">Patrimônio Líquido</span><i class="fas fa-wallet"></i>
+                </div>
                 <h2 id="total-net-worth">R$ 0,00</h2>
-                <p id="usd-rate-info" class="balance-update">Buscando dólar...</p>
+                <span class="balance-update" id="javer-balance-info">Saldo Javer: R$ 0,00</span>
             </div>
-            <div class="card score-card">
-                <span class="label">Perfil do Investidor</span>
-                <h2 id="investor-profile">Buscando...</h2>
-                <p class="score-info">Análise baseada em sua carteira.</p>
+            <div class="card kpi-card">
+                <div class="card-header"><span class="label">Rendimento Global</span><i class="fas fa-chart-line"></i>
+                </div>
+                <h2 id="global-yield">0.00%</h2>
+                <span id="global-profit-brl" class="yield-badge">R$ 0,00</span>
             </div>
-        </section>
-
-        <!-- 2. EXPLORADOR DE MERCADO (Assets Search Name/Ticker) -->
-        <section class="market-explorer card">
-            <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Explorar Mercado</h3>
-            <div class="search-box">
-                <input type="text" id="market-search" placeholder="Busque por nome (Ex: Apple) ou Ticker (Ex: PETR4)">
-                <button onclick="searchMarket()" class="btn-primary-action">Pesquisar Ativo</button>
+            <div class="card kpi-card">
+                <div class="card-header"><span class="label">Cotação Dólar</span><i class="fas fa-dollar-sign"></i>
+                </div>
+                <h2 id="usd-rate">R$ 0,00</h2>
+                <span class="status-badge">Real-time (Yahoo)</span>
             </div>
-            <div id="search-results" class="search-results-grid"></div>
-        </section>
-
-        <!-- 3. GRÁFICOS (Analytics Wallet/Projection) -->
-        <section class="charts-grid">
-            <div class="card chart-box">
-                <h3>Alocação por Ativo</h3>
-                <div class="canvas-container"><canvas id="chart-allocation"></canvas></div>
-            </div>
-            <div class="card chart-box">
-                <h3>Performance (%)</h3>
-                <div class="canvas-container"><canvas id="chart-performance"></canvas></div>
-            </div>
-            <div class="card chart-box full-width">
-                <h3>Projeção de Renda Fixa (12 Meses)</h3>
-                <div class="canvas-container line-chart"><canvas id="chart-projection"></canvas></div>
+            <div class="card actions-card">
+                <button class="btn-confirm-action" onclick="openModal('modal-buy')">
+                    <i class="fas fa-plus-circle"></i> Novo Ativo
+                </button>
+                <button class="btn-exit" style="width: 100%; margin-top: 10px;" onclick="openModal('modal-register')">
+                    Registrar Histórico
+                </button>
             </div>
         </section>
 
-        <!-- 4. MINHA CARTEIRA (Investments Me/Detail/Sell) -->
-        <section class="statement-section">
-            <div class="section-header">
-                <h3><i class="fa-solid fa-wallet"></i> Minha Carteira Ativa</h3>
-                <button class="btn-primary-action" onclick="openModal('modal-register')">Registrar Ativo Antigo</button>
+        <!-- BARRA DE BUSCA E TRENDING -->
+        <section class="search-section chart-card-modern">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="asset-search" placeholder="Buscar por ticker ou nome (ex: PETR4, Google...)"
+                    onkeyup="handleSearch(event)">
+                <div id="search-results" class="search-dropdown"></div>
             </div>
-            <div class="statement-card">
-                <div id="investment-list" class="investment-list"></div>
+            <div class="trending-container">
+                <span><i class="fas fa-fire" style="color: #f3681e;"></i> Ativos Quentes:</span>
+                <div id="trending-list" class="trending-badges">
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO B: CORAÇÃO DOS DADOS -->
+        <section class="core-data-grid">
+            <!-- Evolução (60%) -->
+            <div class="chart-card-modern evolution-section">
+                <div class="evolution-header">
+                    <div class="evolution-titles">
+                        <h3>Evolução do Ativo</h3>
+                        <select id="ticker-evolution-select" class="modern-select"></select>
+                    </div>
+                    <div class="period-filters">
+                        <button class="btn-period" data-period="1mo">1M</button>
+                        <button class="btn-period" data-period="6mo">6M</button>
+                        <button class="btn-period" data-period="1y" class="active">1A</button>
+                    </div>
+                </div>
+                <div style="height: 350px;"><canvas id="chart-evolution"></canvas></div>
+            </div>
+            <!-- Alocação (40%) -->
+            <div class="chart-card-modern">
+                <h3>Alocação de Carteira</h3>
+                <div style="height: 350px;"><canvas id="chart-allocation"></canvas></div>
+            </div>
+        </section>
+
+        <section class="performance-section" style="margin-bottom: 20px;">
+            <div class="chart-card-modern">
+                <h3 style="margin-bottom: 20px;">Performance Detalhada por Ativo</h3>
+                <div style="height: 400px; position: relative;"> 
+                    <canvas id="chart-performance"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO C: INTELIGÊNCIA -->
+        <section class="intelligence-grid">
+            <div class="chart-card-modern">
+                <h3>vs Ibovespa</h3>
+                <div style="height: 200px;"><canvas id="chart-benchmark"></canvas></div>
+            </div>
+            <div class="chart-card-modern">
+                <h3>Projeção 12 Meses</h3>
+                <p id="projection-info" class="small-text"></p>
+                <div style="height: 200px;"><canvas id="chart-projection"></canvas></div>
+            </div>
+            <div class="chart-card-modern highlights-card">
+                <h3>Destaques</h3>
+                <div id="highlights-content">
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO D: INVENTÁRIO -->
+        <section class="inventory-section">
+            <div class="chart-card-modern">
+                <div class="section-header">
+                    <h3>Meus Ativos</h3>
+                    <span id="assets-count" class="badge">0 ativos</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Ativo</th>
+                                <th>Tipo</th>
+                                <th>Qtd</th>
+                                <th>Preço Médio</th>
+                                <th>Valor Atual</th>
+                                <th>ROI</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>
 
-    <!-- MODAL COMPRA RÁPIDA -->
+    <!-- MODAIS (Compra e Registro) -->
     <div id="modal-buy" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Confirmar Compra</h3>
-                <button class="close-x" onclick="closeModal('modal-buy')">&times;</button>
+                <h3>Comprar Ativo</h3><button class="close-x" onclick="closeModal('modal-buy')">×</button>
             </div>
             <div class="modal-body">
-                <p id="buy-asset-name">---</p>
-                <div class="input-group">
-                    <label>Quantidade de Cotas</label>
-                    <input type="number" id="buy-qty" placeholder="0">
-                </div>
-                <button class="btn-confirm-action" id="btn-confirm-buy">Finalizar Compra</button>
+                <div class="input-group"><label>Ticker (ex: PETR4.SA)</label><input type="text" id="buy-ticker"></div>
+                <div class="input-group"><label>Quantidade</label><input type="number" id="buy-qty"></div>
+                <button class="btn-confirm-action" onclick="executeTrade('buy')">Confirmar Compra</button>
             </div>
         </div>
     </div>
-
-    <!-- MODAL REGISTRAR ATIVO ANTIGO -->
-    <div id="modal-register" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Registrar Ativo Antigo</h3>
-                <button class="close-x" onclick="closeModal('modal-register')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group"><label>Ticker</label><input type="text" id="reg-ticker"></div>
-                <div class="input-group"><label>Quantidade</label><input type="number" id="reg-qty"></div>
-                <div class="input-group"><label>Preço Pago (na época)</label><input type="number" id="reg-price"></div>
-                <div class="input-group"><label>Data da Compra</label><input type="date" id="reg-date"></div>
-                <button class="btn-confirm-action" id="btn-confirm-reg">Salvar no Histórico</button>
-            </div>
-        </div>
-    </div>
-
     <script src="../js/investments.js"></script>
 </body>
+
 </html>
