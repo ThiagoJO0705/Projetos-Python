@@ -1,11 +1,12 @@
 import uuid
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from app_gateway.services.customers_services import CustomerDataService
 from app_gateway.services.investments_services import InvestmentDataService
 from app_gateway.services.yfinance_services import YahooService
 from app_gateway.services.analysis_services import AnalysisService
 from app_gateway.app.dependencies import validate_active_investor
 from app_data.schemas.enums import InvestorProfile, InvestmentType
+from typing import Literal
 
 analytics = APIRouter(prefix='/analytics', tags=['analytics'])
 
@@ -88,19 +89,26 @@ async def get_my_total_net_worth(user: dict = Depends(validate_active_investor))
     }
 
 @analytics.get('/market/comparison/{ticker}')
-async def get_market_analysis(ticker: str):
+async def get_market_analysis(ticker: str, period: Literal['1d', '5d', '1mo', '3mo', '6mo', '1y', '5y', 'max'] = Query('1y', description="Período de análise")):
     '''Compara o desempenho de um ativo específico com o benchmark do mercado (Ibovespa).'''
     asset_details = YahooService.get_asset_details(ticker)
     if not asset_details:
         raise HTTPException(status_code=404, detail='Ticker não encontrado ou inválido no Yahoo Finance.')
-    history_df = YahooService.get_historical_data(ticker)
-    benchmark_df = YahooService.get_historical_data('^BVSP')
+    history_df = YahooService.get_historical_data(ticker, period=period)
+    benchmark_df = YahooService.get_historical_data('^BVSP', period=period)
+    if history_df.empty:
+        raise HTTPException(status_code=404, detail='Não foi possível obter dados históricos para este período.')
+    chart_data = history_df.reset_index().rename(columns={'Date': 'date', 'Close': 'price'})
+    chart_data['date'] = chart_data['date'].dt.strftime('%Y-%m-%d')
+    chart_list = chart_data[['date', 'price']].to_dict(orient='records')
     return {
         'asset_info': asset_details,
+        'selected_period': period,
         'metrics': {
-            'daily_variation_pct': f'{YahooService.get_market_variation(ticker)}%',
+            'period_variation_pct': f'{YahooService.get_market_variation(ticker)}%',
             'annualized_volatility': f'{AnalysisService.calculate_volatility(history_df)}%'
         },
+        'chart_data': chart_list,
         'market_benchmark_comparison': AnalysisService.compare_with_benchmark(
             portfolio_yield_pct=YahooService.get_market_variation(ticker), 
             benchmark_df=benchmark_df

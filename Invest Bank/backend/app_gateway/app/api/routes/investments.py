@@ -24,6 +24,8 @@ async def get_my_investments(user: dict = Depends(validate_active_investor)):
         asset_type = inv['asset']['type']
         currency = inv['asset']['currency']
         quantity = float(inv['quantity'])
+        raw_date = inv.get('application_date')
+        inv['date_only'] = str(raw_date)[:10]
         if asset_type == InvestmentType.FIXED_INCOME:
             live_price = 1.0
         else:

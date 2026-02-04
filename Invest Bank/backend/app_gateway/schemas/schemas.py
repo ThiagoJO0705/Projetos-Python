@@ -46,6 +46,7 @@ class InvestmentResponse(BaseModel):
     quantity: Decimal
     purchase_price: Decimal
     application_date: datetime
+    date_only: str 
     is_active: bool
     current_value_brl: Optional[Decimal] = None
     current_value_usd: Optional[Decimal] = None
