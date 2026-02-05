@@ -4,16 +4,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!token) window.location.href = 'index.html';
 
+    // --- VARIÁVEIS GLOBAIS DE CONTROLE ---
     let globalUsdRate = 1;
-    let lastAnalysisData = null
+    let lastAnalysisData = null;
+    let currentPeriod = '1y';
 
-    // Variáveis de controle dos gráficos (Preservadas)
+    // Instâncias dos Gráficos
     let chartAlloc = null;
     let chartPerf = null;
     let chartEvol = null;
     let chartBench = null;
     let chartProj = null;
-    let currentPeriod = '1y';
 
     // --- UTILITÁRIOS ---
     const showToast = (msg, type = 'error') => {
@@ -49,32 +50,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const myInvestments = await invRes.json();
             const trending = trendingRes ? await trendingRes.json() : [];
 
+            // Atualiza Componentes
             updateKPIs(netWorth, analysis);
             renderTrending(trending);
             renderInventoryTable(myInvestments, analysis);
 
             if (walletRes.ok && analysis.charts) {
-                renderCharts(analysis, projection, null, myInvestments);
-
-                const activeTickers = analysis.portfolio_summary.portfolio_items
-                    .filter(item => item.current_value > 0);
-
-                if (activeTickers.length > 0) {
-                    setupEvolutionUI(analysis, myInvestments);
-                    updateMarketCharts(activeTickers[0].ticker);
-                }
+                renderCharts(analysis, projection);
+                setupEvolutionUI(analysis);
+                updateMarketCharts('GLOBAL');
             } else {
                 showToast("Sua carteira está vazia. Adicione ativos.", "success");
             }
         } catch (err) {
             console.error("ERRO NO LOAD:", err);
-            showToast("Erro ao conectar com o Gateway de Investimentos.");
+            showToast("Erro ao conectar com o servidor.");
         } finally {
             hideLoader();
         }
     };
 
-    // --- FUNÇÕES DE INTERFACE (UI) ---
+    // --- INTERFACE (KPIs e TABELA) ---
 
     function updateKPIs(netWorth, analysis) {
         document.getElementById('total-net-worth').innerText =
@@ -96,11 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const highlightsDiv = document.getElementById('highlights-content');
         highlightsDiv.innerHTML = `
             <div class="highlight-item">
-                <small>Melhor Performance</small>
+                <small>Melhor Ativo</small>
                 <p style="color: #059669"><strong>${analysis.highlights.best_performer.ticker}</strong> (+R$ ${analysis.highlights.best_performer.profit.toFixed(2)})</p>
             </div>
             <div class="highlight-item">
-                <small>Maior Queda</small>
+                <small>Pior Ativo</small>
                 <p style="color: #ea580c"><strong>${analysis.highlights.worst_performer.ticker}</strong> (R$ ${analysis.highlights.worst_performer.profit.toFixed(2)})</p>
             </div>
         `;
@@ -145,20 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
     }
 
-    function renderTrending(trending) {
-        const container = document.getElementById('trending-list');
-        if (!trending || trending.length === 0) {
-            container.innerHTML = `<span class="trend-item">PETR4.SA</span><span class="trend-item">VALE3.SA</span><span class="trend-item">BTC-USD</span>`;
-            return;
-        }
-        container.innerHTML = trending.map(t => `<span class="trend-item" onclick="setSearch('${t.ticker}')">${t.ticker}</span>`).join('');
-    }
-
-    // --- LÓGICA DE BUSCA (Debounce) ---
+    // --- BUSCA E TRENDING ---
     let searchTimeout;
     window.handleSearch = async (e) => {
         clearTimeout(searchTimeout);
-        const query = e.target.value.toUpperCase();
+        const query = e.target.value.trim();
         const resultsDiv = document.getElementById('search-results');
 
         if (query.length < 2) {
@@ -168,27 +155,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchTimeout = setTimeout(async () => {
             try {
-                const res = await fetch(`${API}/assets/search/ticker/${query}`, {
+                const res = await fetch(`${API}/assets/search/name/${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
 
-                resultsDiv.style.display = 'block';
-                resultsDiv.innerHTML = `
-                    <div class="search-item" onclick="prepareTrade('${data.ticker}', ${data.current_price})">
-                        <strong>${data.ticker}</strong> - ${data.name} 
-                        <span style="float:right; color:#059669">R$ ${data.current_price}</span>
-                    </div>
-                `;
-            } catch (err) {
-                resultsDiv.innerHTML = `<div class="search-item">Ativo não encontrado</div>`;
-            }
-        }, 600);
+                if (data.length > 0) {
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.innerHTML = data.map(asset => `
+                        <div class="search-result-item" onclick="quickTrade('${asset.ticker}')">
+                            <div class="asset-info">
+                                <b>${asset.ticker}</b><br>
+                                <span>${asset.name}</span>
+                            </div>
+                            <div class="asset-price">
+                                R$ ${parseFloat(asset.current_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }, 500);
     };
 
-    // --- GRÁFICOS ---
+    window.quickTrade = async (ticker) => {
+        document.getElementById('search-results').style.display = 'none';
+        showLoader();
+        try {
+            const res = await fetch(`${API}/assets/search/ticker/${ticker}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            window.prepareTrade(data.ticker, data.current_price);
+        } catch (err) { showToast("Erro ao buscar ativo."); }
+        finally { hideLoader(); }
+    };
 
-    const renderCharts = (analysis, projection, marketData, myInvestments) => {
+    function renderTrending(trending) {
+        const container = document.getElementById('trending-list');
+        const list = (trending && trending.length > 0) ? trending : [{ ticker: 'AAPL' }, { ticker: 'PETR4.SA' }, { ticker: 'BTC-USD' }];
+        container.innerHTML = list.map(t => `<span class="trend-badge" onclick="quickTrade('${t.ticker}')">${t.ticker}</span>`).join('');
+    }
+
+    // --- GRÁFICOS  ---
+
+    const renderCharts = (analysis, projection) => {
         renderAllocationChart(analysis.charts);
         renderPerformanceChart(analysis, analysis.charts);
         renderProjectionChart(projection);
@@ -196,24 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderAllocationChart(chartData) {
         const ctxPie = document.getElementById('chart-allocation').getContext('2d');
-        const allocationArray = chartData.allocation_by_type;
-        const labelsAlloc = allocationArray.map(item => item.type);
-        const valuesAlloc = allocationArray.map(item => item.current_value_brl);
-        const totalValue = valuesAlloc.reduce((a, b) => a + b, 0);
-
-        function createGradient(ctx, color1, color2) {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, color1);
-            gradient.addColorStop(1, color2);
-            return gradient;
-        }
-
-        const gradientColors = [
-            createGradient(ctxPie, '#0a173d', '#1e3a8a'),
-            createGradient(ctxPie, '#f3681e', '#ff8c00'),
-            createGradient(ctxPie, '#a6cfc0', '#2dd4bf'),
-            createGradient(ctxPie, '#fce210', '#ffd700'),
-        ];
+        const valuesAlloc = chartData.allocation_by_type.map(item => item.current_value_brl);
+        const labelsAlloc = chartData.allocation_by_type.map(item => item.type);
+        const total = valuesAlloc.reduce((a, b) => a + b, 0);
 
         if (chartAlloc) chartAlloc.destroy();
         chartAlloc = new Chart(ctxPie, {
@@ -222,23 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: labelsAlloc,
                 datasets: [{
                     data: valuesAlloc,
-                    backgroundColor: gradientColors,
-                    hoverOffset: 20, borderWidth: 0, borderRadius: 2, spacing: 5
+                    backgroundColor: ['#0a173d', '#f3681e', '#a6cfc0', '#fce210'],
+                    borderWidth: 0, cutout: '75%'
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false, cutout: '75%',
+                responsive: true, maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#444', usePointStyle: true, font: { size: 12, weight: '600' },
-                            generateLabels: (chart) => chart.data.labels.map((label, i) => ({
-                                text: `${label} (${((valuesAlloc[i] / totalValue) * 100).toFixed(0)}%)`,
-                                fillStyle: gradientColors[i], strokeStyle: gradientColors[i], lineWidth: 0, index: i
-                            }))
-                        }
-                    }
+                    legend: { position: 'right', labels: { usePointStyle: true, font: { weight: '600' } } }
                 }
             }
         });
@@ -299,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chartEvol) chartEvol.destroy();
 
         chartEvol = new Chart(ctx, {
+            type: 'line',
             data: {
                 labels: historyLabels,
                 datasets: [{
@@ -345,59 +333,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-    };
+    }
 
-    const renderBenchmarkChart = (marketData) => {
+    function renderBenchmarkChart(marketData) {
         const ctx = document.getElementById('chart-benchmark').getContext('2d');
         const bench = marketData.market_benchmark_comparison;
-        const myYield = typeof bench.portfolio_yield === 'string' ? parseFloat(bench.portfolio_yield.replace('%', '')) : bench.portfolio_yield;
-        const marketYield = typeof bench.market_yield === 'string' ? parseFloat(bench.market_yield.replace('%', '')) : bench.market_yield;
-        const labelAtivo = marketData.asset_info.ticker;
+        const myY = typeof bench.portfolio_yield === 'string' ? parseFloat(bench.portfolio_yield.replace('%', '')) : bench.portfolio_yield;
+        const mkY = typeof bench.market_yield === 'string' ? parseFloat(bench.market_yield.replace('%', '')) : bench.market_yield;
+        const label = marketData.asset_info.ticker;
+
         if (chartBench) chartBench.destroy();
         chartBench = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: [labelAtivo, 'Ibovespa'],
+                labels: [label, 'Ibovespa'],
                 datasets: [{
-                    data: [myYield, marketYield],
-                    backgroundColor: [
-                        labelAtivo === 'Minha Carteira' ? '#f3681e' : '#a6cfc0',
-                        '#0a173d'
-                    ],
-                    borderRadius: 8,
-                    barPercentage: 0.5
+                    data: [myY, mkY],
+                    backgroundColor: [label === 'Minha Carteira' ? '#f3681e' : '#a6cfc0', '#0a173d'],
+                    borderRadius: 8
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#1e293b',
-                        padding: 12,
-                        callbacks: {
-                            label: (ctx) => ` Rendimento: ${ctx.raw.toFixed(2)}%`
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: { callback: (v) => v + '%' }
-                    }
-                }
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { callback: v => v + '%' } } }
             }
         });
-    };
+    }
 
     function renderProjectionChart(projection) {
         const ctxProj = document.getElementById('chart-projection').getContext('2d');
-        document.getElementById('projection-info').innerText = `Taxa: ${projection.annual_rate} (Perfil ${projection.profile})`;
+        document.getElementById('projection-info').innerText = `Taxa: ${projection.annual_rate} (${projection.profile})`;
 
         if (chartProj) chartProj.destroy();
         chartProj = new Chart(ctxProj, {
@@ -407,48 +374,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     data: [projection.initial_assets, projection.projected_value],
                     backgroundColor: ['#0a173d', '#2dd4bf'],
-                    borderRadius: 10, barPercentage: 0.6
+                    borderRadius: 10
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#1e293b',
-                        padding: 12,
-                        callbacks: {
-                            label: (ctx) => ` Valor: R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') }
-                    }
-                }
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
             }
         });
     }
 
+    // --- LOGICA DE MERCADO E BENCHMARK ---
     const setupEvolutionUI = (analysis) => {
         const select = document.getElementById('ticker-evolution-select');
-        const activeTickers = [...new Set(analysis.portfolio_summary.portfolio_items
-            .filter(item => item.current_value > 0).map(item => item.ticker))];
-
-        // Adiciona "Minha Carteira" como primeira opção e depois os tickers
+        const tickers = [...new Set(analysis.portfolio_summary.portfolio_items.filter(i => i.current_value > 0).map(i => i.ticker))];
         let options = `<option value="GLOBAL">Minha Carteira (Total)</option>`;
-        options += activeTickers.map(t => `<option value="${t}">${t}</option>`).join('');
-
+        options += tickers.map(t => `<option value="${t}">${t}</option>`).join('');
         select.innerHTML = options;
-
         select.onchange = () => updateMarketCharts(select.value);
-
         document.querySelectorAll('.btn-period').forEach(btn => {
             btn.onclick = (e) => {
                 document.querySelectorAll('.btn-period').forEach(b => b.classList.remove('active'));
@@ -464,35 +409,32 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoader();
         try {
             const tickerToFetch = (ticker === 'GLOBAL') ? 'PETR4.SA' : ticker;
-            const periodToFetch = (ticker === 'GLOBAL') ? '1y' : currentPeriod;
-            const res = await fetch(`${API}/analytics/market/comparison/${tickerToFetch}?period=${periodToFetch}`, {
+            const res = await fetch(`${API}/analytics/market/comparison/${tickerToFetch}?period=${currentPeriod}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
+
             if (ticker === 'GLOBAL') {
                 const globalYield = lastAnalysisData.portfolio_summary.global_yield_pct;
-                const globalBenchmark = {
+                const globalBench = {
                     asset_info: { ticker: "Minha Carteira" },
                     market_benchmark_comparison: {
-                        portfolio_yield: `${globalYield.toFixed(2)}%`,
-                        market_yield: data.market_benchmark_comparison.market_yield // Mantém o Ibov do período
+                        portfolio_yield: globalYield,
+                        market_yield: data.market_benchmark_comparison.market_yield
                     }
                 };
-                renderBenchmarkChart(globalBenchmark)
-                document.getElementById('chart-evolution').style.opacity = "0.3";
+                renderBenchmarkChart(globalBench);
+                document.getElementById('chart-evolution').style.opacity = "0.2";
             } else {
                 document.getElementById('chart-evolution').style.opacity = "1";
                 renderEvolutionChart(data);
                 renderBenchmarkChart(data);
             }
-        } catch (err) {
-            showToast("Erro ao carregar dados de mercado.");
-        } finally {
-            hideLoader();
-        }
+        } catch (err) { console.error(err); }
+        finally { hideLoader(); }
     }
 
-    // --- MODAIS ---
+    // --- MODAIS E OPERAÇÕES (COMPRA/VENDA/DETALHES) ---
 
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
@@ -514,7 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!res.ok) throw new Error("Não foi possível localizar este investimento.");
             const data = await res.json();
-            const exchangeRate = (typeof globalUsdRate !== 'undefined' && globalUsdRate > 0) ? globalUsdRate : 1;
             const isUsd = data.asset.currency === 'USD';
             const qty = parseFloat(data.quantity) || 0;
             let unitPurchasePrice = parseFloat(data.purchase_price) || 0;
@@ -635,98 +576,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.prepareTrade = (ticker, price) => {
         document.getElementById('buy-ticker').value = ticker;
-        document.getElementById('search-results').style.display = 'none';
         openModal('modal-buy');
     };
 
-    window.executeTrade = async (type) => {
+    window.executeTrade = async () => {
         const ticker = document.getElementById('buy-ticker').value;
         const quantity = document.getElementById('buy-qty').value;
-
-        if (!ticker || !quantity) return showToast("Preencha todos os campos");
-
         showLoader();
         try {
             const res = await fetch(`${API}/investments/buy`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ticker, quantity: parseFloat(quantity) })
             });
-
-            if (res.ok) {
-                showToast("Ordem executada com sucesso!", "success");
-                closeModal('modal-buy');
-                loadAllInvestmentsData();
-            } else {
-                const err = await res.json();
-                showToast(err.detail || "Erro na transação");
-            }
-        } catch (err) {
-            showToast("Erro de conexão");
-        } finally {
-            hideLoader();
-        }
+            if (res.ok) { showToast("Compra realizada!", "success"); closeModal('modal-buy'); loadAllInvestmentsData(); }
+            else { const e = await res.json(); showToast(e.detail); }
+        } finally { hideLoader(); }
     };
-
-    // --- LÓGICA DE VENDA ---
 
     window.openSellModal = (id, ticker, currentQty) => {
         document.getElementById('sell-investment-id').value = id;
         document.getElementById('sell-current-qty').value = currentQty;
-        document.getElementById('sell-qty-input').value = "";
-
-        document.getElementById('sell-asset-info').innerHTML = `
-            <p style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Ativo Selecionado</p>
-            <p><strong>${ticker}</strong></p>
-            <p style="font-size: 13px;">Quantidade em Carteira: <strong>${parseFloat(currentQty).toFixed(8)}</strong></p>
-        `;
-
-        window.openModal('modal-sell');
+        document.getElementById('sell-asset-info').innerHTML = `Vender <b>${ticker}</b> (Disponível: ${currentQty})`;
+        openModal('modal-sell');
     };
 
     window.executeSell = async () => {
         const id = document.getElementById('sell-investment-id').value;
         const currentQty = parseFloat(document.getElementById('sell-current-qty').value);
         const qtyToSell = parseFloat(document.getElementById('sell-qty-input').value);
+        const newTotal = currentQty - qtyToSell;
 
-        if (isNaN(qtyToSell) || qtyToSell <= 0) {
-            return showToast("Informe uma quantidade válida para venda.");
-        }
-
-        if (qtyToSell > currentQty) {
-            return showToast("Você não pode vender mais do que possui.");
-        }
-
-        const newTotalQuantity = currentQty - qtyToSell;
-
+        if (newTotal < 0) return showToast("Quantidade insuficiente.");
         showLoader();
         try {
             const res = await fetch(`${API}/investments/${id}`, {
                 method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ quantity: newTotalQuantity })
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: newTotal })
             });
-
-            if (res.ok) {
-                showToast(qtyToSell === currentQty ? "Ativo totalmente vendido!" : "Venda parcial realizada!", "success");
-                window.closeModal('modal-sell');
-                loadAllInvestmentsData();
-            } else {
-                const err = await res.json();
-                showToast(err.detail || "Erro ao processar venda.");
-            }
-        } catch (err) {
-            console.error("ERRO NA VENDA:", err);
-            showToast("Erro de conexão com o servidor.");
-        } finally {
-            hideLoader();
-        }
+            if (res.ok) { showToast("Venda realizada!", "success"); closeModal('modal-sell'); loadAllInvestmentsData(); }
+        } finally { hideLoader(); }
     };
 
     loadAllInvestmentsData();

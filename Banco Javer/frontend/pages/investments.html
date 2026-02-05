@@ -60,16 +60,21 @@
         </section>
 
         <!-- BARRA DE BUSCA E TRENDING -->
-        <section class="search-section chart-card-modern">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" id="asset-search" placeholder="Buscar por ticker ou nome (ex: PETR4, Google...)"
-                    onkeyup="handleSearch(event)">
-                <div id="search-results" class="search-dropdown"></div>
-            </div>
-            <div class="trending-container">
-                <span><i class="fas fa-fire" style="color: #f3681e;"></i> Ativos Quentes:</span>
-                <div id="trending-list" class="trending-badges">
+        <section class="search-section card">
+            <div class="search-main-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="asset-search"
+                        placeholder="Pesquise por Nome da Empresa ou Ticker (ex: Google, PETR4...)"
+                        onkeyup="handleSearch(event)">
+                    <div id="search-results" class="search-results-dropdown"></div>
+                </div>
+
+                <!-- ATIVOS QUENTES (BADGES) -->
+                <div class="trending-wrapper">
+                    <span class="trending-label"><i class="fas fa-fire"></i> Sugestões:</span>
+                    <div id="trending-list" class="trending-badges">
+                    </div>
                 </div>
             </div>
         </section>
