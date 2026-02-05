@@ -165,15 +165,19 @@ async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpd
         sold_qty = current_qty - new_qty
         ticker = current_inv['asset']['ticker']
         currency = current_inv['asset']['currency']
-        live_market_price = YahooService.get_current_price(ticker)
-        if live_market_price <= 0:
-            raise HTTPException(status_code=400, detail='Mercado indisponível para venda no momento.')
+        asset_type = current_inv['asset']['type']
+        if asset_type == InvestmentType.FIXED_INCOME:
+            live_market_price = 1.0
+        else:
+            live_market_price = YahooService.get_current_price(ticker)
+            if live_market_price <= 0:
+                raise HTTPException(status_code=400, detail='Mercado indisponível para venda no momento.')
         sale_value_original = sold_qty * live_market_price
         if currency == 'USD':
             usd_rate = YahooService.get_usd_brl_rate()
             sale_value_brl = sale_value_original * usd_rate
         else:
-            sale_value_brl = sale_value_original
+           sale_value_brl = sale_value_original
         await JaverService.credit_account(auth.credentials, sale_value_brl)
     update_payload = update_data.model_dump(exclude_unset=True, mode='json')
     if new_qty == 0:

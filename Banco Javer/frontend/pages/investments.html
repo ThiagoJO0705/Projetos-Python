@@ -181,6 +181,33 @@
         </div>
     </div>
 
+    <!-- MODAL DE VENDA -->
+    <div id="modal-sell" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Vender Ativo</h3>
+                <button class="close-x" onclick="closeModal('modal-sell')">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="sell-asset-info"
+                    style="margin-bottom: 20px; padding: 10px; background: #f8fafc; border-radius: 8px;">
+                </div>
+                <input type="hidden" id="sell-investment-id">
+                <input type="hidden" id="sell-current-qty">
+
+                <div class="input-group">
+                    <label>Quantidade para Vender</label>
+                    <input type="number" id="sell-qty-input" step="0.00000001" placeholder="Quanto deseja vender?">
+                    <small id="sell-warning" style="color: #f3681e; font-size: 11px;"></small>
+                </div>
+
+                <button class="btn-confirm-action btn-danger-solid" onclick="executeSell()">Confirmar Venda</button>
+                <button class="btn-exit" style="width: 100%; margin-top: 10px;"
+                    onclick="closeModal('modal-sell')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/investments.js"></script>
 </body>
 

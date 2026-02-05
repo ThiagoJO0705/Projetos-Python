@@ -118,21 +118,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <tr>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <div class="asset-icon">${inv.asset.ticker[0]}</div>
-                        <div><strong>${inv.asset.ticker}</strong><br><small>${inv.asset.name}</small></div>
-                    </div>
-                </td>
-                <td><span class="badge">${inv.asset.currency === 'USD' ? 'USD ➔ BRL' : 'BRL'}</span></td>
-                <td>${parseFloat(inv.quantity).toFixed(8)}</td>
-                <td>R$ ${pPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                <td>R$ ${cPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
-                <td><button class="btn-eye" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button></td>
-            </tr>
-        `;
+        <tr>
+            <td>
+                <div style="display:flex; align-items:center; gap:10px">
+                    <div class="asset-icon">${inv.asset.ticker[0]}</div>
+                    <div><strong>${inv.asset.ticker}</strong><br><small>${inv.asset.name}</small></div>
+                </div>
+            </td>
+            <td><span class="badge">${inv.asset.currency === 'USD' ? 'USD ➔ BRL' : 'BRL'}</span></td>
+            <td>${parseFloat(inv.quantity).toFixed(8)}</td>
+            <td>R$ ${pPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            <td>R$ ${cPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
+            <td style="display: flex; gap: 5px;">
+                <button class="btn-eye" title="Detalhes" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button>
+                <button class="btn-eye" title="Vender" style="background: #fee2e2; color: #ef4444; border-radius: 20%;" onclick="openSellModal('${inv.id}', '${inv.asset.ticker}', ${inv.quantity})">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </button>
+            </td>
+        </tr>
+    `;
         }).join('');
 
         document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
@@ -408,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isUsd) {
                 unitCurrentPrice = unitCurrentPrice * exchangeRate;
             }
-            const totalValue = data.current_value_brl? parseFloat(data.current_value_brl): (qty * unitCurrentPrice);
+            const totalValue = data.current_value_brl ? parseFloat(data.current_value_brl) : (qty * unitCurrentPrice);
             detailsDiv.innerHTML = `
             <div class="details-grid">
                 <div class="detail-item">
@@ -552,6 +557,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             showToast("Erro de conexão");
+        } finally {
+            hideLoader();
+        }
+    };
+
+    // --- LÓGICA DE VENDA ---
+
+    window.openSellModal = (id, ticker, currentQty) => {
+        document.getElementById('sell-investment-id').value = id;
+        document.getElementById('sell-current-qty').value = currentQty;
+        document.getElementById('sell-qty-input').value = "";
+
+        document.getElementById('sell-asset-info').innerHTML = `
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Ativo Selecionado</p>
+            <p><strong>${ticker}</strong></p>
+            <p style="font-size: 13px;">Quantidade em Carteira: <strong>${parseFloat(currentQty).toFixed(8)}</strong></p>
+        `;
+
+        window.openModal('modal-sell');
+    };
+
+    window.executeSell = async () => {
+        const id = document.getElementById('sell-investment-id').value;
+        const currentQty = parseFloat(document.getElementById('sell-current-qty').value);
+        const qtyToSell = parseFloat(document.getElementById('sell-qty-input').value);
+
+        if (isNaN(qtyToSell) || qtyToSell <= 0) {
+            return showToast("Informe uma quantidade válida para venda.");
+        }
+
+        if (qtyToSell > currentQty) {
+            return showToast("Você não pode vender mais do que possui.");
+        }
+
+        const newTotalQuantity = currentQty - qtyToSell;
+
+        showLoader();
+        try {
+            const res = await fetch(`${API}/investments/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ quantity: newTotalQuantity })
+            });
+
+            if (res.ok) {
+                showToast(qtyToSell === currentQty ? "Ativo totalmente vendido!" : "Venda parcial realizada!", "success");
+                window.closeModal('modal-sell');
+                loadAllInvestmentsData();
+            } else {
+                const err = await res.json();
+                showToast(err.detail || "Erro ao processar venda.");
+            }
+        } catch (err) {
+            console.error("ERRO NA VENDA:", err);
+            showToast("Erro de conexão com o servidor.");
         } finally {
             hideLoader();
         }

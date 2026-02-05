@@ -20,7 +20,7 @@ class InvestmentDataService:
         '''
         Busca os investimentos um cliente específico. 
         '''
-        async with httpx.AsyncClient(timeout=40.0) as client:
+        async with httpx.AsyncClient(timeout=50.0) as client:
             response = await client.get(f'{INVESTMENT_SERVICE_URL}/customer/{customer_id}') 
             if response.status_code == 404:
                 return []
