@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!token) window.location.href = 'index.html';
 
+    let globalUsdRate = 1; // Valor padrão inicial
+
     // Variáveis de controle dos gráficos (Preservadas)
     let chartAlloc = null;
     let chartPerf = null;
@@ -39,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ]);
 
             const netWorth = await netWorthRes.json();
+            globalUsdRate = netWorth.usd_rate || 1;
             const analysis = await walletRes.json();
             const projection = await projRes.json();
             const myInvestments = await invRes.json();
@@ -46,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateKPIs(netWorth, analysis);
             renderTrending(trending);
-            entoryTable(myInvestments, analysis);
+            renderInventoryTable(myInvestments, analysis);
 
             if (walletRes.ok && analysis.charts) {
                 renderCharts(analysis, projection, null, myInvestments);
@@ -102,16 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function entoryTable(investments, analysis) {
+    function renderInventoryTable(investments, analysis) {
         const tbody = document.getElementById('inventory-table-body');
         const portfolioItems = analysis.portfolio_summary.portfolio_items;
-
-        // FILTRO: Apenas investimentos onde is_active é true
         const activeInvestments = investments.filter(inv => inv.is_active === true);
 
         tbody.innerHTML = activeInvestments.map(inv => {
             const analysisData = portfolioItems.find(i => i.ticker === inv.asset.ticker) || {};
             const roi = analysisData.roi_pct || 0;
+            let pPrice = parseFloat(inv.purchase_price);
+            let cPrice = parseFloat(inv.asset.current_price);
+
+            if (inv.asset.currency === 'USD') {
+                cPrice = cPrice * globalUsdRate;
+            }
+
             return `
             <tr>
                 <td>
@@ -120,19 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div><strong>${inv.asset.ticker}</strong><br><small>${inv.asset.name}</small></div>
                     </div>
                 </td>
-                <td><span class="type-badge">${inv.asset.type}</span></td>
+                <td><span class="badge">${inv.asset.currency === 'USD' ? 'USD ➔ BRL' : 'BRL'}</span></td>
                 <td>${parseFloat(inv.quantity).toFixed(8)}</td>
-                <td>R$ ${parseFloat(inv.purchase_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                <td>R$ ${parseFloat(inv.current_value_brl).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td>R$ ${pPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td>R$ ${cPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                 <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
-                <td>
-                    <button class="btn-eye" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button>
-                </td>
+                <td><button class="btn-eye" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button></td>
             </tr>
         `;
         }).join('');
-
-        document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
     }
 
     function renderTrending(trending) {
@@ -381,47 +385,141 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    // --- FUNÇÃO DE DETALHES COMPLETA ---
     window.viewDetails = async (id) => {
         const detailsDiv = document.getElementById('details-content');
-        detailsDiv.innerHTML = '<p>Carregando detalhes...</p>';
+        detailsDiv.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; padding:30px; gap:15px;">
+            <div class="loader-mini"></div>
+            <p style="color: #64748b; font-size: 14px; font-weight: 500;">Buscando dados no Yahoo Finance...</p>
+        </div>`;
         window.openModal('modal-details');
 
         try {
             const token = localStorage.getItem('access_token');
             const API = "http://127.0.0.1:8003";
-
             const res = await fetch(`${API}/investments/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!res.ok) throw new Error("Não foi possível carregar os detalhes.");
+            if (!res.ok) throw new Error("Não foi possível localizar este investimento.");
             const data = await res.json();
-
-            // TRATAMENTO DE DADOS PARA EVITAR NaN
+            const exchangeRate = (typeof globalUsdRate !== 'undefined' && globalUsdRate > 0) ? globalUsdRate : 1;
+            const isUsd = data.asset.currency === 'USD';
             const qty = parseFloat(data.quantity) || 0;
-            const currentPrice = parseFloat(data.asset.current_price) || 0;
-            const purchasePrice = parseFloat(data.purchase_price) || 0;
-
-            // Se o back não mandou o total, calculamos: Qtd * Preço Atual
-            const totalValue = data.current_value_brl ? parseFloat(data.current_value_brl) : (qty * currentPrice);
-
+            let unitPurchasePrice = parseFloat(data.purchase_price) || 0;
+            let unitCurrentPrice = parseFloat(data.asset.current_price) || 0;
+            if (isUsd) {
+                unitCurrentPrice = unitCurrentPrice * exchangeRate;
+            }
+            const totalValue = data.current_value_brl? parseFloat(data.current_value_brl): (qty * unitCurrentPrice);
             detailsDiv.innerHTML = `
             <div class="details-grid">
-                <div class="detail-item"><label>Ticker</label><p><strong>${data.asset.ticker}</strong></p></div>
-                <div class="detail-item"><label>Nome</label><p>${data.asset.name}</p></div>
-                <div class="detail-item"><label>Quantidade</label><p>${qty.toFixed(8)}</p></div>
-                <div class="detail-item"><label>Compra (Unitário)</label><p>R$ ${purchasePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p></div>
-                <div class="detail-item"><label>Mercado (Unitário)</label><p>R$ ${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p></div>
-                <div class="detail-item"><label>Total Atual</label><p><strong>R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></p></div>
-                <div class="detail-item"><label>Data</label><p>${new Date(data.application_date).toLocaleDateString('pt-BR')}</p></div>
+                <div class="detail-item">
+                    <label>Ticker</label>
+                    <p><strong>${data.asset.ticker}</strong></p>
+                </div>
+                <div class="detail-item">
+                    <label>Nome do Ativo</label>
+                    <p>${data.asset.name}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Quantidade</label>
+                    <p>${qty.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Moeda Base</label>
+                    <p>${data.asset.currency} ${isUsd ? '🇺🇸' : '🇧🇷'}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Compra (Unitário em BRL)</label>
+                    <p>R$ ${unitPurchasePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Mercado (Unitário em BRL)</label>
+                    <p>R$ ${unitCurrentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                
+                <div class="detail-item highlight-total" style="grid-column: span 2;">
+                    <label>Patrimônio Total Atualizado (BRL)</label>
+                    <p><strong>R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Data da Aplicação</label>
+                    <p>${new Date(data.application_date).toLocaleDateString('pt-BR')}</p>
+                </div>
+
+                ${isUsd ? `
+                <div class="conversion-info" style="grid-column: span 2;">
+                    <i class="fas fa-info-circle"></i>
+                    Ativo dolarizado. Conversão realizada automaticamente com a cotação atual de <strong>R$ ${exchangeRate.toFixed(2)}</strong>.
+                </div>
+                ` : ''}
             </div>
+
             <style>
-                .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-                .detail-item label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; }
-                .detail-item p { font-size: 15px; color: #0a173d; margin-top: 2px; }
+                .details-grid { 
+                    display: grid; 
+                    grid-template-columns: 1fr 1fr; 
+                    gap: 15px; 
+                    margin-top: 10px; 
+                }
+                .detail-item label { 
+                    display: block;
+                    font-size: 10px; 
+                    color: #64748b; 
+                    text-transform: uppercase; 
+                    font-weight: 800; 
+                    margin-bottom: 2px;
+                    letter-spacing: 0.5px;
+                }
+                .detail-item p { 
+                    font-size: 15px; 
+                    color: #0a173d; 
+                    margin: 0;
+                    font-weight: 500;
+                }
+                .highlight-total {
+                    background: #f8fafc;
+                    padding: 15px;
+                    border-radius: 12px;
+                    border-left: 5px solid #f3681e;
+                    margin-top: 10px;
+                }
+                .highlight-total p {
+                    font-size: 22px;
+                    color: #0a173d;
+                }
+                .conversion-info {
+                    margin-top: 15px;
+                    background: #fffbeb;
+                    color: #92400e;
+                    padding: 12px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    border: 1px solid #fef3c7;
+                    line-height: 1.4;
+                }
+                .loader-mini {
+                    width: 25px;
+                    height: 25px;
+                    border: 3px solid #f3f3f3;
+                    border-top: 3px solid #f3681e;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             </style>`;
+
         } catch (err) {
-            detailsDiv.innerHTML = `<p style="color:red">Erro: ${err.message}</p>`;
+            console.error("Erro ao carregar detalhes:", err);
+            detailsDiv.innerHTML = `
+            <div style="text-align:center; padding: 20px;">
+                <i class="fas fa-times-circle" style="font-size: 40px; color: #ef4444; margin-bottom: 15px;"></i>
+                <p style="color: #ef4444; font-weight: bold;">Erro ao carregar detalhes</p>
+                <p style="font-size: 13px; color: #64748b; margin-top: 5px;">${err.message}</p>
+            </div>`;
         }
     };
 
