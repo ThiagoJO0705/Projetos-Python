@@ -280,21 +280,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = document.getElementById('chart-evolution').getContext('2d');
         const historyLabels = marketData.chart_data.map(d => d.date);
         const historyPrices = marketData.chart_data.map(d => d.price);
+
         if (chartEvol) chartEvol.destroy();
+
         chartEvol = new Chart(ctx, {
             data: {
                 labels: historyLabels,
                 datasets: [{
                     type: 'line', label: 'Preço de Mercado', data: historyPrices,
                     borderColor: '#a6cfc0', backgroundColor: 'rgba(166, 207, 192, 0.1)',
-                    fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2
+                    fill: true, tension: 0.4, pointRadius: 0, pointHitRadius: 20, borderWidth: 2
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',   
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#1e293b', 
+                        padding: 12,
+                        titleFont: { size: 12, family: 'Inter' },
+                        bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                let value = context.parsed.y;
+                                return ` Preço: R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 8 } },
-                    y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { color: '#94a3b8' } }
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 12 }
+                    },
+                    y: {
+                        grid: { color: 'rgba(0,0,0,0.03)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
+                        }
+                    }
                 }
             }
         });
