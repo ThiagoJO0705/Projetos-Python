@@ -268,7 +268,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            callbacks: {
+                                label: (ctx) => ` Lucro/Prejuízo: R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                            }
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: '600' } } },
                         y: { beginAtZero: true, grid: { color: 'rgba(226, 232, 240, 0.6)', drawBorder: false } }
@@ -358,9 +371,15 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
                         callbacks: {
                             label: (ctx) => ` Rendimento: ${ctx.raw.toFixed(2)}%`
                         }
@@ -393,8 +412,26 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        callbacks: {
+                            label: (ctx) => ` Valor: R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') }
+                    }
+                }
             }
         });
     }
