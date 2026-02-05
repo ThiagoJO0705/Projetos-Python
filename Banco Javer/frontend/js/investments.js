@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!token) window.location.href = 'index.html';
 
-    let globalUsdRate = 1; // Valor padrão inicial
+    let globalUsdRate = 1;
+    let lastAnalysisData = null
 
     // Variáveis de controle dos gráficos (Preservadas)
     let chartAlloc = null;
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const netWorth = await netWorthRes.json();
             globalUsdRate = netWorth.usd_rate || 1;
             const analysis = await walletRes.json();
+            lastAnalysisData = analysis;
             const projection = await projRes.json();
             const myInvestments = await invRes.json();
             const trending = trendingRes ? await trendingRes.json() : [];
@@ -295,14 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 interaction: {
-                    mode: 'index',   
+                    mode: 'index',
                     intersect: false,
                 },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
                         enabled: true,
-                        backgroundColor: '#1e293b', 
+                        backgroundColor: '#1e293b',
                         padding: 12,
                         titleFont: { size: 12, family: 'Inter' },
                         bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
@@ -335,24 +337,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderBenchmarkChart = (marketData) => {
         const ctx = document.getElementById('chart-benchmark').getContext('2d');
         const bench = marketData.market_benchmark_comparison;
-        const myYield = parseFloat(bench.portfolio_yield.replace('%', ''));
-        const marketYield = parseFloat(bench.market_yield.replace('%', ''));
-
+        const myYield = typeof bench.portfolio_yield === 'string' ? parseFloat(bench.portfolio_yield.replace('%', '')) : bench.portfolio_yield;
+        const marketYield = typeof bench.market_yield === 'string' ? parseFloat(bench.market_yield.replace('%', '')) : bench.market_yield;
+        const labelAtivo = marketData.asset_info.ticker;
         if (chartBench) chartBench.destroy();
         chartBench = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: [marketData.asset_info.ticker, 'Ibovespa'],
+                labels: [labelAtivo, 'Ibovespa'],
                 datasets: [{
                     data: [myYield, marketYield],
-                    backgroundColor: ['#a6cfc0', '#0a173d'],
-                    borderRadius: 8, barPercentage: 0.5
+                    backgroundColor: [
+                        labelAtivo === 'Minha Carteira' ? '#f3681e' : '#a6cfc0',
+                        '#0a173d'
+                    ],
+                    borderRadius: 8,
+                    barPercentage: 0.5
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { ticks: { callback: (v) => v + '%' } } }
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` Rendimento: ${ctx.raw.toFixed(2)}%`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { callback: (v) => v + '%' }
+                    }
+                }
             }
         });
     };
@@ -385,7 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeTickers = [...new Set(analysis.portfolio_summary.portfolio_items
             .filter(item => item.current_value > 0).map(item => item.ticker))];
 
-        select.innerHTML = activeTickers.map(t => `<option value="${t}">${t}</option>`).join('');
+        // Adiciona "Minha Carteira" como primeira opção e depois os tickers
+        let options = `<option value="GLOBAL">Minha Carteira (Total)</option>`;
+        options += activeTickers.map(t => `<option value="${t}">${t}</option>`).join('');
+
+        select.innerHTML = options;
+
         select.onchange = () => updateMarketCharts(select.value);
 
         document.querySelectorAll('.btn-period').forEach(btn => {
@@ -402,12 +426,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ticker) return;
         showLoader();
         try {
-            const res = await fetch(`${API}/analytics/market/comparison/${ticker}?period=${currentPeriod}`, {
+            const tickerToFetch = (ticker === 'GLOBAL') ? 'PETR4.SA' : ticker;
+            const periodToFetch = (ticker === 'GLOBAL') ? '1y' : currentPeriod;
+            const res = await fetch(`${API}/analytics/market/comparison/${tickerToFetch}?period=${periodToFetch}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            renderEvolutionChart(data);
-            renderBenchmarkChart(data);
+            if (ticker === 'GLOBAL') {
+                const globalYield = lastAnalysisData.portfolio_summary.global_yield_pct;
+                const globalBenchmark = {
+                    asset_info: { ticker: "Minha Carteira" },
+                    market_benchmark_comparison: {
+                        portfolio_yield: `${globalYield.toFixed(2)}%`,
+                        market_yield: data.market_benchmark_comparison.market_yield // Mantém o Ibov do período
+                    }
+                };
+                renderBenchmarkChart(globalBenchmark)
+                document.getElementById('chart-evolution').style.opacity = "0.3";
+            } else {
+                document.getElementById('chart-evolution').style.opacity = "1";
+                renderEvolutionChart(data);
+                renderBenchmarkChart(data);
+            }
         } catch (err) {
             showToast("Erro ao carregar dados de mercado.");
         } finally {
