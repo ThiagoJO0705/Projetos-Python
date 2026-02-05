@@ -101,7 +101,7 @@
         <section class="performance-section" style="margin-bottom: 20px;">
             <div class="chart-card-modern">
                 <h3 style="margin-bottom: 20px;">Performance Detalhada por Ativo</h3>
-                <div style="height: 400px; position: relative;"> 
+                <div style="height: 400px; position: relative;">
                     <canvas id="chart-performance"></canvas>
                 </div>
             </div>
@@ -166,6 +166,21 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL DE DETALHES DO INVESTIMENTO -->
+    <div id="modal-details" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Detalhes do Ativo</h3>
+                <button class="close-x" onclick="closeModal('modal-details')">×</button>
+            </div>
+            <div id="details-content" class="modal-body">
+                <div class="loader-mini"></div>
+            </div>
+            <button class="btn-confirm-action" onclick="closeModal('modal-details')">Fechar</button>
+        </div>
+    </div>
+
     <script src="../js/investments.js"></script>
 </body>
 

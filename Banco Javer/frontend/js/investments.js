@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(`${API}/analytics/wallet/me`, { headers }),
                 fetch(`${API}/analytics/calculations/projection/me`, { headers }),
                 fetch(`${API}/investments/me`, { headers }),
-                fetch(`${API}/assets/trending`, { headers }).catch(() => null) 
+                fetch(`${API}/assets/trending`, { headers }).catch(() => null)
             ]);
 
             const netWorth = await netWorthRes.json();
@@ -46,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateKPIs(netWorth, analysis);
             renderTrending(trending);
-            renderInventoryTable(myInvestments, analysis);
+            entoryTable(myInvestments, analysis);
 
             if (walletRes.ok && analysis.charts) {
                 renderCharts(analysis, projection, null, myInvestments);
 
                 const activeTickers = analysis.portfolio_summary.portfolio_items
                     .filter(item => item.current_value > 0);
-                
+
                 if (activeTickers.length > 0) {
                     setupEvolutionUI(analysis, myInvestments);
                     updateMarketCharts(activeTickers[0].ticker);
@@ -72,22 +72,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNÇÕES DE INTERFACE (UI) ---
 
     function updateKPIs(netWorth, analysis) {
-        document.getElementById('total-net-worth').innerText = 
+        document.getElementById('total-net-worth').innerText =
             new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(netWorth.total_net_worth);
-        
-        document.getElementById('javer-balance-info').innerText = 
+
+        document.getElementById('javer-balance-info').innerText =
             `Saldo Banco: R$ ${netWorth.javer_account_balance.toLocaleString('pt-BR')}`;
-        
+
         document.getElementById('usd-rate').innerText = `R$ ${netWorth.usd_rate.toFixed(2)}`;
 
         const yieldPct = analysis.portfolio_summary.global_yield_pct;
         const yieldElem = document.getElementById('global-yield');
         yieldElem.innerText = `${yieldPct.toFixed(2)}%`;
         yieldElem.className = yieldPct >= 0 ? 'yield-positive' : 'yield-negative';
-        
-        document.getElementById('global-profit-brl').innerText = 
+
+        document.getElementById('global-profit-brl').innerText =
             `R$ ${analysis.portfolio_summary.total_profit_loss.toLocaleString('pt-BR')}`;
-            
+
         // Highlights (Destaques)
         const highlightsDiv = document.getElementById('highlights-content');
         highlightsDiv.innerHTML = `
@@ -102,34 +102,37 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function renderInventoryTable(investments, analysis) {
+    function entoryTable(investments, analysis) {
         const tbody = document.getElementById('inventory-table-body');
         const portfolioItems = analysis.portfolio_summary.portfolio_items;
 
-        tbody.innerHTML = investments.map(inv => {
+        // FILTRO: Apenas investimentos onde is_active é true
+        const activeInvestments = investments.filter(inv => inv.is_active === true);
+
+        tbody.innerHTML = activeInvestments.map(inv => {
             const analysisData = portfolioItems.find(i => i.ticker === inv.asset.ticker) || {};
             const roi = analysisData.roi_pct || 0;
             return `
-                <tr>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:10px">
-                            <div class="asset-icon">${inv.asset.ticker[0]}</div>
-                            <div><strong>${inv.asset.ticker}</strong><br><small>${inv.asset.name}</small></div>
-                        </div>
-                    </td>
-                    <td><span class="type-badge">${inv.asset.type}</span></td>
-                    <td>${parseFloat(inv.quantity).toFixed(2)}</td>
-                    <td>R$ ${parseFloat(inv.purchase_price).toFixed(2)}</td>
-                    <td>R$ ${parseFloat(inv.current_value_brl).toFixed(2)}</td>
-                    <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
-                    <td>
-                        <button class="btn-eye" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button>
-                    </td>
-                </tr>
-            `;
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <div class="asset-icon">${inv.asset.ticker[0]}</div>
+                        <div><strong>${inv.asset.ticker}</strong><br><small>${inv.asset.name}</small></div>
+                    </div>
+                </td>
+                <td><span class="type-badge">${inv.asset.type}</span></td>
+                <td>${parseFloat(inv.quantity).toFixed(8)}</td>
+                <td>R$ ${parseFloat(inv.purchase_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td>R$ ${parseFloat(inv.current_value_brl).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
+                <td>
+                    <button class="btn-eye" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button>
+                </td>
+            </tr>
+        `;
         }).join('');
-        
-        document.getElementById('assets-count').innerText = `${investments.length} ativos na carteira`;
+
+        document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
     }
 
     function renderTrending(trending) {
@@ -155,11 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchTimeout = setTimeout(async () => {
             try {
-                const res = await fetch(`${API}/assets/search/ticker/${query}`, { 
-                    headers: { 'Authorization': `Bearer ${token}` } 
+                const res = await fetch(`${API}/assets/search/ticker/${query}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                
+
                 resultsDiv.style.display = 'block';
                 resultsDiv.innerHTML = `
                     <div class="search-item" onclick="prepareTrade('${data.ticker}', ${data.current_price})">
@@ -361,8 +364,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ticker) return;
         showLoader();
         try {
-            const res = await fetch(`${API}/analytics/market/comparison/${ticker}?period=${currentPeriod}`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
+            const res = await fetch(`${API}/analytics/market/comparison/${ticker}?period=${currentPeriod}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             renderEvolutionChart(data);
@@ -378,6 +381,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    window.viewDetails = async (id) => {
+        const detailsDiv = document.getElementById('details-content');
+        detailsDiv.innerHTML = '<p>Carregando detalhes...</p>';
+        window.openModal('modal-details');
+
+        try {
+            const token = localStorage.getItem('access_token');
+            const API = "http://127.0.0.1:8003";
+
+            const res = await fetch(`${API}/investments/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("Não foi possível carregar os detalhes.");
+            const data = await res.json();
+
+            // TRATAMENTO DE DADOS PARA EVITAR NaN
+            const qty = parseFloat(data.quantity) || 0;
+            const currentPrice = parseFloat(data.asset.current_price) || 0;
+            const purchasePrice = parseFloat(data.purchase_price) || 0;
+
+            // Se o back não mandou o total, calculamos: Qtd * Preço Atual
+            const totalValue = data.current_value_brl ? parseFloat(data.current_value_brl) : (qty * currentPrice);
+
+            detailsDiv.innerHTML = `
+            <div class="details-grid">
+                <div class="detail-item"><label>Ticker</label><p><strong>${data.asset.ticker}</strong></p></div>
+                <div class="detail-item"><label>Nome</label><p>${data.asset.name}</p></div>
+                <div class="detail-item"><label>Quantidade</label><p>${qty.toFixed(8)}</p></div>
+                <div class="detail-item"><label>Compra (Unitário)</label><p>R$ ${purchasePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p></div>
+                <div class="detail-item"><label>Mercado (Unitário)</label><p>R$ ${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p></div>
+                <div class="detail-item"><label>Total Atual</label><p><strong>R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></p></div>
+                <div class="detail-item"><label>Data</label><p>${new Date(data.application_date).toLocaleDateString('pt-BR')}</p></div>
+            </div>
+            <style>
+                .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+                .detail-item label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+                .detail-item p { font-size: 15px; color: #0a173d; margin-top: 2px; }
+            </style>`;
+        } catch (err) {
+            detailsDiv.innerHTML = `<p style="color:red">Erro: ${err.message}</p>`;
+        }
+    };
 
     window.prepareTrade = (ticker, price) => {
         document.getElementById('buy-ticker').value = ticker;
@@ -395,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(`${API}/investments/buy`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
