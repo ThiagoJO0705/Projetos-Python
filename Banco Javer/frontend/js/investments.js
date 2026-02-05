@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('global-profit-brl').innerText =
             `R$ ${analysis.portfolio_summary.total_profit_loss.toLocaleString('pt-BR')}`;
 
-        // Highlights (Destaques)
         const highlightsDiv = document.getElementById('highlights-content');
         highlightsDiv.innerHTML = `
             <div class="highlight-item">
@@ -109,13 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('inventory-table-body');
         const portfolioItems = analysis.portfolio_summary.portfolio_items;
         const activeInvestments = investments.filter(inv => inv.is_active === true);
-
         tbody.innerHTML = activeInvestments.map(inv => {
-            const analysisData = portfolioItems.find(i => i.ticker === inv.asset.ticker) || {};
-            const roi = analysisData.roi_pct || 0;
+            const summaryItem = portfolioItems.find(i => i.ticker === inv.asset.ticker && i.current_value > 0);
+            const roi = summaryItem ? summaryItem.roi_pct : 0;
             let pPrice = parseFloat(inv.purchase_price);
             let cPrice = parseFloat(inv.asset.current_price);
-
             if (inv.asset.currency === 'USD') {
                 cPrice = cPrice * globalUsdRate;
             }
@@ -137,6 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
         `;
         }).join('');
+
+        document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
     }
 
     function renderTrending(trending) {
@@ -180,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 600);
     };
 
-    // --- FUNÇÕES DE GRÁFICOS (Suas originais preservadas) ---
+    // --- GRÁFICOS ---
 
     const renderCharts = (analysis, projection, marketData, myInvestments) => {
         renderAllocationChart(analysis.charts);
@@ -344,8 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- CONTROLES DE EVENTOS ---
-
     const setupEvolutionUI = (analysis) => {
         const select = document.getElementById('ticker-evolution-select');
         const activeTickers = [...new Set(analysis.portfolio_summary.portfolio_items
@@ -381,11 +378,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- MODAIS E TRANSAÇÕES (ORDENS) ---
+    // --- MODAIS ---
 
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
-    // --- FUNÇÃO DE DETALHES COMPLETA ---
     window.viewDetails = async (id) => {
         const detailsDiv = document.getElementById('details-content');
         detailsDiv.innerHTML = `
