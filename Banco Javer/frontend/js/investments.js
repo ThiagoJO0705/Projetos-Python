@@ -76,8 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('total-net-worth').innerText =
             new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(netWorth.total_net_worth);
 
+
+        document.getElementById('investment-balance-info').innerText =
+            `Total Investido: R$ ${analysis.portfolio_summary.total_invested.toLocaleString('pt-BR')}`;
+
         document.getElementById('javer-balance-info').innerText =
-            `Saldo Banco: R$ ${netWorth.javer_account_balance.toLocaleString('pt-BR')}`;
+            `Valor Atual: R$ ${analysis.portfolio_summary.current_portfolio_value.toLocaleString('pt-BR')}`;
 
         document.getElementById('usd-rate').innerText = `R$ ${netWorth.usd_rate.toFixed(2)}`;
 
@@ -142,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BUSCA E TRENDING ---
+    // --- LÓGICA DE BUSCA COM PREÇO EM TEMPO REAL ---
     let searchTimeout;
     window.handleSearch = async (e) => {
         clearTimeout(searchTimeout);
@@ -155,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchTimeout = setTimeout(async () => {
             try {
+                // [1] Busca a lista de nomes/tickers (Rápido)
                 const res = await fetch(`${API}/assets/search/name/${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -162,21 +168,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.length > 0) {
                     resultsDiv.style.display = 'block';
+
+                    // [2] Renderiza a lista com um "Loading..." no lugar do preço
                     resultsDiv.innerHTML = data.map(asset => `
                         <div class="search-result-item" onclick="quickTrade('${asset.ticker}')">
                             <div class="asset-info">
                                 <b>${asset.ticker}</b><br>
                                 <span>${asset.name}</span>
                             </div>
-                            <div class="asset-price">
-                                R$ ${parseFloat(asset.current_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <div class="asset-price" id="price-search-${asset.ticker.replace('.', '-')}">
+                                <small style="color: #94a3b8; font-size: 10px;">Carregando...</small>
                             </div>
                         </div>
                     `).join('');
+
+                    // [3] Dispara a busca de preço individual para cada item da lista (Lazy Loading)
+                    data.forEach(asset => fetchPriceForSearchList(asset.ticker));
+
+                } else {
+                    resultsDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#64748b;">Nenhum ativo encontrado.</div>`;
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Erro na busca:", err); }
         }, 500);
     };
+
+    async function fetchPriceForSearchList(ticker) {
+        try {
+            const res = await fetch(`${API}/assets/search/ticker/${ticker}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const details = await res.json();
+            const priceElement = document.getElementById(`price-search-${ticker.replace(/\./g, '-')}`);
+            if (priceElement) {
+                let priceToDisplay;
+                if (details.currency === 'USD') {
+                    priceToDisplay = details.price_in_brl || (details.current_price * globalUsdRate);
+                } else {
+                    priceToDisplay = details.current_price;
+                }
+
+                if (priceToDisplay) {
+                    const price = parseFloat(priceToDisplay);
+                    priceElement.innerHTML = `R$ ${price.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}`;
+                    priceElement.style.color = "#059669";
+                    priceElement.style.fontWeight = "700";
+                }
+            }
+        } catch (e) {
+            console.error(`Erro ao buscar preço para ${ticker}:`, e);
+            const priceElement = document.getElementById(`price-search-${ticker.replace(/\./g, '-')}`);
+            if (priceElement) priceElement.innerHTML = `<small style="color: #ef4444;">N/A</small>`;
+        }
+    }
 
     window.quickTrade = async (ticker) => {
         document.getElementById('search-results').style.display = 'none';
@@ -575,7 +621,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.prepareTrade = (ticker, price) => {
+        // Preenche o campo de ticker
         document.getElementById('buy-ticker').value = ticker;
+
+        // Formata o preço para mostrar ao usuário no modal (opcional: adicione um span de preço no seu HTML do modal)
+        const priceFormatted = parseFloat(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // Se você quiser mostrar o preço no modal, pode adicionar um feedback visual:
+        showToast(`Iniciando compra de ${ticker} por ${priceFormatted}`, "success");
+
+        document.getElementById('search-results').style.display = 'none';
         openModal('modal-buy');
     };
 
