@@ -9,7 +9,7 @@ class InvestmentDataService:
     @staticmethod
     async def get_all_investments():
         '''Lista todos os investimentos (Admin)'''
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.get(f'{INVESTMENT_SERVICE_URL}/')
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail='Erro ao listar todos os investimentos')
@@ -20,7 +20,7 @@ class InvestmentDataService:
         '''
         Busca os investimentos um cliente específico. 
         '''
-        async with httpx.AsyncClient(timeout=50.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.get(f'{INVESTMENT_SERVICE_URL}/customer/{customer_id}') 
             if response.status_code == 404:
                 return []
@@ -31,7 +31,7 @@ class InvestmentDataService:
     @staticmethod
     async def get_investment_by_id(investment_id: uuid.UUID):
         '''Busca detalhes de um investimento específico'''
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.get(f'{INVESTMENT_SERVICE_URL}/investment/{investment_id}')
             if response.status_code == 404:
                 raise HTTPException(status_code=404, detail='Investimento não encontrado')
@@ -40,7 +40,7 @@ class InvestmentDataService:
     @staticmethod
     async def create_investment(investment_data: dict):
         '''Registra um novo investimento no banco de dados'''
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(f'{INVESTMENT_SERVICE_URL}/', json=investment_data)
             if response.status_code == 400:
                 raise HTTPException(status_code=400, detail=response.json().get('detail', 'Dados inválidos'))
@@ -51,7 +51,7 @@ class InvestmentDataService:
     @staticmethod
     async def update_investment(investment_id: uuid.UUID, update_data: dict):
         '''Atualiza um investimento existente (venda parcial ou desativação)'''
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.patch(f'{INVESTMENT_SERVICE_URL}/investment/{investment_id}', json=update_data)
             if response.status_code == 404:
                 raise HTTPException(status_code=404, detail='Investimento não encontrado para atualização')
@@ -60,7 +60,7 @@ class InvestmentDataService:
     @staticmethod
     async def delete_investment(investment_id: uuid.UUID):
         '''Remove permanentemente um investimento'''
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.delete(f'{INVESTMENT_SERVICE_URL}/investment/{investment_id}')
             if response.status_code == 404:
                 raise HTTPException(status_code=404, detail='Investimento não encontrado para deleção')

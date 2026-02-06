@@ -34,54 +34,66 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoader();
         try {
             const headers = { 'Authorization': `Bearer ${token}` };
-            const [netWorthRes, walletRes, projRes, invRes, trendingRes] = await Promise.all([
-                fetch(`${API}/analytics/calculations/net-worth/me`, { headers }),
-                fetch(`${API}/analytics/wallet/me`, { headers }),
-                fetch(`${API}/analytics/calculations/projection/me`, { headers }),
-                fetch(`${API}/investments/me`, { headers }),
-                fetch(`${API}/assets/trending`, { headers }).catch(() => null)
-            ]);
-
+            const netWorthRes = await fetch(`${API}/analytics/calculations/net-worth/me`, { headers });
+            if (!netWorthRes.ok) throw new Error("Falha ao carregar Patrimônio");
             const netWorth = await netWorthRes.json();
             globalUsdRate = netWorth.usd_rate || 1;
+
+            const walletRes = await fetch(`${API}/analytics/wallet/me`, { headers });
+            if (!walletRes.ok) throw new Error("Falha ao carregar Análise");
             const analysis = await walletRes.json();
             lastAnalysisData = analysis;
-            const projection = await projRes.json();
-            const myInvestments = await invRes.json();
-            const trending = trendingRes ? await trendingRes.json() : [];
 
-            // Atualiza Componentes
+            const projRes = await fetch(`${API}/analytics/calculations/projection/me`, { headers });
+            const projection = projRes.ok ? await projRes.json() : null;
+
+            const invRes = await fetch(`${API}/investments/me`, { headers });
+            const myInvestments = invRes.ok ? await invRes.json() : [];
+
+            let trending = [];
+            try {
+                const trendingRes = await fetch(`${API}/assets/trending`, { headers });
+                if (trendingRes.ok) trending = await trendingRes.json();
+            } catch (e) { console.warn("Trending indisponível"); }
+
+            // --- ATUALIZAÇÃO DA INTERFACE ---
+
+            // KPIs e Resumo Superior
             updateKPIs(netWorth, analysis);
+
+            // Sugestões de busca
             renderTrending(trending);
+
+            // Tabela de ativos (Filtra is_active dentro da função)
             renderInventoryTable(myInvestments, analysis);
 
-            if (walletRes.ok && analysis.charts) {
+            // Gráficos (Só renderiza se houver dados)
+            if (analysis.charts) {
                 renderCharts(analysis, projection);
                 setupEvolutionUI(analysis);
-                updateMarketCharts('GLOBAL');
+
+                // Inicializa o Benchmark comparando a Carteira Global vs Ibovespa
+                setTimeout(() => {
+                    updateMarketCharts('GLOBAL');
+                }, 300);
             } else {
                 showToast("Sua carteira está vazia. Adicione ativos.", "success");
             }
+
         } catch (err) {
-            console.error("ERRO NO LOAD:", err);
-            showToast("Erro ao conectar com o servidor.");
+            console.error("ERRO CRÍTICO NO LOAD:", err);
+            showToast(err.message || "Erro de conexão com o Gateway.");
         } finally {
             hideLoader();
         }
     };
 
-    // --- INTERFACE (KPIs e TABELA) ---
-
     function updateKPIs(netWorth, analysis) {
         document.getElementById('total-net-worth').innerText =
             new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(netWorth.total_net_worth);
 
-
-        document.getElementById('investment-balance-info').innerText =
-            `Total Investido: R$ ${analysis.portfolio_summary.total_invested.toLocaleString('pt-BR')}`;
-
         document.getElementById('javer-balance-info').innerText =
-            `Valor Atual: R$ ${analysis.portfolio_summary.current_portfolio_value.toLocaleString('pt-BR')}`;
+            `Saldo Banco: R$ ${netWorth.javer_account_balance.toLocaleString('pt-BR')}`;
 
         document.getElementById('usd-rate').innerText = `R$ ${netWorth.usd_rate.toFixed(2)}`;
 
@@ -89,35 +101,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const yieldElem = document.getElementById('global-yield');
         yieldElem.innerText = `${yieldPct.toFixed(2)}%`;
         yieldElem.className = yieldPct >= 0 ? 'yield-positive' : 'yield-negative';
+        const summary = analysis.portfolio_summary;
 
-        document.getElementById('global-profit-brl').innerText =
-            `R$ ${analysis.portfolio_summary.total_profit_loss.toLocaleString('pt-BR')}`;
+        document.getElementById('summary-total-invested').innerText =
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.total_invested);
 
+        document.getElementById('summary-market-value').innerText =
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.current_portfolio_value);
+        const profitLossElem = document.getElementById('summary-profit-loss');
+        const profitValue = summary.total_profit_loss;
+        profitLossElem.innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(profitValue);
+        profitLossElem.classList.add(profitValue >= 0 ? 'positive' : 'negative');
+        const countActive = summary.portfolio_items.filter(i => i.current_value > 0).length;
+        document.getElementById('summary-active-count').innerText = `${countActive} Ativos`;
         const highlightsDiv = document.getElementById('highlights-content');
         highlightsDiv.innerHTML = `
-            <div class="highlight-item">
-                <small>Melhor Ativo</small>
-                <p style="color: #059669"><strong>${analysis.highlights.best_performer.ticker}</strong> (+R$ ${analysis.highlights.best_performer.profit.toFixed(2)})</p>
-            </div>
-            <div class="highlight-item">
-                <small>Pior Ativo</small>
-                <p style="color: #ea580c"><strong>${analysis.highlights.worst_performer.ticker}</strong> (R$ ${analysis.highlights.worst_performer.profit.toFixed(2)})</p>
-            </div>
-        `;
+        <div class="highlight-item">
+            <small>Melhor Ativo</small>
+            <p style="color: #059669"><strong>${analysis.highlights.best_performer.ticker}</strong> (+R$ ${analysis.highlights.best_performer.profit.toFixed(2)})</p>
+        </div>
+        <div class="highlight-item">
+            <small>Pior Ativo</small>
+            <p style="color: #ea580c"><strong>${analysis.highlights.worst_performer.ticker}</strong> (R$ ${analysis.highlights.worst_performer.profit.toFixed(2)})</p>
+        </div>
+    `;
     }
 
     function renderInventoryTable(investments, analysis) {
         const tbody = document.getElementById('inventory-table-body');
-        const portfolioItems = analysis.portfolio_summary.portfolio_items;
-        const activeInvestments = investments.filter(inv => inv.is_active === true);
+        const activeInvestments = investments.filter(inv => inv.is_active == true || inv.is_active == 1);
+
+        if (activeInvestments.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Nenhum ativo disponível.</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = activeInvestments.map(inv => {
-            const summaryItem = portfolioItems.find(i => i.ticker === inv.asset.ticker && i.current_value > 0);
-            const roi = summaryItem ? summaryItem.roi_pct : 0;
             let pPrice = parseFloat(inv.purchase_price);
             let cPrice = parseFloat(inv.asset.current_price);
+
             if (inv.asset.currency === 'USD') {
                 cPrice = cPrice * globalUsdRate;
             }
+            const individualRoi = ((cPrice - pPrice) / pPrice) * 100;
 
             return `
         <tr>
@@ -131,10 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${parseFloat(inv.quantity).toFixed(8)}</td>
             <td>R$ ${pPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
             <td>R$ ${cPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-            <td><span class="roi-badge ${roi >= 0 ? 'positive' : 'negative'}">${roi.toFixed(2)}%</span></td>
+            <td>
+                <span class="roi-badge ${individualRoi >= 0 ? 'positive' : 'negative'}">
+                    ${individualRoi.toFixed(2)}%
+                </span>
+            </td>
             <td style="display: flex; gap: 5px;">
-                <button class="btn-eye" title="Detalhes" onclick="viewDetails('${inv.id}')"><i class="fas fa-search-plus"></i></button>
-                <button class="btn-eye" title="Vender" style="background: #fee2e2; color: #ef4444; border-radius: 20%;" onclick="openSellModal('${inv.id}', '${inv.asset.ticker}', ${inv.quantity})">
+                <button class="btn-eye" title="Detalhes" onclick="viewDetails('${inv.id}')">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="btn-eye" title="Vender" style="background: #fee2e2; color: #ef4444;" onclick="openSellModal('${inv.id}', '${inv.asset.ticker}', ${inv.quantity})">
                     <i class="fas fa-hand-holding-usd"></i>
                 </button>
             </td>
@@ -142,55 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
         }).join('');
 
-        document.getElementById('assets-count').innerText = `${activeInvestments.length} ativos na carteira`;
+        document.getElementById('assets-count').innerText = `${activeInvestments.length} registros ativos`;
     }
-
-    // --- BUSCA E TRENDING ---
-    // --- LÓGICA DE BUSCA COM PREÇO EM TEMPO REAL ---
-    let searchTimeout;
-    window.handleSearch = async (e) => {
-        clearTimeout(searchTimeout);
-        const query = e.target.value.trim();
-        const resultsDiv = document.getElementById('search-results');
-
-        if (query.length < 2) {
-            resultsDiv.style.display = 'none';
-            return;
-        }
-
-        searchTimeout = setTimeout(async () => {
-            try {
-                // [1] Busca a lista de nomes/tickers (Rápido)
-                const res = await fetch(`${API}/assets/search/name/${query}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                if (data.length > 0) {
-                    resultsDiv.style.display = 'block';
-
-                    // [2] Renderiza a lista com um "Loading..." no lugar do preço
-                    resultsDiv.innerHTML = data.map(asset => `
-                        <div class="search-result-item" onclick="quickTrade('${asset.ticker}')">
-                            <div class="asset-info">
-                                <b>${asset.ticker}</b><br>
-                                <span>${asset.name}</span>
-                            </div>
-                            <div class="asset-price" id="price-search-${asset.ticker.replace('.', '-')}">
-                                <small style="color: #94a3b8; font-size: 10px;">Carregando...</small>
-                            </div>
-                        </div>
-                    `).join('');
-
-                    // [3] Dispara a busca de preço individual para cada item da lista (Lazy Loading)
-                    data.forEach(asset => fetchPriceForSearchList(asset.ticker));
-
-                } else {
-                    resultsDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#64748b;">Nenhum ativo encontrado.</div>`;
-                }
-            } catch (err) { console.error("Erro na busca:", err); }
-        }, 500);
-    };
 
     async function fetchPriceForSearchList(ticker) {
         try {
@@ -621,13 +606,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.prepareTrade = (ticker, price) => {
-        // Preenche o campo de ticker
         document.getElementById('buy-ticker').value = ticker;
-
-        // Formata o preço para mostrar ao usuário no modal (opcional: adicione um span de preço no seu HTML do modal)
         const priceFormatted = parseFloat(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // Se você quiser mostrar o preço no modal, pode adicionar um feedback visual:
         showToast(`Iniciando compra de ${ticker} por ${priceFormatted}`, "success");
 
         document.getElementById('search-results').style.display = 'none';

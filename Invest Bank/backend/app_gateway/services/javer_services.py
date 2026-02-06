@@ -8,7 +8,7 @@ class JaverService:
     async def get_user_data_from_javer(token: str):
         '''Consome a API do Banco Javer para obter os dados do usuário autenticado.'''
         headers = {'Authorization': f'Bearer {token}'}
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=120) as client:
             try:
                 user_response = await client.get(f'{JAVER_API_URL}/auth/me', headers=headers)
                 if user_response.status_code != 200:
@@ -39,7 +39,7 @@ class JaverService:
             "amount": amount,
             "description": f"Compra do ativo: {ticker} via PYInvest"
         }
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=120) as client:
             try:
                 response = await client.post(
                     f"{JAVER_API_URL}/banking/payment", 
@@ -59,7 +59,7 @@ class JaverService:
     async def credit_account(token: str, amount: float):
         '''Realiza o depósito do valor da venda do ativo no Banco Javer.'''
         headers = {'Authorization': f'Bearer {token}'}
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=120) as client:
             response = await client.post(
                 f"{JAVER_API_URL}/banking/deposit",
                 params={"deposit_value": amount},

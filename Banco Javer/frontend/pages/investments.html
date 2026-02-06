@@ -35,7 +35,10 @@
                 <div class="card-header"><span class="label">Patrimônio Líquido</span><i class="fas fa-wallet"></i>
                 </div>
                 <h2 id="total-net-worth">R$ 0,00</h2>
-                <span class="balance-update" id="javer-balance-info">Saldo Javer: R$ 0,00</span>
+                <div class="balance-container">
+                    <span class="balance-update" id="javer-balance-info">Saldo Javer: R$ 0,00</span>
+                </div>
+
             </div>
             <div class="card kpi-card">
                 <div class="card-header"><span class="label">Rendimento Global</span><i class="fas fa-chart-line"></i>
@@ -56,6 +59,28 @@
                 <button class="btn-exit" style="width: 100%; margin-top: 10px;" onclick="openModal('modal-register')">
                     Registrar Histórico
                 </button>
+            </div>
+        </section>
+
+        <section class="portfolio-summary-bar card">
+            <div class="summary-item">
+                <span class="summary-label">Total Investido (Custo)</span>
+                <span class="summary-value" id="summary-total-invested">R$ 0,00</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-item">
+                <span class="summary-label">Valor de Mercado Atual</span>
+                <span class="summary-value" id="summary-market-value">R$ 0,00</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-item">
+                <span class="summary-label">Lucro/Prejuízo Acumulado</span>
+                <span class="summary-value highlight" id="summary-profit-loss">R$ 0,00</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-item">
+                <span class="summary-label">Ativos com Saldo</span>
+                <span class="summary-value" id="summary-active-count">0 Ativos</span>
             </div>
         </section>
 

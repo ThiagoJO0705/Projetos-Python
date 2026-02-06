@@ -238,3 +238,58 @@ canvas#chart-performance {
 #chart-performance {
     width: 100% !important;
 }
+
+.balance-container{
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.portfolio-summary-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px !important;
+    margin-bottom: 25px;
+    background: linear-gradient(to right, #ffffff, #f8fafc);
+    border-bottom: 4px solid #0a173d;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.summary-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0a173d;
+}
+
+.summary-divider {
+    width: 1px;
+    height: 40px;
+    background: #e2e8f0;
+}
+
+.summary-value.highlight.positive { color: #059669; }
+.summary-value.highlight.negative { color: #ea580c; }
+
+@media (max-width: 768px) {
+    .portfolio-summary-bar {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .summary-divider { display: none; }
+}
