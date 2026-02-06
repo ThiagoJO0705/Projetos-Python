@@ -72,12 +72,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCharts(analysis, projection);
                 setupEvolutionUI(analysis);
 
-                // Inicializa o Benchmark comparando a Carteira Global vs Ibovespa
-                setTimeout(() => {
+                const activeTickers = [...new Set(
+                    analysis.portfolio_summary.portfolio_items
+                        .filter(i => i.current_value > 0)
+                        .map(i => i.ticker)
+                )];
+                if (activeTickers.length > 0) {
+                    const firstTicker = activeTickers[0];
+                    document.getElementById('ticker-evolution-select').value = firstTicker;
+                    setTimeout(() => {
+                        updateMarketCharts(firstTicker);
+                    }, 300);
+                } else {l
                     updateMarketCharts('GLOBAL');
-                }, 300);
-            } else {
-                showToast("Sua carteira está vazia. Adicione ativos.", "success");
+                }
             }
 
         } catch (err) {
