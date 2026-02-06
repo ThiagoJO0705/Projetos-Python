@@ -186,6 +186,48 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('assets-count').innerText = `${activeInvestments.length} registros ativos`;
     }
 
+    // --- LÓGICA DE BUSCA E TRENDING  ---
+
+    let searchTimeout;
+    window.handleSearch = async (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        const resultsDiv = document.getElementById('search-results');
+
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API}/assets/search/name/${query}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data.length > 0) {
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.innerHTML = data.map(asset => `
+                        <div class="search-result-item" onclick="quickTrade('${asset.ticker}')">
+                            <div class="asset-info">
+                                <b>${asset.ticker}</b><br>
+                                <span>${asset.name}</span>
+                            </div>
+                            <div class="asset-price" id="price-search-${asset.ticker.replace('.', '-')}">
+                                <small style="color: #94a3b8; font-size: 10px;">Carregando...</small>
+                            </div>
+                        </div>
+                    `).join('');
+                    data.forEach(asset => fetchPriceForSearchList(asset.ticker));
+
+                } else {
+                    resultsDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#64748b;">Nenhum ativo encontrado.</div>`;
+                }
+            } catch (err) { console.error("Erro na busca:", err); }
+        }, 500);
+    };
+
     async function fetchPriceForSearchList(ticker) {
         try {
             const res = await fetch(`${API}/assets/search/ticker/${ticker}`, {
@@ -236,6 +278,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const list = (trending && trending.length > 0) ? trending : [{ ticker: 'AAPL' }, { ticker: 'PETR4.SA' }, { ticker: 'BTC-USD' }];
         container.innerHTML = list.map(t => `<span class="trend-badge" onclick="quickTrade('${t.ticker}')">${t.ticker}</span>`).join('');
     }
+
+    document.addEventListener('click', (e) => {
+        const searchBox = document.querySelector('.search-box');
+        const resultsDiv = document.getElementById('search-results');
+        if (resultsDiv && searchBox && !searchBox.contains(e.target)) {
+            resultsDiv.style.display = 'none';
+        }
+    });
 
     // --- GRÁFICOS  ---
 

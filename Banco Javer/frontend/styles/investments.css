@@ -191,6 +191,7 @@ canvas#chart-performance {
     font-weight: 700;
     cursor: pointer;
     transition: 0.3s;
+    margin-left: 5px;
 }
 
 .trend-badge:hover {
