@@ -76,7 +76,7 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         'customer_id': str(user['pyinvest']['id']),
         'asset_id': str(db_asset['id']),
         'quantity': quantity,
-        'purchase_price': purchase_price_brl, # SALVA EM BRL AQUI
+        'purchase_price': purchase_price_brl,
         'is_active': True
     }
     new_investment = await InvestmentDataService.create_investment(investment_payload)
@@ -120,7 +120,7 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
         if not day_bounds or not asset_market_info:
             raise HTTPException(status_code=400, detail=f'Sem dados para {ticker} em {purchase_date}.')
         if not (day_bounds['day_low'] * 0.99 <= user_input_price <= day_bounds['day_high'] * 1.01):
-            raise HTTPException(status_code=400, detail=f'Preço de ${user_input_price} inválido para {purchase_date}.')
+            raise HTTPException(status_code=400, detail=f'Preço de ${user_input_price} inválido para {purchase_date}. O preço estava entre {day_bounds['day_low']} e {day_bounds['day_high']}')
         currency = asset_market_info['currency']
         if currency == 'USD':
             historical_usd_rate = YahooService.get_usd_brl_rate_on_date(purchase_date)

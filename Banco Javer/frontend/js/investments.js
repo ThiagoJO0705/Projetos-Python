@@ -83,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         updateMarketCharts(firstTicker);
                     }, 300);
-                } else {l
+                } else {
+                    l
                     updateMarketCharts('GLOBAL');
                 }
             }
@@ -500,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let unitPurchasePrice = parseFloat(data.purchase_price) || 0;
             let unitCurrentPrice = parseFloat(data.asset.current_price) || 0;
             if (isUsd) {
-                unitCurrentPrice = unitCurrentPrice * exchangeRate;
+                unitCurrentPrice = unitCurrentPrice * globalUsdRate;
             }
             const totalValue = data.current_value_brl ? parseFloat(data.current_value_brl) : (qty * unitCurrentPrice);
             detailsDiv.innerHTML = `
@@ -543,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${isUsd ? `
                 <div class="conversion-info" style="grid-column: span 2;">
                     <i class="fas fa-info-circle"></i>
-                    Ativo dolarizado. Conversão realizada automaticamente com a cotação atual de <strong>R$ ${exchangeRate.toFixed(2)}</strong>.
+                    Ativo dolarizado. Conversão realizada automaticamente com a cotação atual de <strong>R$ ${globalUsdRate.toFixed(2)}</strong>.
                 </div>
                 ` : ''}
             </div>
@@ -660,6 +661,84 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.ok) { showToast("Venda realizada!", "success"); closeModal('modal-sell'); loadAllInvestmentsData(); }
         } finally { hideLoader(); }
+    };
+
+    // --- LÓGICA DE REGISTRO HISTÓRICO ---
+    window.executeRegister = async () => {
+        const ticker = document.getElementById('reg-ticker').value.trim().toUpperCase();
+        const quantity = document.getElementById('reg-qty').value;
+        const purchase_price = document.getElementById('reg-price').value;
+        const purchase_date = document.getElementById('reg-date').value;
+        if (!ticker || !quantity || !purchase_price || !purchase_date) {
+            return showToast("Preencha todos os campos obrigatórios.");
+        }
+
+        showLoader();
+        try {
+            const res = await fetch(`${API}/investments/register`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    quantity: parseFloat(quantity),
+                    purchase_price: parseFloat(purchase_price),
+                    purchase_date: purchase_date
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast("Registro histórico salvo com sucesso!", "success");
+                window.closeModal('modal-register');
+                document.getElementById('reg-ticker').value = "";
+                document.getElementById('reg-qty').value = "";
+                document.getElementById('reg-price').value = "";
+                document.getElementById('reg-date').value = "";
+                loadAllInvestmentsData();
+            } else {
+                showToast(data.detail || "Erro ao registrar ativo.");
+            }
+        } catch (err) {
+            console.error("ERRO NO REGISTRO:", err);
+            showToast("Erro de conexão com o servidor.");
+        } finally {
+            hideLoader();
+        }
+    };
+
+    // --- LÓGICA DE ALTERAÇÃO DE PERFIL ---
+    window.updateInvestorProfile = async (newProfile) => {
+        showLoader();
+        try {
+            const token = localStorage.getItem('access_token');
+            const API = "http://127.0.0.1:8003";
+            const res = await fetch(`${API}/customer/me`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    investor_profile: newProfile
+                })
+            });
+
+            if (res.ok) {
+                showToast(`Perfil alterado para ${newProfile}!`, "success");
+                window.closeModal('modal-profile');
+                loadAllInvestmentsData();
+            } else {
+                const errorData = await res.json();
+                showToast(errorData.detail || "Erro ao atualizar perfil.");
+            }
+        } catch (err) {
+            console.error("ERRO AO MUDAR PERFIL:", err);
+            showToast("Erro de conexão com o Gateway.");
+        } finally {
+            hideLoader();
+        }
     };
 
     loadAllInvestmentsData();

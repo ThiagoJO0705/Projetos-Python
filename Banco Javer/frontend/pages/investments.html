@@ -137,18 +137,30 @@
 
         <!-- SEÇÃO C: INTELIGÊNCIA -->
         <section class="intelligence-grid">
+            <!-- Card 1: Benchmark -->
             <div class="chart-card-modern">
-                <h3>vs Ibovespa</h3>
-                <div style="height: 200px;"><canvas id="chart-benchmark"></canvas></div>
+                <h3>Comparativo vs Ibovespa</h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="chart-benchmark"></canvas>
+                </div>
             </div>
             <div class="chart-card-modern">
-                <h3>Projeção 12 Meses</h3>
-                <p id="projection-info" class="small-text"></p>
-                <div style="height: 200px;"><canvas id="chart-projection"></canvas></div>
+                <div class="section-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin-bottom: 0;">Projeção 12 Meses</h3>
+                    <button class="btn-settings-small" onclick="openModal('modal-profile')" title="Configurar Perfil">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                <p id="projection-info" class="small-text"
+                    style="color: #64748b; font-size: 12px; margin-bottom: 15px;"></p>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="chart-projection"></canvas>
+                </div>
             </div>
-            <div class="chart-card-modern highlights-card">
-                <h3>Destaques</h3>
-                <div id="highlights-content">
+            <div class="chart-card-modern">
+                <h3>Destaques da Carteira</h3>
+                <div id="highlights-content" style="margin-top: 20px;">
                 </div>
             </div>
         </section>
@@ -232,6 +244,75 @@
                 <button class="btn-confirm-action btn-danger-solid" onclick="executeSell()">Confirmar Venda</button>
                 <button class="btn-exit" style="width: 100%; margin-top: 10px;"
                     onclick="closeModal('modal-sell')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO HISTÓRICO -->
+    <div id="modal-register" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Registrar Ativo Histórico</h3>
+                <button class="close-x" onclick="closeModal('modal-register')">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">
+                    O preço será validado conforme a cotação oficial da data escolhida.
+                </p>
+
+                <div class="input-group">
+                    <label>Ticker (Ex: AAPL ou PETR4.SA)</label>
+                    <input type="text" id="reg-ticker" placeholder="PETR4.SA" style="text-transform: uppercase;">
+                </div>
+
+                <div class="input-group">
+                    <label>Quantidade</label>
+                    <input type="number" id="reg-qty" step="0.00000001" placeholder="0.00">
+                </div>
+
+                <div class="input-group">
+                    <label>Preço Pago na Época (Unitário)</label>
+                    <input type="number" id="reg-price" step="0.01" placeholder="0.00">
+                </div>
+
+                <div class="input-group">
+                    <label>Data da Compra</label>
+                    <input type="date" id="reg-date">
+                </div>
+
+                <button class="btn-confirm-action" onclick="executeRegister()">Salvar Registro</button>
+                <button class="btn-exit" style="width: 100%; margin-top: 10px;"
+                    onclick="closeModal('modal-register')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ALTERAÇÃO DE PERFIL -->
+    <div id="modal-profile" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Perfil de Investimento</h3>
+                <button class="close-x" onclick="closeModal('modal-profile')">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+                    Escolha seu perfil para recalcular a projeção anual de Renda Fixa.
+                </p>
+
+                <div class="profile-options">
+                    <button class="profile-opt-btn" onclick="updateInvestorProfile('CONSERVADOR')">
+                        <b>Conservador</b>
+                        <span>Taxa Estimada: 8.0% a.a.</span>
+                    </button>
+                    <button class="profile-opt-btn" onclick="updateInvestorProfile('MODERADO')">
+                        <b>Moderado</b>
+                        <span>Taxa Estimada: 12.0% a.a.</span>
+                    </button>
+                    <button class="profile-opt-btn" onclick="updateInvestorProfile('ARROJADO')">
+                        <b>Arrojado</b>
+                        <span>Taxa Estimada: 18.0% a.a.</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
