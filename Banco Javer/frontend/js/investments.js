@@ -710,6 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ quantity: newTotal })
             });
             if (res.ok) { showToast("Venda realizada!", "success"); closeModal('modal-sell'); loadAllInvestmentsData(); }
+            else { const e = await res.json(); showToast(e.detail); }
         } finally { hideLoader(); }
     };
 

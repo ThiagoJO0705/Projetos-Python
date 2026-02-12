@@ -58,6 +58,9 @@ async def buy_investment(purchase_data: InvestmentCreate, user: dict = Depends(v
         asset_market_info = YahooService.get_asset_details(ticker)
         if not asset_market_info:
             raise HTTPException(status_code=404, detail=f'Ativo {ticker} não encontrado no mercado financeiro.')
+        if asset_market_info.get('type') == InvestmentType.STOCKS:
+            if not quantity.is_integer():
+                raise HTTPException(status_code=400, detail=f'O registro de ações ({ticker}) deve ser inteiro.')
         unit_price = float(asset_market_info['current_price'])
         currency = asset_market_info['currency'] 
     total_cost = unit_price * quantity
@@ -119,6 +122,9 @@ async def register_investment(registration_data: InvestmentCreate, user: dict = 
         asset_market_info = YahooService.get_asset_details(ticker)
         if not day_bounds or not asset_market_info:
             raise HTTPException(status_code=400, detail=f'Sem dados para {ticker} em {purchase_date}.')
+        if asset_market_info.get('type') == InvestmentType.STOCKS:
+            if not quantity.is_integer():
+                raise HTTPException(status_code=400, detail=f'O registro de ações ({ticker}) deve ser inteiro.')
         if not (day_bounds['day_low'] * 0.99 <= user_input_price <= day_bounds['day_high'] * 1.01):
             raise HTTPException(status_code=400, detail=f'Preço de ${user_input_price} inválido para {purchase_date}. O preço estava entre {day_bounds['day_low']} e {day_bounds['day_high']}')
         currency = asset_market_info['currency']
@@ -158,14 +164,18 @@ async def update_investment(investment_id: uuid.UUID, update_data: InvestmentUpd
     if current_inv['customer_id'] != str(user['pyinvest']['id']):
         raise HTTPException(status_code=403, detail='Acesso negado.')
     current_qty = float(current_inv['quantity'])
+    asset_type = current_inv['asset']['type']
+    ticker = current_inv['asset']['ticker']
     new_qty = float(update_data.quantity) if update_data.quantity is not None else current_qty
+    if asset_type == InvestmentType.STOCKS:
+        if not new_qty.is_integer():
+            raise HTTPException(status_code=400, detail=f"Ação {ticker} não permite fração. A quantidade final deve ser inteira.")
     if update_data.is_active is False and new_qty > 0:
         raise HTTPException(status_code=400, detail='Venda as cotas antes de desativar.')
     if new_qty < current_qty:
         sold_qty = current_qty - new_qty
         ticker = current_inv['asset']['ticker']
         currency = current_inv['asset']['currency']
-        asset_type = current_inv['asset']['type']
         if asset_type == InvestmentType.FIXED_INCOME:
             live_market_price = 1.0
         else:
